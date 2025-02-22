@@ -6,6 +6,7 @@ from models import ExchangeUSDT
 
 app = Flask(__name__)
 
+# test branch
 # test modifed by mikewang
 # 将所有的config写入另一个文件，直接加载左右配置，绑定配置文件
 app.config.from_object(config)
@@ -30,4 +31,3 @@ def index():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
