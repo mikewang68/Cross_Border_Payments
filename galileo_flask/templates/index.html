@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>法币换U</title>
+    <style>
+        /* 全局样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 左侧菜单栏 */
+        #sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        #sidebar h2 {
+            color: #ecf0f1;
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        #sidebar button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            color: #ecf0f1;
+            background-color: #34495e;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-align: left;
+        }
+
+        #sidebar button:hover {
+            background-color: #1abc9c;
+        }
+
+        /* 下拉菜单 */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #34495e;
+            border-radius: 5px;
+            margin-top: 5px;
+            z-index: 1000;
+        }
+
+        .dropdown-item {
+            width: 100%;
+            padding: 12px;
+            color: #ecf0f1;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background-color: #1abc9c;
+        }
+
+        /* 右侧内容区 */
+        #content {
+            flex-grow: 1;
+            padding: 20px;
+            background-color: #ecf0f1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* 欢迎信息 */
+        #welcome-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 72px;
+            color: rgba(128, 128, 128, 0.3);
+            user-select: none;
+        }
+
+        /* 表格容器 */
+        .table-container {
+            display: block;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #2ecc71;
+            color: white;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        /* 页脚样式 */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+            font-size: 14px;
+            position: absolute;
+            bottom: 20px;
+            width: calc(100% - 40px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左侧菜单栏 -->
+    <div id="sidebar">
+        <h2>管理面板</h2>
+        <button id="systemBtn">系统</button>
+        
+        <button onclick="window.location.href='/fiat-to-usdt'">法币换U</button>
+    </div>
+
+    <!-- 右侧内容区 -->
+    <div id="content">
+        {% if active_tab == 'fiat-to-usdt' %}
+        <div class="table-container">
+            <h2>法币换U</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>币种</th>
+                        <th>官牌</th>
+                        <th>兑换商</th>
+                        <th>手续费</th>
+                        <th>USDT成本</th>
+                        <th>指数报价</th>
+                        <th>百分比</th>
+                        <th>百分比报价</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in exchange_data %}
+                        <tr>
+                            <td>{{ row.currency }}</td>
+                            <td>{{ row.official_rate }}</td>
+                            <td>{{ row.exchange_provider }}</td>
+                            <td>{{ row.fee }}</td>
+                            <td>{{ row.usdt_cost }}</td>
+                            <td>{{ row.index_quote }}</td>
+                            <td>{{ row.percentage }}</td>
+                            <td>{{ row.percentage_quote }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div id="welcome-message">
+            <h1>Galileo</h1>
+        </div>
+        {% endif %}
+
+        <!-- 页脚 -->
+        <footer>
+            <p>&copy; 2025 法币换U | 保留所有权利</p>
+        </footer>
+    </div>
+
+    <script>
+        
+    </script>
+</body>
+</html>
