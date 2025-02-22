@@ -6,7 +6,7 @@ from models import ExchangeUSDT
 
 app = Flask(__name__)
 
-
+// test
 # 将所有的config写入另一个文件，直接加载左右配置，绑定配置文件
 app.config.from_object(config)
 db.init_app(app)
