@@ -6,22 +6,28 @@ from models import ExchangeUSDT
 
 app = Flask(__name__)
 
-// test
+# test modifed by mikewang
 # 将所有的config写入另一个文件，直接加载左右配置，绑定配置文件
 app.config.from_object(config)
 db.init_app(app)
 
+
 # 获取数据的路由
-@app.route('/fiat-to-usdt')
+@app.route("/fiat-to-usdt")
 def fiat_to_usdt():
     # 查询数据
     exchange_data = ExchangeUSDT.query.all()
     # 将数据传递给模板
-    return render_template('index.html', active_tab='fiat-to-usdt', exchange_data=exchange_data)
+    return render_template(
+        "index.html", active_tab="fiat-to-usdt", exchange_data=exchange_data
+    )
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    return render_template('index.html')
+    return render_template("index.html")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
+
