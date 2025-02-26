@@ -6,6 +6,7 @@ from models import ExchangeUSDT
 
 app = Flask(__name__)
 
+# test2
 # test branch
 # test modifed by mikewang
 # 将所有的config写入另一个文件，直接加载左右配置，绑定配置文件
