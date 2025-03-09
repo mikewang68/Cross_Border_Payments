@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .welcome-container {
+        text-align: center;
+        padding: 100px 0;
+    }
+    .welcome-container h1 {
+        font-size: 36px;
+        color: #333;
+        margin-bottom: 20px;
+    }
+    .welcome-container p {
+        font-size: 18px;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    layui.use(['element', 'layer'], function(){
+        var element = layui.element;
+        var layer = layui.layer;
+        
+        // 初始化页面
+        layer.msg('欢迎使用UCard管理系统');
+    });
+</script>
+{% endblock %} 

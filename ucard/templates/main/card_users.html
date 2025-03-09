@@ -1,0 +1,62 @@
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header">用卡人管理</div>
+        <div class="layui-card-body">
+            <!-- 搜索框 -->
+            <form class="layui-form layui-form-pane" lay-filter="searchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">卡号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="card_no" placeholder="请输入卡号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">搜索</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- 数据表格 -->
+            <table id="user-table" lay-filter="user-table"></table>
+            
+            <!-- 表格工具栏 -->
+            <script type="text/html" id="toolbar">
+            {% raw %}
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm" lay-event="add">添加用卡人</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="batchDel">批量删除</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="import">导入</button>
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="export">导出</button>
+                </div>
+            {% endraw %}
+            </script>
+            
+            <!-- 行工具栏 -->
+            <script type="text/html" id="barTool">
+            {% raw %}
+                <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+            {% endraw %}
+            </script>
+
+            <!-- 状态显示模板 -->
+            <script type="text/html" id="statusTpl">
+            {% raw %}
+                {{#  if(d.status == 1){ }}
+                <span class="layui-badge layui-bg-green">正常</span>
+                {{#  } else { }}
+                <span class="layui-badge layui-bg-gray">冻结</span>
+                {{#  } }}
+            {% endraw %}
+            </script>
+        </div>
+    </div>
+</div> 
