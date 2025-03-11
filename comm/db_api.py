@@ -3,7 +3,7 @@
 
 import logging
 import mariadb
-from utils import get_db
+from comm.utils import get_db
 
 logging.basicConfig(
     filename='db.log',

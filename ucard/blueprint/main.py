@@ -5,6 +5,8 @@ from applications.models.wallet import Wallet
 from applications.extensions import db
 from sqlalchemy import func
 
+from comm.db_api import query_all_from_table
+
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
@@ -39,7 +41,13 @@ def card_users():
 @main_bp.route('/transactions')
 @login_required
 def transactions():
-    return render_template('main/transactions.html')
+    transactions = query_all_from_table('card_transactions')
+
+    # 打印一下查询结果，检查是否有数据返回
+    print(f"查询到 {len(transactions) if transactions else 0} 条交易记录")
+
+    # 将所有结果传递给模板，让前端处理分页
+    return render_template('main/card_transactions.html', transactions=transactions)
 
 @main_bp.route('/limit')
 @login_required

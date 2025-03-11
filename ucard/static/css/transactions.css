@@ -1,0 +1,60 @@
+/* 交易记录页面样式 */
+
+/* 表格容器样式 */
+.table-container {
+    position: relative;
+    overflow: visible;
+}
+
+/* 禁用表格固定高度 */
+.layui-table-view {
+    height: auto !important;
+}
+
+/* 防止分页栏被遮挡 */
+.layui-card-body {
+    padding-bottom: 20px;
+    overflow: visible;
+}
+
+/* 表格行样式优化 */
+.layui-table-cell {
+    height: auto;
+    line-height: 22px;
+    padding: 8px 12px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* 表格头部样式 */
+.layui-table-header th {
+    font-weight: bold;
+    background-color: #f2f2f2;
+}
+
+/* 按钮样式微调 */
+.layui-btn-xs {
+    padding: 0 8px;
+    height: 22px;
+    line-height: 22px;
+}
+
+/* 确保下拉菜单正确显示 */
+.layui-form-select .layui-input {
+    padding-right: 30px;
+}
+
+.layui-form-select dl {
+    top: 42px;
+    z-index: 999;
+    max-height: 300px;
+}
+
+/* 确保下拉菜单在其他元素之上 */
+.layui-form-select dl dd, 
+.layui-form-select dl dt {
+    line-height: 36px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+} 

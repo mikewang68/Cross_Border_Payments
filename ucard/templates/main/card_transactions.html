@@ -1,0 +1,62 @@
+<!-- 交易记录表格模板 -->
+<div class="layui-card">
+    <div class="layui-card-header">信用卡交易记录</div>
+    <div class="layui-card-body">
+        <form class="layui-form" action="">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">交易流水号</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="transaction_id" placeholder="请输入" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">卡号后四位</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="card_last_digits" placeholder="请输入" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">交易类型</label>
+                    <div class="layui-input-inline">
+                        <select name="biz_type">
+                            <option value="">全部</option>
+                            <option value="AUTH">交易扣款</option>
+                            <option value="CORRECTIVE_AUTH">交易扣款修正</option>
+                            <option value="VERIFICATION">验证交易</option>
+                            <option value="VOID">交易撤单</option>
+                            <option value="REFUND">交易退款</option>
+                            <option value="SETTLE">交易结算</option>
+                            <option value="CORRECTIVE_REFUND">退款修正</option>
+                            <option value="CORRECTIVE_REFUND_VOID">退款修正取消</option>
+                            <option value="REFUND_REVERSAL">撤销退款</option>
+                            <option value="SERVICE_FEE">卡服务费</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="transactionSearch">
+                        <i class="layui-icon layui-icon-search"></i> 搜索
+                    </button>
+                    <button type="button" class="layui-btn layui-btn-primary" id="exportTransactions">
+                        <i class="layui-icon layui-icon-export"></i> 导出
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <!-- 修改表格容器，移除多余的分页容器 -->
+        <div class="table-container" id="transaction-table-container">
+            <table id="transaction-table" lay-filter="transaction-table"></table>
+        </div>
+    </div>
+</div>
+
+<!-- 保存后端传递的数据 -->
+<script id="transactions-data" type="application/json">
+{{ transactions|tojson|safe }}
+</script>
+
+<!-- 引入交易记录CSS和JS -->
+<link rel="stylesheet" href="/static/css/transactions.css">
+<script src="/static/js/transactions.js"></script>
