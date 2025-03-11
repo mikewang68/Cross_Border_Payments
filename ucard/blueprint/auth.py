@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
-from applications.models.admins import Admin
+from comm.db_api import query_database
 from functools import wraps
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -20,15 +20,14 @@ def login():
     if request.method == 'POST':
         account = request.form.get('account')
         password = request.form.get('password')
-        
-        # 查询用户
-        admin = Admin.query.filter_by(admin_account=account).first()
+        # 获取数据，判断数据是否存在
+        data = query_database('admins','admin_account',str(account))
         
         # 直接比较密码（假设数据库中存储的是明文密码）
-        if admin and admin.admin_password == password:
+        if account == data[0]['admin_account'] and data[0]['admin_password'] == password:
             # 登录成功，保存用户信息到会话
-            session['user_id'] = admin.admin_id
-            session['user_account'] = admin.admin_account
+            session['user_id'] = data[0]['admin_id']
+            session['user_account'] = data[0]['admin_account']
             
             # 重定向到首页
             return redirect(url_for('main.index'))

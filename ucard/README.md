@@ -2,18 +2,19 @@
 
 UCard管理系统是一个基于Flask和Layui的跨境支付管理平台，用于企业管理吉薪卡、工资支付等功能。
 
+## 已完成功能
+- 登录操作
+- 用卡人查询
+- 交易记录查询
+- ...
+
 ## 项目结构
 
 ```
 ucard/
-├── applications/       # 应用程序包
-│   ├── __init__.py
-│   ├── models/         # 数据模型
-│   ├── views/          # 视图函数
-│   ├── config.py       # 配置文件
-│   └── extensions.py   # 扩展配置
 ├── blueprint/          # 蓝图包
 │   └── main.py         # 主蓝图
+│   └── auth.py
 ├── static/             # 静态资源
 │   ├── css/            # CSS样式
 │   ├── js/             # JavaScript文件
@@ -23,6 +24,7 @@ ucard/
 │   ├── auth/           # 认证相关
 │   ├── main/           # 主要功能
 │   └── error/          # 错误页面
+├── views/              # 
 ├── app.py              # 应用程序入口
 └── requirements.txt    # 依赖包
 ```

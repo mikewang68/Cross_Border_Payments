@@ -1,0 +1,64 @@
+/**
+ * 用卡人管理页面样式
+ */
+
+/* 表格容器样式 */
+.table-container {
+    margin-top: 15px;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* 搜索表单样式 */
+.layui-form-pane .layui-form-label {
+    width: 80px;
+}
+
+.layui-form-pane .layui-input-inline {
+    width: 180px;
+}
+
+/* 详情弹窗样式 */
+.layui-layer-content .layui-card-header {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.layui-layer-content .layui-table {
+    margin-top: 10px;
+}
+
+/* 状态标签样式 */
+.layui-badge {
+    padding: 3px 8px;
+    font-size: 12px;
+}
+
+/* 表格内容溢出处理 */
+.layui-table-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 表格行悬停效果 */
+.layui-table-hover {
+    background-color: #f8f8f8;
+}
+
+/* 工具栏按钮间距 */
+.layui-btn + .layui-btn {
+    margin-left: 8px;
+}
+
+/* 确保表格在小屏幕上也能正常显示 */
+@media screen and (max-width: 992px) {
+    .layui-table-view {
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .layui-table-body {
+        min-width: 800px;
+    }
+} 

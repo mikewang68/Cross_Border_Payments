@@ -12,20 +12,26 @@
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <label class="layui-form-label">卡号</label>
+                        <label class="layui-form-label">地区</label>
                         <div class="layui-input-inline">
-                            <input type="text" name="card_no" placeholder="请输入卡号" autocomplete="off" class="layui-input">
+                            <input type="text" name="region" placeholder="请输入地区" autocomplete="off" class="layui-input">
                         </div>
                     </div>
                     <div class="layui-inline">
-                        <button class="layui-btn" lay-submit lay-filter="formSearch">搜索</button>
-                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
                     </div>
                 </div>
             </form>
             
-            <!-- 数据表格 -->
-            <table id="user-table" lay-filter="user-table"></table>
+            <!-- 添加表格容器 -->
+            <div class="table-container" id="user-table-container">
+                <table id="user-table" lay-filter="user-table"></table>
+            </div>
             
             <!-- 表格工具栏 -->
             <script type="text/html" id="toolbar">
@@ -42,7 +48,8 @@
             <!-- 行工具栏 -->
             <script type="text/html" id="barTool">
             {% raw %}
-                <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+                <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">编辑</a>
                 <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
             {% endraw %}
             </script>
@@ -50,7 +57,7 @@
             <!-- 状态显示模板 -->
             <script type="text/html" id="statusTpl">
             {% raw %}
-                {{#  if(d.status == 1){ }}
+                {{#  if(d.status == 'ACTIVE'){ }}
                 <span class="layui-badge layui-bg-green">正常</span>
                 {{#  } else { }}
                 <span class="layui-badge layui-bg-gray">冻结</span>
@@ -59,4 +66,18 @@
             </script>
         </div>
     </div>
+    
+    <!-- 调试输出数据 -->
+    <div style="display: none;">
+        <pre id="debug-data">{{ card_holders|tojson(indent=4)|safe }}</pre>
+    </div>
+    
+    <!-- 保存后端传递的数据 -->
+    <script id="card-holders-data" type="application/json">
+        {{ card_holders|tojson|safe }}
+    </script>
+    
+    <!-- 引入用卡人CSS和JS -->
+    <link rel="stylesheet" href="/static/css/card_holders.css">
+    <script src="/static/js/card_holders.js"></script>
 </div> 
