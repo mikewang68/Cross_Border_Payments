@@ -14,11 +14,13 @@ from comm.db_api import query_database
 
 
 # 配置日志记录
-logging.basicConfig(
-    filename='app.log',
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
+logger = logging.getLogger(__name__)
+
+logger.setLevel(logging.DEBUG)
+
+handler = logging.FileHandler("gsalay_api.log")
+handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
 
 def load_private_key(system_id):
 
@@ -31,11 +33,11 @@ def load_private_key(system_id):
             private_key_data = converted_key_str.encode('utf-8')
             break
     else:
-        logging.error(f"未找到 {system_id} 的信息。")
+        logger.error(f"未找到 {system_id} 的信息。")
 
     try:
         private_key = serialization.load_pem_private_key(private_key_data, password=None, backend=default_backend())
-        logging.info(private_key)
+
         return private_key
     except Exception as e:
         print(f"加载私钥时出错: {e}")
@@ -50,7 +52,7 @@ def load_app_id(system_id):
             appid = item.get('appid')
             break
     else:
-        logging.error(f"未找到 {system_id} 的信息。")
+        logger.error(f"未找到 {system_id} 的信息。")
         
     return appid
 
@@ -114,11 +116,11 @@ class GSalaryAPI:
             response.raise_for_status()
             return response.json()
         except requests.exceptions.HTTPError as http_err:
-            logging.error(f"HTTP error occurred: {http_err}")
-            logging.error(f"HTTP error occurred: {response.json()}")
+            logger.error(f"HTTP error occurred: {http_err}")
+            logger.error(f"HTTP error occurred: {response.json()}")
             return {}
         except Exception as err:
-            logging.error(f"Other error occurred: {err}")
+            logger.error(f"Other error occurred: {err}")
             return {}
 
     # 账户操作 - 钱包
