@@ -35,6 +35,12 @@ async def balance_history(version):
     data = gsalary.get_card_balance_history(version)
     flatten_data = flat_data(data, 'data', 'history')
     insert_database('balance_history', flatten_data)
+
+# 插入用卡人信息 by mwh 3.12
+async def card_holder(version):
+    data = gsalary.get_card_holders(version)
+    flatten_data = flat_data(data, 'data', 'card_holder')
+    insert_database('card_holder', flatten_data)
 #-------------------------- 伽利略任务End--------------------------------------------------------
 
 

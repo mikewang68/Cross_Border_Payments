@@ -23,10 +23,6 @@ def register_blueprints(app):
     app.register_blueprint(auth_bp)
     # app.register_blueprint(card_users_bp)
     
-    # 添加用卡人表单页面路由
-    @app.route('/card_holders/add')
-    def card_holder_add():
-        return render_template('main/card_user_add.html')
 
 # 注册蓝图
 register_blueprints(app)

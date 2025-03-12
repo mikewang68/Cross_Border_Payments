@@ -73,7 +73,7 @@ layui.use(['table', 'form', 'layer'], function(){
                             return '<span class="layui-badge layui-bg-gray">冻结</span>';
                         }
                     }},
-                    {fixed: 'right', title: '操作', toolbar: '#barTool', width: 150}
+                    {fixed: 'right', title: '操作', toolbar: '#barTool', width: 170}
                 ]],
                 done: function(res){
                     // 确保分页正确显示
@@ -128,32 +128,34 @@ layui.use(['table', 'form', 'layer'], function(){
         // 初始化事件监听
         function initEventListeners() {
             // 监听表格头工具栏事件
-            table.on('toolbar(user-table)', function(obj){
-                var checkStatus = table.checkStatus(obj.config.id);
-                var data = checkStatus.data; // 获取选中的数据
-                
+            table.on('toolbar(user-table)', function(obj){  
                 switch(obj.event){
                     case 'add':
                         // 跳转到添加用卡人页面
-                        window.location.href = '/card_holders/add';
-                        break;
-                    case 'batchDel':
-                        if(data.length === 0){
-                            layer.msg('请选择至少一条数据', {icon: 2});
-                            return;
-                        }
-                        layer.confirm('确定删除选中的用卡人吗？', function(index){
-                            // 这里应该发送请求到后端执行删除
-                            layer.msg('批量删除功能正在开发中', {icon: 6});
-                            layer.close(index);
+                        layer.open({
+                            type: 2,
+                            title: '添加用卡人',
+                            area: ['800px', '600px'],
+                            content: '/card_holders/add'
                         });
                         break;
-                    case 'import':
-                        layer.msg('导入功能正在开发中', {icon: 6});
-                        break;
-                    case 'export':
-                        layer.msg('导出功能正在开发中', {icon: 6});
-                        break;
+                    // case 'batchDel':
+                    //     if(data.length === 0){
+                    //         layer.msg('请选择至少一条数据', {icon: 2});
+                    //         return;
+                    //     }
+                    //     layer.confirm('确定删除选中的用卡人吗？', function(index){
+                    //         // 这里应该发送请求到后端执行删除
+                    //         layer.msg('批量删除功能正在开发中', {icon: 6});
+                    //         layer.close(index);
+                    //     });
+                    //     break;
+                    // case 'import':
+                    //     layer.msg('导入功能正在开发中', {icon: 6});
+                    //     break;
+                    // case 'export':
+                    //     layer.msg('导出功能正在开发中', {icon: 6});
+                    //     break;
                 }
             });
             
@@ -188,8 +190,8 @@ layui.use(['table', 'form', 'layer'], function(){
                         return false;
                     }
                     
-                    // 按地区搜索
-                    if (formData.region && item.region && !item.region.toLowerCase().includes(formData.region.toLowerCase())) {
+                    // 按邮箱搜索
+                    if (formData.email && item.email && !item.email.toLowerCase().includes(formData.email.toLowerCase())) {
                         return false;
                     }
                     
