@@ -1,8 +1,5 @@
-# 数据库通用方法
-
-
+import pymysql
 import logging
-import mariadb
 from comm.utils import get_db
 
 logging.basicConfig(
@@ -18,7 +15,7 @@ def create_db_connection():
         if db is None:
             logging.error("无法获取有效的数据库配置信息，连接失败。")
             return None
-        conn = mariadb.connect(
+        conn = pymysql.connect(
             user=db.get('user'),
             password=db.get('password'),
             host=db.get('host'),
@@ -26,7 +23,7 @@ def create_db_connection():
             database=db.get('database')
         )
         return conn
-    except mariadb.Error as e:
+    except pymysql.Error as e:
         logging.error(f"数据库连接错误: {e}")
         return None
 
@@ -45,8 +42,8 @@ def insert_database(table_name, records):
         try:
             cursor.execute(sql, val)
             logging.info(f"成功插入记录: {record.get('insert_time')}")
-        except mariadb.Error as err:
-            if err.errno == 1062:  # 检查是否为主键冲突错误
+        except pymysql.Error as err:
+            if err.args[0] == 1062:  # 检查是否为主键冲突错误
                 logging.info(f"检测到重复数据: {record.get('insert_time')}，错误信息: {err}")
             else:
                 logging.info(f"插入数据时发生错误，错误信息: {err}")
@@ -70,7 +67,7 @@ def update_database(table_name, set_column, set_value, where_column, where_value
         cursor.execute(sql, (set_value, where_value))
         conn.commit()
         logging.info(f"成功更新 {cursor.rowcount} 条记录。")
-    except mariadb.Error as err:
+    except pymysql.Error as err:
         logging.error(f"更新数据时出现错误: {err}")
         conn.rollback()
     finally:
@@ -83,16 +80,16 @@ def query_database(table_name, column_name, query_value):
         logging.error("无法建立数据库连接，程序退出。")
         return []
 
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
         # 构建 SQL 查询语句
         sql = f"SELECT * FROM {table_name} WHERE {column_name} = %s"
         cursor.execute(sql, (query_value,))
         results = cursor.fetchall()
         return results
-    except mariadb.Error as err:
+    except pymysql.Error as err:
         logging.error(f"查询数据时出现错误: {err}")
-        return err
+        return []
     finally:
         cursor.close()
         conn.close()
@@ -103,14 +100,14 @@ def query_all_from_table(table_name):
         logging.error("无法建立数据库连接，程序退出。")
         return []
 
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
         # 构建全量查询的 SQL 语句
         sql = f"SELECT * FROM {table_name}"
         cursor.execute(sql)
         results = cursor.fetchall()
         return results
-    except mariadb.Error as err:
+    except pymysql.Error as err:
         logging.error(f"查询数据时出现错误: {err}")
         return []
     finally:
