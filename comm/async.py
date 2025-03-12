@@ -14,13 +14,12 @@ time = 60
 
 
 
-async def async_time (version):
+async def async_time (version,time):
     # ------------------- 获取执行周期
     async_ctrl = query_database('async_ctrl', 'version', 'J1')
     record = async_ctrl[0]
     time = record.get('async_time')
-    print('获取时间：',time)
-    return time
+
 
 
 
@@ -50,7 +49,7 @@ async def fetch_info():
         card_transactions('J1'),
         balance_history('J1'),
         get_user_info(),
-        async_time('J1'),
+        async_time('J1',time)
     ]
 
     # 使用 asyncio.gather 并行执行所有任务
