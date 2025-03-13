@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for
-from blueprint.auth import login_required
-from sqlalchemy import func
+from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
-
+from datetime import datetime
 from comm.db_api import query_all_from_table
 
 main_bp = Blueprint('main', __name__)
@@ -86,8 +85,22 @@ def transactions():
     # 打印一下查询结果，检查是否有数据返回
     print(f"查询到 {len(transactions) if transactions else 0} 条交易记录")
 
+    # 定义一个函数将字符串转换为 datetime 对象
+    def convert_time(time_str):
+        try:
+            # 尝试使用包含毫秒的格式解析
+            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+        except ValueError:
+            # 如果失败，使用不包含毫秒的格式解析
+            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ')
+
+    # 对列表进行排序，按 transaction_time 倒序排列
+    sorted_transactions = sorted(transactions, key=lambda x: convert_time(x["transaction_time"]), reverse=True)
+
+
+
     # 将所有结果传递给模板，让前端处理分页
-    return render_template('main/card_transactions.html', transactions=transactions)
+    return render_template('main/card_transactions.html', transactions=sorted_transactions)
 
 #查看额度明细
 @main_bp.route('/balance_history')

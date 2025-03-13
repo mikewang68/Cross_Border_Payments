@@ -24,11 +24,11 @@ layui.use(['table', 'form', 'layer'], function(){
             elem: '#transaction-table',
             data: allTransactions,  // 使用本地数据
             page: true,             // 开启分页
-            limit: 5,               // 默认每页显示5条
+            limit: 10,               // 默认每页显示5条
             limits: [5, 10, 20, 50],
             height: 'auto',         // 使用自动高度，不要固定高度
             cols: [[
-                {field: 'transaction_time', title: '交易时间', width: 160, sort: true},
+                {field: 'transaction_time', title: '交易时间', width: 160},
                 {field: 'transaction_id', title: '交易流水号', width: 180},
                 {field: 'mask_card_number', title: '卡号', width: 160},
                 {field: 'card_id', title: '卡ID', width: 120},
@@ -54,12 +54,11 @@ layui.use(['table', 'form', 'layer'], function(){
                 {field: 'surcharge_amount', title: '交易手续费', width: 120, templet: function(d){
                     return d.surcharge_amount + ' ' + d.surcharge_currency;
                 }},
-                {field: 'status', title: '状态', width: 100, templet: function(d){
-                    return '<span class="layui-badge layui-bg-green">成功</span>';
-                }},
-                {field: 'remark', title: '备注', width: 120, templet: function(){
-                    return '--';
-                }},
+                {field: 'status', title: '状态', width: 100},
+                {field: 'version', title: '平台', width: 120},
+
+
+                {field: 'status_description', title: '备注', width: 120},
                 {fixed: 'right', title: '操作', width: 100, templet: function(d){
                     return '<a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>';
                 }}
@@ -75,7 +74,7 @@ layui.use(['table', 'form', 'layer'], function(){
     function showTransactionDetail(transactionData) {
         // 构建详情内容HTML
         var content = '<div class="layui-card">' +
-            '<div class="layui-card-header">交易详情</div>' +
+
             '<div class="layui-card-body">' +
             '<table class="layui-table">' +
             '<colgroup><col width="30%"><col width="70%"></colgroup>' +
@@ -121,6 +120,11 @@ layui.use(['table', 'form', 'layer'], function(){
                 if (formData.transaction_id && !item.transaction_id.includes(formData.transaction_id)) {
                     return false;
                 }
+
+                if (formData.version && !item.version.includes(formData.version)) {
+                    return false;
+                }
+
                 if (formData.card_last_digits) {
                     var maskCardNumber = item.mask_card_number || '';
                     if (!maskCardNumber.endsWith(formData.card_last_digits)) {
