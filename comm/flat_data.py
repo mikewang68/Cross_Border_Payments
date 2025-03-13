@@ -3,7 +3,7 @@
 from datetime import datetime
 from utils import flatten_dict
 
-def flat_data(json_data, p1=None, p2=None):
+def flat_data(version,json_data, p1=None, p2=None):
 
     if p1 is not None and p2 is not None:
         # 如果传入了 p1 和 p2，使用它们提取数据列表
@@ -19,11 +19,12 @@ def flat_data(json_data, p1=None, p2=None):
 
     flattened_records = []
     for data in data_list:
-        print(data)
+
         flat_data = flatten_dict(data)
         current_time = datetime.now()
         formatted_time = current_time.strftime("%Y%m%d%H%M%S%f")
         flat_data['insert_time'] = formatted_time
+        flat_data['version'] = version
         flattened_records.append(flat_data)
 
     return flattened_records
