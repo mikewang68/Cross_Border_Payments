@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, jsonify, request
+from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for
 from blueprint.auth import login_required
 from sqlalchemy import func
 from comm.gsalay_api import GSalaryAPI
@@ -18,10 +18,36 @@ def index():
 
 @main_bp.route('/wallet')
 @login_required
-def wallet():
-    # 从会话中获取用户名
-    user_account = session.get('user_account', '')
-    return render_template('main/wallet.html', user_account=user_account)
+def wallet_redirect():
+    return redirect(url_for('main.wallet_balance'))
+
+@main_bp.route('/wallet_balance')
+@login_required
+def wallet_balance():
+    try:
+        # 查询钱包余额数据
+        wallet_balances = query_all_from_table('wallet_balance')
+        # 查询地区数据（包含国旗图标）
+        regions = query_all_from_table('region')
+        
+        # 打印调试信息
+        print(f"查询到 {len(wallet_balances) if wallet_balances else 0} 条钱包余额记录")
+        print(f"查询到 {len(regions) if regions else 0} 条地区记录")
+        
+        # 如果数据为空，添加测试数据（仅用于测试前端显示）
+        if not wallet_balances or len(wallet_balances) == 0:
+            # 添加测试数据，仅用于开发阶段
+            print("未找到钱包余额数据，使用测试数据")
+            wallet_balances = [
+                {"currency": "USD", "amount": 936.12, "user_id": "test_user", "update_time": "2023-03-13 18:48:52"}
+            ]
+        
+        # 将数据转换为JSON并返回给前端
+        return render_template('main/wallet_balance.html', wallet_balances=wallet_balances, regions=regions)
+    except Exception as e:
+        print(f"查询钱包数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/wallet_balance.html', wallet_balances=[], regions=[])
 
 @main_bp.route('/recharge')
 @login_required
@@ -123,3 +149,75 @@ def create_card_holder():
             "msg": f"发生错误: {str(e)}",
             "data": None
         })
+
+# API endpoints
+@main_bp.route('/api/wallet/balance', methods=['GET'])
+@login_required
+def api_wallet_balance():
+    try:
+        # 查询钱包余额数据
+        wallet_balances = query_all_from_table('wallet_balance')
+        # 查询地区数据
+        regions = query_all_from_table('region')
+        
+        # 构建响应数据
+        balances = []
+        for balance in wallet_balances:
+            balances.append({
+                'currency': balance.get('currency', ''),
+                'amount': float(balance.get('amount', 0)),
+            })
+        
+        # 获取更新时间（取第一条记录的更新时间）
+        update_time = wallet_balances[0].get('update_time', '') if wallet_balances else ''
+        
+        return jsonify({
+            'code': 200,
+            'msg': 'success',
+            'data': {
+                'balances': balances,
+                'updateTime': update_time
+            }
+        })
+    except Exception as e:
+        print(f"获取钱包余额数据时出错: {str(e)}")
+        return jsonify({
+            'code': 500,
+            'msg': f'获取钱包余额数据失败: {str(e)}',
+            'data': None
+        })
+
+@main_bp.route('/api/wallet_data', methods=['GET'])
+@login_required
+def api_wallet_data():
+    """返回钱包数据的API端点，用于调试和标签页加载"""
+    try:
+        # 查询钱包余额数据
+        wallet_balances = query_all_from_table('wallet_balance')
+        # 查询地区数据（包含国旗图标）
+        regions = query_all_from_table('region')
+        
+        # 打印调试信息
+        print(f"API查询到 {len(wallet_balances) if wallet_balances else 0} 条钱包余额记录")
+        print(f"API查询到 {len(regions) if regions else 0} 条地区记录")
+        
+        # 如果数据为空，添加测试数据
+        if not wallet_balances or len(wallet_balances) == 0:
+            print("API未找到钱包余额数据，使用测试数据")
+            wallet_balances = [
+                {"currency": "USD", "amount": 936.12, "user_id": "test_user", "update_time": "2023-03-13 18:48:52"}
+            ]
+        
+        return jsonify({
+            'status': 'success',
+            'data': {
+                'wallet_balances': wallet_balances,
+                'regions': regions  # 返回完整的region数据，包括图标
+            }
+        })
+    except Exception as e:
+        print(f"API获取钱包数据时出错: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500

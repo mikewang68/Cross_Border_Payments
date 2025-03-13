@@ -77,6 +77,16 @@ async def get_user_info():
     except Exception as e:
         print(f"获取用户信息时出错: {e}")
 
+async def wallet_balance(version):
+    logger.info(f'插入{version}钱包余额明细')
+    try:
+
+        data = gsalary.get_wallet_balance(version)
+        flatten_data = flat_data(data, 'data')
+        insert_database('wallet_balance', flatten_data) #表名
+    except Exception as e:
+        logger.error(f"插入钱包余额明细时出错: {e}")
+
 # 主任务函数，异步执行所有信息获取
 async def fetch_info():
     # 查询平台
