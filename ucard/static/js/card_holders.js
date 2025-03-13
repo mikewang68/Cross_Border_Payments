@@ -166,12 +166,6 @@ layui.use(['table', 'form', 'layer'], function(){
                 
                 if(obj.event === 'edit'){
                     layer.msg('编辑功能正在开发中', {icon: 6});
-                } else if(obj.event === 'del'){
-                    layer.confirm('确定删除该用卡人吗？', function(index){
-                        // 这里应该发送请求到后端执行删除
-                        layer.msg('删除功能正在开发中', {icon: 6});
-                        layer.close(index);
-                    });
                 } else if(obj.event === 'detail'){
                     // 显示用卡人详情
                     showCardHolderDetail(data);

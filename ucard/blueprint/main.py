@@ -63,10 +63,16 @@ def transactions():
     # 将所有结果传递给模板，让前端处理分页
     return render_template('main/card_transactions.html', transactions=transactions)
 
-@main_bp.route('/limit')
+#查看额度明细
+@main_bp.route('/balance_history')
 @login_required
-def limit():
-    return render_template('main/limit.html')
+def balance_history():
+    balance_history = query_all_from_table('balance_history')
+
+    print(f"查询到 {len(balance_history) if balance_history else 0} 条额度明细记录")
+
+    return render_template('main/balance_history.html', balance_history=balance_history)
+
 
 @main_bp.route('/all_cards')
 @login_required
@@ -94,13 +100,11 @@ def create_card_holder():
     try:
         # 获取表单数据
         data = request.get_json()
-        print(data)
         # 创建API实例
         gsalary_api = GSalaryAPI()
         
         # 调用API创建用卡人
         result = gsalary_api.create_card_holder("J1", data)  # 替换实际的system_id
-        
         if result['result']['result'] == 'S':
             return jsonify({
                 "code": 0,
