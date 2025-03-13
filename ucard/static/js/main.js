@@ -16,12 +16,8 @@ layui.use(['element', 'layer'], function(){
         var implementedFeatures = [
             'card_users',
             'transactions',
-<<<<<<< HEAD
             'balance_history',
             'wallet_balance'
-=======
-            'balance_history'
->>>>>>> 4412763cc35a666229b6d377fee77f488a8b59a0
         ];
         
         // 检查功能是否已实现
