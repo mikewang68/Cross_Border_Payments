@@ -64,14 +64,13 @@ class GSalaryAPI:
 
     def make_gsalary_request(self, method: str, endpoint: str, system_id: str, data: Optional[Dict] = None,
                              params: Optional[Dict] = None) -> Dict[str, Any]:
+        # 计算body_hash by 裴振宇
         if data:
-            json_str = json.dumps(data, sort_keys=True)
-            sha256 = hashlib.sha256()
-            sha256.update(json_str.encode('utf-8'))
-            body_hash = sha256.hexdigest()
+            json_str = json.dumps(data)
+            body_hash_str = base64.b64encode(hashlib.sha256(json_str.encode('utf-8')).digest()) # b'PVRmqiVh1wxhelobc+aZtBHg9UXVW4n0LY97ayhPeEQ='
+            body_hash = body_hash_str.decode('utf-8')
         else:
             body_hash = ''
-
         private_key = load_private_key(system_id)
         if private_key is None:
             return {}
@@ -88,7 +87,7 @@ class GSalaryAPI:
             path = f"{endpoint}?{param_str}"
         else:
             path = endpoint
-
+        print(path)
         sign_base = f'''{method} {path}
 {appid}
 {timestamp}
@@ -226,8 +225,10 @@ class GSalaryAPI:
         
         Args:
             data: 持卡人信息，包含姓名、地址、联系方式等
+        
         """
-        return self.make_gsalary_request("POST", "/v1/card-holders", data)
+        print('前端返回的data:',type(data))
+        return self.make_gsalary_request("POST", "/v1/card_holders",system_id, data)
 
     
     def get_card_holders(self, system_id,params: Optional[dict] = None) -> Dict[str, Any]:
