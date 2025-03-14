@@ -87,7 +87,6 @@ class GSalaryAPI:
             path = f"{endpoint}?{param_str}"
         else:
             path = endpoint
-        print(path)
         sign_base = f'''{method} {path}
 {appid}
 {timestamp}

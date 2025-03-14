@@ -36,17 +36,29 @@ def insert_database(table_name, records):
         return
 
     cursor = conn.cursor()
+
+    # 获取表的实际字段列表
+    try:
+        cursor.execute(f"SHOW COLUMNS FROM {table_name}")
+        columns_in_table = [column[0] for column in cursor.fetchall()]
+    except pymysql.Error as err:
+        logger.error(f"获取表结构信息时发生错误，错误信息: {err}")
+        conn.close()
+        return
+
     for record in records:
-        columns = ', '.join(record.keys())
-        values = ', '.join(['%s'] * len(record))
+        # 过滤掉表中不存在的字段
+        valid_record = {key: value for key, value in record.items() if key in columns_in_table}
+        columns = ', '.join(valid_record.keys())
+        values = ', '.join(['%s'] * len(valid_record))
         sql = f"INSERT INTO {table_name} ({columns}) VALUES ({values})"
-        val = tuple(record.values())
+        val = tuple(valid_record.values())
         try:
             cursor.execute(sql, val)
-            logger.info(f"成功插入记录: {record.get('insert_time')}")
+            logger.info(f"成功插入记录: {valid_record.get('insert_time')}")
         except pymysql.Error as err:
             if err.args[0] == 1062:  # 检查是否为主键冲突错误
-                logger.info(f"检测到重复数据: {record.get('insert_time')}，错误信息: {err}")
+                logger.info(f"检测到重复数据: {valid_record.get('insert_time')}，错误信息: {err}")
             else:
                 logger.info(f"插入数据时发生错误，错误信息: {err}")
                 conn.rollback()
