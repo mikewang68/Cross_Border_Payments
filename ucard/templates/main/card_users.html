@@ -1,9 +1,9 @@
-<div class="layui-fluid">
+<div class="layui-fluid card-holders-page">
     <div class="layui-card">
         <div class="layui-card-header">用卡人管理</div>
         <div class="layui-card-body">
-            <!-- 搜索框 -->
-            <form class="layui-form layui-form-pane" lay-filter="searchForm">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="userSearchForm">
                 <div class="layui-form-item">
                     <div class="layui-inline">
                         <label class="layui-form-label">姓名</label>
@@ -18,6 +18,16 @@
                         </div>
                     </div>
                     <div class="layui-inline">
+                        <label class="layui-form-label">平台</label>
+                        <div class="layui-input-inline">
+                            <select name="version">
+                                <option value="">全部</option>
+                                <option value="J1">J1</option>
+                                <option value="J2">J2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
                         <button class="layui-btn" lay-submit lay-filter="formSearch">
                             <i class="layui-icon layui-icon-search"></i> 搜索
                         </button>
@@ -28,56 +38,34 @@
                 </div>
             </form>
             
-            <!-- 添加表格容器 -->
-            <div class="table-container" id="user-table-container">
+            <!-- 表格工具栏 -->
+            <script type="text/html" id="toolbar_card_holders">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add">
+                        <i class="layui-icon">&#xe654;</i> 添加用卡人
+                    </button>
+                </div>
+            </script>
+            
+            <!-- 表格容器 -->
+            <div class="table-container">
                 <table id="user-table" lay-filter="user-table"></table>
             </div>
             
-            <!-- 表格工具栏 -->
-            <script type="text/html" id="toolbar">
-            {% raw %}
-                <div class="layui-btn-container">
-                    <button class="layui-btn layui-btn-sm" lay-event="add">添加用卡人</button>
-                    <!-- <button class="layui-btn layui-btn-sm layui-btn-danger" lay-event="batchDel">批量删除</button>
-                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="import">导入</button>
-                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="export">导出</button> -->
-                </div>
-            {% endraw %}
-            </script>
-            
             <!-- 行工具栏 -->
             <script type="text/html" id="barTool">
-            {% raw %}
                 <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
                 <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">编辑</a>
-                <!-- <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a> -->
-            {% endraw %}
-            </script>
-
-            <!-- 状态显示模板 -->
-            <script type="text/html" id="statusTpl">
-            {% raw %}
-                {{#  if(d.status == 'ACTIVE'){ }}
-                <span class="layui-badge layui-bg-green">正常</span>
-                {{#  } else { }}
-                <span class="layui-badge layui-bg-gray">冻结</span>
-                {{#  } }}
-            {% endraw %}
             </script>
         </div>
-    </div>
-    
-    <!-- 调试输出数据 -->
-    <div style="display: none;">
-        <pre id="debug-data">{{ card_holders|tojson(indent=4)|safe }}</pre>
     </div>
     
     <!-- 保存后端传递的数据 -->
     <script id="card-holders-data" type="application/json">
         {{ card_holders|tojson|safe }}
     </script>
-    
-    <!-- 引入用卡人CSS和JS -->
-    <link rel="stylesheet" href="/static/css/card_holders.css">
-    <script src="/static/js/card_holders.js"></script>
-</div> 
+</div>
+
+<!-- 引入用卡人CSS和JS -->
+<link rel="stylesheet" href="/static/css/card_holders.css">
+<script src="/static/js/card_holders.js"></script> 

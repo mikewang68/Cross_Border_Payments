@@ -226,7 +226,6 @@ class GSalaryAPI:
             data: 持卡人信息，包含姓名、地址、联系方式等
         
         """
-        print('前端返回的data:',type(data))
         return self.make_gsalary_request("POST", "/v1/card_holders",system_id, data)
 
     

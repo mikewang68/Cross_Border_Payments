@@ -1,57 +1,57 @@
 /* 额度明细页面样式 */
 
 /* 表格容器样式 */
-.table-container {
+.balance-history-container .table-container {
     margin-top: 15px;
     width: 100%;
     overflow-x: auto;
 }
 
 /* 搜索表单样式 */
-.layui-form-pane .layui-form-label {
+.balance-history-container .layui-form-pane .layui-form-label {
     width: 100px;
 }
 
-.layui-form-pane .layui-input-inline {
+.balance-history-container .layui-form-pane .layui-input-inline {
     width: 180px;
 }
 
 /* 详情弹窗样式 */
-.layui-layer-content .layui-card-header {
+.balance-history-container .layui-layer-content .layui-card-header {
     font-weight: bold;
     font-size: 16px;
 }
 
-.layui-layer-content .layui-table {
+.balance-history-container .layui-layer-content .layui-table {
     margin-top: 10px;
 }
 
 /* 表格内容溢出处理 */
-.layui-table-cell {
+.balance-history-container .layui-table-cell {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 /* 表格工具栏样式 */
-.layui-table-tool-self {
+.balance-history-container .layui-table-tool-self {
     position: absolute;
     right: 17px;
     top: 10px;
 }
 
-.layui-table-tool-self .layui-inline {
+.balance-history-container .layui-table-tool-self .layui-inline {
     margin: 0 0 0 10px;
 }
 
 /* 确保表格在小屏幕上也能正常显示 */
 @media screen and (max-width: 992px) {
-    .layui-table-view {
+    .balance-history-container .layui-table-view {
         width: 100%;
         overflow-x: auto;
     }
     
-    .layui-table-body {
+    .balance-history-container .layui-table-body {
         min-width: 800px;
     }
 } 

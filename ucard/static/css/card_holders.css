@@ -3,62 +3,95 @@
  */
 
 /* 表格容器样式 */
-.table-container {
+.card-holders-page .table-container {
     margin-top: 15px;
     width: 100%;
     overflow-x: auto;
 }
 
 /* 搜索表单样式 */
-.layui-form-pane .layui-form-label {
+.card-holders-page .layui-form-pane .layui-form-label {
     width: 80px;
 }
 
-.layui-form-pane .layui-input-inline {
+.card-holders-page .layui-form-pane .layui-input-inline {
     width: 180px;
 }
 
 /* 详情弹窗样式 */
-.layui-layer-content .layui-card-header {
+.card-holders-page .layui-layer-content .layui-card-header {
     font-weight: bold;
     font-size: 16px;
 }
 
-.layui-layer-content .layui-table {
+.card-holders-page .layui-layer-content .layui-table {
     margin-top: 10px;
 }
 
 /* 状态标签样式 */
-.layui-badge {
+.card-holders-page .layui-badge {
     padding: 3px 8px;
     font-size: 12px;
 }
 
 /* 表格内容溢出处理 */
-.layui-table-cell {
+.card-holders-page .layui-table-cell {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 /* 表格行悬停效果 */
-.layui-table-hover {
+.card-holders-page .layui-table-hover {
     background-color: #f8f8f8;
 }
 
 /* 工具栏按钮间距 */
-.layui-btn + .layui-btn {
+.card-holders-page .layui-btn + .layui-btn {
     margin-left: 8px;
 }
 
 /* 确保表格在小屏幕上也能正常显示 */
 @media screen and (max-width: 992px) {
-    .layui-table-view {
+    .card-holders-page .layui-table-view {
         width: 100%;
         overflow-x: auto;
     }
     
-    .layui-table-body {
+    .card-holders-page .layui-table-body {
         min-width: 800px;
     }
 } 
+
+.card-holders-page .layui-table-tool-self {
+    position: absolute;
+    right: 17px;
+    top: 10px;
+}
+
+/* 用卡人页面 - 修复滚动条问题 */
+.card-holders-page .layui-table-body {
+    overflow-y: auto !important; /* 允许表格内容垂直滚动 */
+}
+
+.card-holders-page .layui-table-fixed .layui-table-body {
+    overflow-y: hidden !important; /* 固定列不需要垂直滚动 */
+}
+
+.card-holders-page .layui-body {
+    overflow: hidden !important; /* 防止body层出现额外滚动条 */
+}
+
+.card-holders-page .layui-fluid {
+    overflow: hidden; /* 防止fluid层出现额外滚动条 */
+}
+
+.card-holders-page .layui-table-page {
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+    position: relative;
+}
+
+.card-holders-page .layui-table-view {
+    margin-bottom: 10px;
+}

@@ -48,7 +48,8 @@ layui.use(['table', 'form', 'layer'], function(){
             // 渲染用卡人表格
             table.render({
                 elem: '#user-table',
-                toolbar: '#toolbar',
+                toolbar: '#toolbar_card_holders',
+                defaultToolbar: ['filter', 'exports'],
                 data: allCardHolders,  // 使用本地数据
                 url: null,             // 不使用URL加载数据
                 page: true,             // 开启分页
@@ -56,12 +57,12 @@ layui.use(['table', 'form', 'layer'], function(){
                 limits: [10, 20, 50, 100],
                 height: 'auto',         // 使用自动高度，不要固定高度
                 cols: [[
-                    {type: 'checkbox', fixed: 'left', width: 50},
-                    {field: 'user_id', title: 'ID', width: 120, sort: true},
+                    {field: 'user_id', title: 'ID', width: 250, sort: true},
                     {field: 'user_name', title: '姓名', width: 120},
                     {field: 'mobile', title: '手机号码', width: 150},
                     {field: 'email', title: '邮箱', width: 180},
-                    {field: 'country', title: '国家', width: 80},
+                    {field: 'version', title: '平台', width: 80},
+                    {field: 'country', title: '国家', width: 80},  
                     {field: 'state', title: '省份/州', width: 100},
                     {field: 'city', title: '城市', width: 100},
                     {field: 'address', title: '详细地址', width: 200},
@@ -73,7 +74,7 @@ layui.use(['table', 'form', 'layer'], function(){
                             return '<span class="layui-badge layui-bg-gray">冻结</span>';
                         }
                     }},
-                    {fixed: 'right', title: '操作', toolbar: '#barTool', width: 170}
+                    {fixed: 'right', title: '操作', toolbar: '#barTool', width: 120}
                 ]],
                 done: function(res){
                     // 确保分页正确显示
@@ -97,14 +98,15 @@ layui.use(['table', 'form', 'layer'], function(){
                 '<table class="layui-table">' +
                 '<colgroup><col width="30%"><col width="70%"></colgroup>' +
                 '<tbody>' +
-                '<tr><td>用户编码</td><td>' + (cardHolderData.user_code || '--') + '</td></tr>' +
+                // '<tr><td>用户编码</td><td>' + (cardHolderData.user_code || '--') + '</td></tr>' +
                 '<tr><td>用户ID</td><td>' + (cardHolderData.user_id || '--') + '</td></tr>' +
                 '<tr><td>用户姓名</td><td>' + (cardHolderData.user_name || '--') + '</td></tr>' +
                 '<tr><td>地区</td><td>' + (cardHolderData.region || '--') + '</td></tr>' +
-                '<tr><td>出生日期</td><td>' + (cardHolderData.birth || '--') + '</td></tr>' +
-                '<tr><td>手机号码</td><td>' + (cardHolderData.mobile || '--') + '</td></tr>' +
                 '<tr><td>邮箱</td><td>' + (cardHolderData.email || '--') + '</td></tr>' +
-                '<tr><td>国家</td><td>' + (cardHolderData.country || '--') + '</td></tr>' +
+                '<tr><td>手机号码</td><td>' + (cardHolderData.mobile || '--') + '</td></tr>' +
+                '<tr><td>平台</td><td>' + (cardHolderData.version || '--') + '</td></tr>' +
+                '<tr><td>出生日期</td><td>' + (cardHolderData.birth || '--') + '</td></tr>' +
+                '<tr><td>国家</td><td>' + (cardHolderData.country || '--') + '</td></tr>' +  
                 '<tr><td>省/州</td><td>' + (cardHolderData.state || '--') + '</td></tr>' +
                 '<tr><td>城市</td><td>' + (cardHolderData.city || '--') + '</td></tr>' +
                 '<tr><td>地址</td><td>' + (cardHolderData.address || '--') + '</td></tr>' +
@@ -188,7 +190,11 @@ layui.use(['table', 'form', 'layer'], function(){
                     if (formData.email && item.email && !item.email.toLowerCase().includes(formData.email.toLowerCase())) {
                         return false;
                     }
-                    
+
+                    // 按平台搜索
+                    if (formData.version && item.version !== formData.version) {
+                        return false;
+                    }
                     return true;
                 });
                 

@@ -6,7 +6,17 @@ from comm.db_api import query_all_from_table
 
 main_bp = Blueprint('main', __name__)
 
-
+# 定义一个函数将字符串转换为 datetime 对象
+def convert_time(time_str):
+    try:
+        # 尝试使用包含毫秒的格式解析
+        if len(time_str) > 0:
+            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+        else:
+            return '--'
+    except ValueError:
+        # 如果失败，使用不包含毫秒的格式解析
+            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ')
 
 @main_bp.route('/')
 @login_required
@@ -66,7 +76,10 @@ def card_users():
         card_holders = query_all_from_table('card_holder')
         # 打印调试信息
         print(f"查询到 {len(card_holders) if card_holders else 0} 条用卡人记录")
-        return render_template('main/card_users.html', card_holders=card_holders)
+        
+        # 对列表进行排序，按 transaction_time 倒序排列
+        sorted_card_holders = sorted(card_holders, key=lambda x: convert_time(x["create_time"]), reverse=True)
+        return render_template('main/card_users.html', card_holders=sorted_card_holders)
     except Exception as e:
         print(f"查询用卡人数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
@@ -84,21 +97,8 @@ def transactions():
 
     # 打印一下查询结果，检查是否有数据返回
     print(f"查询到 {len(transactions) if transactions else 0} 条交易记录")
-
-    # 定义一个函数将字符串转换为 datetime 对象
-    def convert_time(time_str):
-        try:
-            # 尝试使用包含毫秒的格式解析
-            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
-        except ValueError:
-            # 如果失败，使用不包含毫秒的格式解析
-            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ')
-
     # 对列表进行排序，按 transaction_time 倒序排列
     sorted_transactions = sorted(transactions, key=lambda x: convert_time(x["transaction_time"]), reverse=True)
-
-
-
     # 将所有结果传递给模板，让前端处理分页
     return render_template('main/card_transactions.html', transactions=sorted_transactions)
 
@@ -139,11 +139,12 @@ def create_card_holder():
     try:
         # 获取表单数据
         data = request.get_json()
+        version_data = data.pop('version') # 删除json['platform']并将其赋值给platform_data
         # 创建API实例
         gsalary_api = GSalaryAPI()
         
         # 调用API创建用卡人
-        result = gsalary_api.create_card_holder("J1", data)  # 替换实际的system_id
+        result = gsalary_api.create_card_holder(version_data, data)  # 替换实际的system_id
         if result['result']['result'] == 'S':
             return jsonify({
                 "code": 0,

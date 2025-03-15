@@ -130,10 +130,11 @@ layui.use(['table', 'form', 'layer'], function(){
                     return false;
                 }
 
-                if (formData.version && !item.version.includes(formData.version)) {
+                // 按平台搜索
+                if (formData.version && item.version !== formData.version) {
                     return false;
                 }
-
+                
                 if (formData.card_last_digits) {
                     var maskCardNumber = item.mask_card_number || '';
                     if (!maskCardNumber.endsWith(formData.card_last_digits)) {

@@ -20,7 +20,7 @@ layui.use(['table', 'form', 'layer'], function(){
     function initBalanceTable() {
         table.render({
             elem: '#balance-table',
-            toolbar: '#toolbar',
+            toolbar: '#toolbar_balance_history',
             defaultToolbar: ['filter', 'exports'],
             data: allBalanceHistory,
             page: true,
@@ -28,7 +28,6 @@ layui.use(['table', 'form', 'layer'], function(){
             limits: [10, 20, 50, 100],
             height: 'full-220',
             cols: [[
-                {type: 'checkbox', fixed: 'left'},
                 {field: 'transaction_time', title: '交易时间', width: 160, sort: true},
                 {field: 'transaction_id', title: '流水号', width: 180},
                 {field: 'mask_card_number', title: '卡号', width: 160},
@@ -39,20 +38,20 @@ layui.use(['table', 'form', 'layer'], function(){
                 {field: 'txn_type', title: '业务类型', width: 120, templet: function(d){
                     // 交易类型中文映射
                     var txnTypeMap = {
-                        'CARD_PAYMENT': '虚拟卡交易结算',
-                        'CARD_PAYMENT_FEE': '虚拟卡交易手续费',
-                        'CARD_REFUND': '虚拟卡交易退款',
-                        'CARD_REFUND_FEE': '虚拟卡交易退款手续费',
-                        'CARD_REFUND_REVERT': '虚拟卡交易退款撤销',
-                        'CARD_REFUND_FEE_REVERT': '虚拟卡交易手续费退回',
-                        'CARD_PRE_AUTH': '虚拟卡交易授权',
-                        'CARD_PRE_AUTH_REVERT': '虚拟卡交易授权撤销',
-                        'CARD_PRE_AUTH_FEE': '虚拟卡交易授权手续费，包括扣除和返还',
+                        'CARD_PAYMENT': '交易结算',
+                        'CARD_PAYMENT_FEE': '交易手续费',
+                        'CARD_REFUND': '交易退款',
+                        'CARD_REFUND_FEE': '交易退款手续费',
+                        'CARD_REFUND_REVERT': '交易退款撤销',
+                        'CARD_REFUND_FEE_REVERT': '交易手续费退回',
+                        'CARD_PRE_AUTH': '交易授权',
+                        'CARD_PRE_AUTH_REVERT': '交易授权撤销',
+                        'CARD_PRE_AUTH_FEE': '交易授权手续费，包括扣除和返还',
                         'CHARGEBACK': 'Chargeback手续费',
                         'CARD_BALANCE_ADJUST': '卡余额调整',
-                        'CARD_INIT_FEE': '虚拟卡开卡手续费',
+                        'CARD_INIT_FEE': '开卡手续费',
                         'CARD_INIT_FEE_REVERT': '创建虚拟卡手续费退回',
-                        'CARD_SERVICE_FEE': '虚拟卡服务费',
+                        'CARD_SERVICE_FEE': '服务费',
                         'CARD_CANCEL_FEE': '销卡手续费',
                         'OTHER': '其他'
                     };

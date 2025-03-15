@@ -3,3 +3,8 @@ GSalary Gateway API (1.7).md
 __pycache__
 .venv
 problem.txt
+db.log
+gsalay_api.log
+test.json   
+test.py
+test.js

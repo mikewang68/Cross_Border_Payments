@@ -1,5 +1,5 @@
 <!-- 交易记录表格模板 -->
-<div class="layui-card">
+<div class="layui-card card-transactions-container">
     <div class="layui-card-header">信用卡交易记录</div>
     <div class="layui-card-body">
         <form class="layui-form" action="">
@@ -17,10 +17,14 @@
                     </div>
                 </div>
 
-                <div class="layui-inline"  >
+                <div class="layui-inline">
                     <label class="layui-form-label">平台</label>
                     <div class="layui-input-inline">
-                        <input type="text" name="version" placeholder="请输入" autocomplete="off" class="layui-input">
+                        <select name="version">
+                            <option value="">全部</option>
+                            <option value="J1">J1</option>
+                            <option value="J2">J2</option>
+                        </select>
                     </div>
                 </div>
 

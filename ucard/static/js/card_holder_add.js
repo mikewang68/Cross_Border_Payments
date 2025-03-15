@@ -30,7 +30,8 @@ layui.use(['form', 'layer', 'laydate', 'jquery'], function(){
                 city: data.field.city,
                 state: data.field.state,
                 country: data.field.country,
-            }
+            },
+            version: data.field.version
         };
         console.log(submitData);
         
