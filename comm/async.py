@@ -77,12 +77,7 @@ async def balance_history(version):
     except Exception as e:
         logger.error(f"插入余额明细时出错: {e}")
 
-# 模拟获取用户信息
-async def get_user_info():
-    try:
-        return
-    except Exception as e:
-        print(f"获取用户信息时出错: {e}")
+
 
 async def wallet_balance(version):
     logger.info(f'更新{version}钱包余额明细')
@@ -91,10 +86,27 @@ async def wallet_balance(version):
         params = {
             'currency': 'USD'
         }
+
+
+        where = {
+            'currency': 'USD',
+            'version': f'{version}'
+        }
+
+
         data = gsalary.get_wallet_balance(version,params )
         print(data)
         flatten_data = flat_data(version,data, 'data')
-        update_database('wallet_balance', flatten_data) #表名
+        amo = flatten_data.get('amount')
+        ava = flatten_data.get('available')
+
+        set = {
+            'amount':  f'{amo}',
+            'available': f'{ava}'
+
+        }
+
+        update_database('wallet_balance', set,where) #表名
     except Exception as e:
         logger.error(f"插入钱包余额明细时出错: {e}")
 
@@ -111,7 +123,7 @@ async def fetch_info():
             card_transactions(version),
             balance_history(version),
             wallet_balance(version),
-            get_user_info()
+            card_holder(version)
         ]
         all_tasks.extend(tasks)
 

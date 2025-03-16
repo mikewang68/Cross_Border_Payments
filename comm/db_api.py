@@ -68,22 +68,41 @@ def insert_database(table_name, records):
     cursor.close()
     conn.close()
 
-def update_database(table_name, set_column, set_value, where_column, where_value):
+def update_database(table_name, set_columns_values, where_conditions):
+
     conn = create_db_connection()
     if conn is None:
         logger.error("无法建立数据库连接，程序退出。")
-        return
+        return False
 
     cursor = conn.cursor()
     try:
-        # 构建 SQL 更新语句
-        sql = f"UPDATE {table_name} SET {set_column} = %s WHERE {where_column} = %s"
-        cursor.execute(sql, (set_value, where_value))
+        # 构建 SET 子句
+        set_clauses = []
+        values = []
+        for column, value in set_columns_values.items():
+            set_clauses.append(f"{column} = %s")
+            values.append(value)
+        set_str = ", ".join(set_clauses)
+
+        # 构建 WHERE 子句和参数列表
+        where_clause = []
+        for column, value in where_conditions.items():
+            where_clause.append(f"{column} = %s")
+            values.append(value)
+
+        where_str = " AND ".join(where_clause)
+
+        # 构建完整的 SQL 更新语句
+        sql = f"UPDATE {table_name} SET {set_str} WHERE {where_str}"
+        cursor.execute(sql, values)
         conn.commit()
         logger.info(f"成功更新 {cursor.rowcount} 条记录。")
+        return True
     except pymysql.Error as err:
         logger.error(f"更新数据时出现错误: {err}")
         conn.rollback()
+        return False
     finally:
         cursor.close()
         conn.close()

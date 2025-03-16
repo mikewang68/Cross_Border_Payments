@@ -13,15 +13,15 @@ def flat_data(version,json_data, p1=None, p2=None):
         # 如果传入了 p1
         data = json_data[f'{p1}']
 
-        flattened_records = []
+
         flat_data = flatten_dict(data)
         current_time = datetime.now()
         formatted_time = current_time.strftime("%Y%m%d%H%M%S%f")
         flat_data['insert_time'] = formatted_time
         flat_data['version'] = version
-        flattened_records.append(flat_data)
+        # flattened_records.append(flat_data)
 
-        return flattened_records
+        return flat_data
 
 
 
