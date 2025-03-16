@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from db_api import insert_database
+from db_api import insert_database, update_database
 from flat_data import flat_data
 from db_api import query_database
 from db_api import query_field_from_table
@@ -85,7 +85,7 @@ async def get_user_info():
         print(f"获取用户信息时出错: {e}")
 
 async def wallet_balance(version):
-    logger.info(f'插入{version}钱包余额明细')
+    logger.info(f'更新{version}钱包余额明细')
     try:
 
         params = {
@@ -94,7 +94,7 @@ async def wallet_balance(version):
         data = gsalary.get_wallet_balance(version,params )
         print(data)
         flatten_data = flat_data(version,data, 'data')
-        insert_database('wallet_balance', flatten_data) #表名
+        update_database('wallet_balance', flatten_data) #表名
     except Exception as e:
         logger.error(f"插入钱包余额明细时出错: {e}")
 

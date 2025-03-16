@@ -26,7 +26,7 @@ layui.use(['table', 'form', 'layer'], function(){
             page: true,
             limit: 10,
             limits: [10, 20, 50, 100],
-            height: 'full-220',
+            height: 'auto',
             cols: [[
                 {field: 'transaction_time', title: '交易时间', width: 160, sort: true},
                 {field: 'transaction_id', title: '流水号', width: 180},

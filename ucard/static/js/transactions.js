@@ -79,24 +79,27 @@ layui.use(['table', 'form', 'layer'], function(){
             '<table class="layui-table">' +
             '<colgroup><col width="30%"><col width="70%"></colgroup>' +
             '<tbody>' +
+            '<tr><td></td><td>' +'<tr><td>交易信息</td><td>' +
             '<tr><td>交易流水号</td><td>' + (transactionData.transaction_id || '--') + '</td></tr>' +
             '<tr><td>原始交易号</td><td>' + (transactionData.origin_transaction_id || '--') + '</td></tr>' +
             '<tr><td>交易时间</td><td>' + (transactionData.transaction_time || '--') + '</td></tr>' +
-            '<tr><td>确认时间</td><td>' + (transactionData.confirm_time || '--') + '</td></tr>' +
             '<tr><td>卡号</td><td>' + (transactionData.mask_card_number || '--') + '</td></tr>' +
             '<tr><td>卡ID</td><td>' + (transactionData.card_id || '--') + '</td></tr>' +
             '<tr><td>交易类型</td><td>' + (transactionData.biz_type || '--') + '</td></tr>' +
             '<tr><td>交易金额</td><td>' + (transactionData.transaction_amount || '0') + ' ' + 
                   (transactionData.transaction_amount_currency || '') + '</td></tr>' +
-            '<tr><td>入账金额</td><td>' + (transactionData.accounting_amount || '0') + ' ' + 
+            '<tr><td></td><td>' +'<tr><td>资金信息</td><td>' +
+            '<tr><td>交易本金（资金账户）</td><td>' + (transactionData.accounting_amount || '0') + ' ' +
                   (transactionData.accounting_amount_currency || '') + '</td></tr>' +
-            '<tr><td>交易手续费</td><td>' + (transactionData.surcharge_amount || '0') + ' ' + 
+            '<tr><td>总手续费（资金账户）</td><td>' + (transactionData.surcharge_amount || '0') + ' ' +
                   (transactionData.surcharge_currency || '') + '</td></tr>' +
             '<tr><td>状态</td><td>' + (transactionData.status || '--') + '</td></tr>' +
             '<tr><td>状态说明</td><td>' + (transactionData.status_description || '--') + '</td></tr>' +
-            '<tr><td>检查码</td><td>' + (transactionData.check_code || '--') + '</td></tr>' +
+            '<tr><td>验证码</td><td>' + (transactionData.check_code || '--') + '</td></tr>' +
+            '<tr><td></td><td>'+'<tr><td>商户信息</td><td>'+
             '<tr><td>商户名称</td><td>' + (transactionData.merchant_name || '--') + '</td></tr>' +
             '<tr><td>商户地区</td><td>' + (transactionData.merchant_region || '--') + '</td></tr>' +
+            '<tr><td></td><td>' +'<tr><td>平台信息</td><td>' +
             '<tr><td>平台</td><td>' + (transactionData.version || '--') + '</td></tr>' +
             '</tbody></table></div></div>';
             
