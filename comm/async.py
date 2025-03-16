@@ -52,16 +52,25 @@ async def card_transactions(version):
     try:
         logger.info(f'插入{version}平台交易明细')
         data = gsalary.get_card_transactions(version)
-        flatten_data = flat_data(version,data, 'data', 'transactions')
+        flatten_data = flat_data(version, data, 'data', 'transactions')
         insert_database('card_transactions', flatten_data)
     except Exception as e:
         logger.error(f"插入交易明细时出错: {e}")
+
+# 插入用户信息
+async def card_holder(version):
+    try:
+        logger.info(f'插入{version}平台用户信息')
+        data = gsalary.get_card_holders(version)
+        flatten_data = flat_data(version, data, 'data', 'card_holders')
+        insert_database('card_holder', flatten_data)
+    except Exception as e:
+        logger.error(f"插入用户信息时出错: {e}")
 
 # 插入余额明细
 async def balance_history(version):
     logger.info(f'插入{version}平台余额明细')
     try:
-
         data = gsalary.get_card_balance_history(version)
         flatten_data = flat_data(version,data, 'data', 'history')
         insert_database('balance_history', flatten_data)

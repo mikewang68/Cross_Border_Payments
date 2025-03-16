@@ -3,10 +3,13 @@
  * 用于处理用卡人表格的渲染、搜索、分页等功能
  */
 
+var selectedCardHolderData; // 存储选中的用卡人数据
+
 layui.use(['table', 'form', 'layer'], function(){
     var table = layui.table;
     var form = layui.form;
     var layer = layui.layer;
+    var $ = layui.jquery;
     
     try {
         // 获取后端传递的数据
@@ -24,12 +27,28 @@ layui.use(['table', 'form', 'layer'], function(){
             return;
         }
         
-        console.log("原始数据文本:", dataText);
+        // console.log("原始数据文本:", dataText);
         
         var allCardHolders = JSON.parse(dataText);
+
+        // 假设原始数据存储在变量 data 中
+        var transformedData = allCardHolders.map(item => {
+            // 提取 first_name 和 last_name 的值
+            const firstName = item.first_name || '';
+            const lastName = item.last_name || '';
+            
+            // 创建新对象，删除原字段并添加 name
+            const { first_name, last_name, ...rest } = item;
+            return {
+            ...rest,
+            name: `${firstName}${lastName}`
+            };
+        });
+        
+        console.log(transformedData);
         
         // 调试输出数据
-        console.log("用卡人数据:", allCardHolders);
+        // console.log("用卡人数据:", allCardHolders);
         
         // 如果数据为null或undefined，初始化为空数组
         if (!allCardHolders) {
@@ -50,29 +69,25 @@ layui.use(['table', 'form', 'layer'], function(){
                 elem: '#user-table',
                 toolbar: '#toolbar_card_holders',
                 defaultToolbar: ['filter', 'exports'],
-                data: allCardHolders,  // 使用本地数据
+                data: transformedData,  // 使用本地数据
                 url: null,             // 不使用URL加载数据
                 page: true,             // 开启分页
                 limit: 10,              // 默认每页显示10条
                 limits: [10, 20, 50, 100],
-                height: 'auto',         // 使用自动高度，不要固定高度
+                height: 'full-220',     // 使用自动高度，不要固定高度
                 cols: [[
-                    {field: 'user_id', title: 'ID', width: 250, sort: true},
-                    {field: 'user_name', title: '姓名', width: 120},
+                    {field: 'card_holder_id', title: 'ID', width: 250},
+                    {field: 'name', title: '姓名', width: 120},
                     {field: 'mobile', title: '手机号码', width: 150},
                     {field: 'email', title: '邮箱', width: 180},
                     {field: 'version', title: '平台', width: 80},
+                    {field: 'create_time', title: '创建时间', width: 160},
                     {field: 'country', title: '国家', width: 80},  
                     {field: 'state', title: '省份/州', width: 100},
                     {field: 'city', title: '城市', width: 100},
                     {field: 'address', title: '详细地址', width: 200},
                     {field: 'status', title: '状态', width: 100, templet: function(d){
-                        // 状态中文映射
-                        if(d.status === 'ACTIVE') {
-                            return '<span class="layui-badge layui-bg-green">正常</span>';
-                        } else {
-                            return '<span class="layui-badge layui-bg-gray">冻结</span>';
-                        }
+                        return d.status === 'ACTIVE' ? '<span class="layui-badge layui-bg-green">激活</span>' : '<span class="layui-badge layui-bg-gray">未激活</span>';
                     }},
                     {fixed: 'right', title: '操作', toolbar: '#barTool', width: 120}
                 ]],
@@ -138,7 +153,17 @@ layui.use(['table', 'form', 'layer'], function(){
                             type: 2,
                             title: '添加用卡人',
                             area: ['800px', '600px'],
-                            content: '/card_holders/add'
+                            content: '/card_holders/add',
+                            end: function(){
+                                // 刷新页面
+                                // location.reload();
+                                // 只刷新表格数据，不刷新整个页面
+                                table.reload('user-table', {
+                                    page: {
+                                        curr: 1 // 重新从第一页开始
+                                    }
+                                });
+                            }
                         });
                         break;
                     // case 'batchDel':
@@ -165,9 +190,19 @@ layui.use(['table', 'form', 'layer'], function(){
             table.on('tool(user-table)', function(obj){
                 var data = obj.data;
                 console.log("行工具事件触发，数据：", data);
-                
                 if(obj.event === 'edit'){
-                    layer.msg('编辑功能正在开发中', {icon: 6});
+                    selectedCardHolderData = data;
+                    // 打开编辑页面
+                    layer.open({
+                        type: 2,
+                        title: '编辑用卡人',
+                        area: ['800px', '600px'],
+                        content: '/card_holders/edit_page',
+                        end: function(){
+                            // 重新加载表格数据
+                            location.reload();
+                        }
+                    });
                 } else if(obj.event === 'detail'){
                     // 显示用卡人详情
                     showCardHolderDetail(data);

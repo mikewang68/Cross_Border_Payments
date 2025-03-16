@@ -2,21 +2,30 @@ from flask import Blueprint, render_template, session, jsonify, request, redirec
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
-from comm.db_api import query_all_from_table
+from comm.db_api import query_all_from_table, insert_database
 
 main_bp = Blueprint('main', __name__)
 
 # 定义一个函数将字符串转换为 datetime 对象
 def convert_time(time_str):
+    if not time_str:  # 处理空字符串或None的情况
+        return "--"
+    
+    # 移除末尾的 'Z'（如果有）
+    time_str_clean = time_str.rstrip('Z')
+    
+    # 尝试解析带毫秒的格式（例如 2024-10-30T06:14:12.123Z）
     try:
-        # 尝试使用包含毫秒的格式解析
-        if len(time_str) > 0:
-            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
-        else:
-            return '--'
+        dt = datetime.strptime(time_str_clean, "%Y-%m-%dT%H:%M:%S.%f")
     except ValueError:
-        # 如果失败，使用不包含毫秒的格式解析
-            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ')
+        # 尝试解析不带毫秒的格式（例如 2024-10-30T06:14:12）
+        try:
+            dt = datetime.strptime(time_str_clean, "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            return "--"  # 若格式不匹配，返回默认值
+    
+    # 格式化为目标字符串
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 @main_bp.route('/')
 @login_required
@@ -76,9 +85,10 @@ def card_users():
         card_holders = query_all_from_table('card_holder')
         # 打印调试信息
         print(f"查询到 {len(card_holders) if card_holders else 0} 条用卡人记录")
-        
+        for card_holder in card_holders:
+            card_holder['create_time'] = convert_time(card_holder['create_time'])
         # 对列表进行排序，按 transaction_time 倒序排列
-        sorted_card_holders = sorted(card_holders, key=lambda x: convert_time(x["create_time"]), reverse=True)
+        sorted_card_holders = sorted(card_holders, key=lambda x: x['create_time'], reverse=True)
         return render_template('main/card_users.html', card_holders=sorted_card_holders)
     except Exception as e:
         print(f"查询用卡人数据时出错: {str(e)}")
@@ -90,6 +100,18 @@ def card_users():
 def card_holder_add():
     return render_template('main/card_user_add.html')
 
+@main_bp.route('/card_holders/edit_page')
+def card_holder_edit_page():
+    """渲染用卡人编辑页面"""
+    return render_template('main/card_user_edit.html')
+
+@main_bp.route('/card_holders/edit', methods=['POST']) 
+def card_holder_edit():
+    """处理用卡人编辑请求"""
+    # 获取JSON数据
+    data = request.get_json()
+    print(data)
+    
 @main_bp.route('/transactions')
 @login_required
 def transactions():
