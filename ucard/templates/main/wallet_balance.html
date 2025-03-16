@@ -1,7 +1,39 @@
 <div class="layui-fluid">
     <div class="layui-card">
-        <div class="layui-card-header">钱包余额</div>
+        <div class="layui-card-header">
+            <div class="header-content">
+                <span>钱包余额</span>
+                <!-- <div class="platform-selector">
+                    <select id="platform-select" lay-filter="platform-select" lay-search>
+                        <option value="all">所有平台</option>
+                       
+                    </select>
+                </div> -->
+            </div>
+        </div>
         <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="walletSearchForm">
+                <div class="layui-form-item">
+                    <!-- <div class="layui-inline">
+                        <label class="layui-form-label">货币</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="currency" placeholder="请输入货币代码" autocomplete="off" class="layui-input">
+                        </div>
+                    </div> -->
+                    <div class="layui-inline">
+                        <label class="layui-form-label">平台</label>
+                        <div class="layui-input-inline">
+                            <select name="version" lay-filter="version-select">
+                                <option value="">全部</option>
+                                <option value="J1">J1</option>
+                                <option value="J2">J2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
             <!-- 顶部信息展示 -->
             <div class="wallet-info">
                 <div class="total-balance">
