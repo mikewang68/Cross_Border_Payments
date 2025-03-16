@@ -1,8 +1,9 @@
 <!-- 交易记录表格模板 -->
+<div class="layui-fluid">
 <div class="layui-card card-transactions-container">
-    <div class="layui-card-header">信用卡交易记录</div>
+    <div class="layui-card-header">交易明细</div>
     <div class="layui-card-body">
-        <form class="layui-form" action="">
+        <form class="layui-form layui-form-pane" lay-filter="searchForm">
             <div class="layui-form-item">
                 <div class="layui-inline">
                     <label class="layui-form-label">交易流水号</label>
@@ -58,16 +59,19 @@
         </form>
         
         <!-- 修改表格容器，移除多余的分页容器 -->
-        <div class="table-container" id="transaction-table-container">
+        <div class="table-container" >
             <table id="transaction-table" lay-filter="transaction-table"></table>
         </div>
+
     </div>
 </div>
 
-<!-- 保存后端传递的数据 -->
-<script id="transactions-data" type="application/json">
-{{ transactions|tojson|safe }}
-</script>
+    <!-- 保存后端传递的数据 -->
+    <script id="transactions-data" type="application/json">
+    {{ transactions|tojson|safe }}
+    </script>
+</div>
+
 
 <!-- 引入交易记录CSS和JS -->
 <link rel="stylesheet" href="/static/css/transactions.css">
