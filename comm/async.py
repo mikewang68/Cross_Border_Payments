@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from db_api import insert_database
+from db_api import insert_database, update_database
 from flat_data import flat_data
 from db_api import query_database
 from db_api import query_field_from_table
@@ -52,40 +52,61 @@ async def card_transactions(version):
     try:
         logger.info(f'插入{version}平台交易明细')
         data = gsalary.get_card_transactions(version)
-        flatten_data = flat_data(version,data, 'data', 'transactions')
+        flatten_data = flat_data(version, data, 'data', 'transactions')
         insert_database('card_transactions', flatten_data)
     except Exception as e:
         logger.error(f"插入交易明细时出错: {e}")
+
+# 插入用户信息
+async def card_holder(version):
+    try:
+        logger.info(f'插入{version}平台用户信息')
+        data = gsalary.get_card_holders(version)
+        flatten_data = flat_data(version, data, 'data', 'card_holders')
+        insert_database('card_holder', flatten_data)
+    except Exception as e:
+        logger.error(f"插入用户信息时出错: {e}")
 
 # 插入余额明细
 async def balance_history(version):
     logger.info(f'插入{version}平台余额明细')
     try:
-
         data = gsalary.get_card_balance_history(version)
         flatten_data = flat_data(version,data, 'data', 'history')
         insert_database('balance_history', flatten_data)
     except Exception as e:
         logger.error(f"插入余额明细时出错: {e}")
 
-# 模拟获取用户信息
-async def get_user_info():
-    try:
-        return
-    except Exception as e:
-        print(f"获取用户信息时出错: {e}")
+
 
 async def wallet_balance(version):
-    logger.info(f'插入{version}钱包余额明细')
+    logger.info(f'更新{version}钱包余额明细')
     try:
 
         params = {
             'currency': 'USD'
         }
+
+
+        where = {
+            'currency': 'USD',
+            'version': f'{version}'
+        }
+
+
         data = gsalary.get_wallet_balance(version,params )
         print(data)
         flatten_data = flat_data(version,data, 'data')
-        insert_database('wallet_balance', flatten_data) #表名
+        amo = flatten_data.get('amount')
+        ava = flatten_data.get('available')
+
+        set = {
+            'amount':  f'{amo}',
+            'available': f'{ava}'
+
+        }
+
+        update_database('wallet_balance', set,where) #表名
     except Exception as e:
         logger.error(f"插入钱包余额明细时出错: {e}")
 
@@ -102,7 +123,7 @@ async def fetch_info():
             card_transactions(version),
             balance_history(version),
             wallet_balance(version),
-            get_user_info()
+            card_holder(version)
         ]
         all_tasks.extend(tasks)
 

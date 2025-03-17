@@ -1,19 +1,20 @@
 <!-- 交易记录表格模板 -->
+<div class="layui-fluid">
 <div class="layui-card card-transactions-container">
-    <div class="layui-card-header">信用卡交易记录</div>
+    <div class="layui-card-header">交易明细</div>
     <div class="layui-card-body">
-        <form class="layui-form" action="">
+        <form class="layui-form layui-form-pane" lay-filter="searchForm">
             <div class="layui-form-item">
                 <div class="layui-inline">
                     <label class="layui-form-label">交易流水号</label>
-                    <div class="layui-input-inline">
-                        <input type="text" name="transaction_id" placeholder="请输入" autocomplete="off" class="layui-input">
+                    <div class="layui-input-inline" style="width: 220px;">
+                        <input type="text" name="transaction_id" placeholder="请输入交易流水号" autocomplete="off" class="layui-input">
                     </div>
                 </div>
                 <div class="layui-inline">
                     <label class="layui-form-label">卡号后四位</label>
-                    <div class="layui-input-inline">
-                        <input type="text" name="card_last_digits" placeholder="请输入" autocomplete="off" class="layui-input">
+                    <div class="layui-input-inline" style="width: 220px;">
+                        <input type="text" name="card_last_digits" placeholder="请输入卡号后四位" autocomplete="off" class="layui-input">
                     </div>
                 </div>
 
@@ -47,27 +48,62 @@
                     </div>
                 </div>
                 <div class="layui-inline">
+                    <label class="layui-form-label">日期范围</label>
+                    <div class="layui-input-inline" style="width: 180px;">
+                        <input type="text" name="date_start" id="date_start" placeholder="开始日期" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline" style="width: 180px;">
+                        <input type="text" name="date_end" id="date_end" placeholder="结束日期" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
                     <button class="layui-btn" lay-submit lay-filter="transactionSearch">
                         <i class="layui-icon layui-icon-search"></i> 搜索
                     </button>
-                    <button type="button" class="layui-btn layui-btn-primary" id="exportTransactions">
-                        <i class="layui-icon layui-icon-export"></i> 导出
+                    <button type="reset" class="layui-btn layui-btn-primary">
+                        <i class="layui-icon layui-icon-refresh"></i> 重置
                     </button>
                 </div>
             </div>
         </form>
         
-        <!-- 修改表格容器，移除多余的分页容器 -->
-        <div class="table-container" id="transaction-table-container">
+        <!-- 表格容器 -->
+        <div class="table-container" >
             <table id="transaction-table" lay-filter="transaction-table"></table>
         </div>
+
+        <!-- 表格工具栏 -->
+        <script type="text/html" id="toolbar_transactions">
+        {% raw %}
+            <div class="layui-btn-container">
+                <div class="layui-table-tool-self">
+                    <div class="layui-inline" title="筛选列" lay-event="LAYTABLE_COLS">
+                        <i class="layui-icon layui-icon-cols"></i>
+                    </div>
+                    <div class="layui-inline" title="导出" lay-event="LAYTABLE_EXPORT">
+                        <i class="layui-icon layui-icon-export"></i>
+                    </div>
+                </div>
+            </div>
+        {% endraw %}
+        </script>
+        
+        <!-- 行工具栏 -->
+        <script type="text/html" id="barTool">
+        {% raw %}
+            <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+        {% endraw %}
+        </script>
     </div>
 </div>
 
-<!-- 保存后端传递的数据 -->
-<script id="transactions-data" type="application/json">
-{{ transactions|tojson|safe }}
-</script>
+    <!-- 保存后端传递的数据 -->
+    <script id="transactions-data" type="application/json">
+    {{ transactions|tojson|safe }}
+    </script>
+</div>
+
 
 <!-- 引入交易记录CSS和JS -->
 <link rel="stylesheet" href="/static/css/transactions.css">

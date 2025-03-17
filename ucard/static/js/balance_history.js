@@ -3,16 +3,32 @@
  * 用于处理交易记录表格的渲染、搜索、分页等功能
  */
 
-layui.use(['table', 'form', 'layer'], function(){
+layui.use(['table', 'form', 'layer', 'laydate'], function(){
     var table = layui.table;
     var form = layui.form;
     var layer = layui.layer;
+    var laydate = layui.laydate;
     
     // 获取后端传递的数据
     var allBalanceHistory = JSON.parse(document.getElementById('balance-history-data').textContent);
     
     // 初始化表单组件
     function initForm() {
+        // 初始化日期选择器
+        laydate.render({
+            elem: '#date_start',
+            type: 'datetime',
+            format: 'yyyy-MM-dd HH:mm:ss',
+            trigger: 'click' // 确保点击触发
+        });
+        
+        laydate.render({
+            elem: '#date_end',
+            type: 'datetime',
+            format: 'yyyy-MM-dd HH:mm:ss',
+            trigger: 'click' // 确保点击触发
+        });
+        
         form.render();
     }
     
@@ -26,9 +42,11 @@ layui.use(['table', 'form', 'layer'], function(){
             page: true,
             limit: 10,
             limits: [10, 20, 50, 100],
-            height: 'full-220',
+            height: 'auto',
             cols: [[
-                {field: 'transaction_time', title: '交易时间', width: 160, sort: true},
+                {field: 'transaction_time', title: '交易时间', width: 160, sort: true, templet: function(d){
+                    return formatTime(d.transaction_time);
+                }},
                 {field: 'transaction_id', title: '流水号', width: 180},
                 {field: 'mask_card_number', title: '卡号', width: 160},
                 {field: 'card_id', title: '卡ID', width: 120},
@@ -85,6 +103,31 @@ layui.use(['table', 'form', 'layer'], function(){
         });
     }
     
+    // 格式化时间函数
+    function formatTime(timeStr) {
+        if (!timeStr) return '--';
+        
+        // 处理ISO格式时间
+        try {
+            var date = new Date(timeStr);
+            
+            // 检查日期是否有效
+            if (isNaN(date.getTime())) return timeStr;
+            
+            var year = date.getFullYear();
+            var month = String(date.getMonth() + 1).padStart(2, '0');
+            var day = String(date.getDate()).padStart(2, '0');
+            var hours = String(date.getHours()).padStart(2, '0');
+            var minutes = String(date.getMinutes()).padStart(2, '0');
+            var seconds = String(date.getSeconds()).padStart(2, '0');
+            
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+        } catch (e) {
+            console.error("时间格式化错误:", e);
+            return timeStr; // 发生错误时返回原始时间字符串
+        }
+    }
+    
     // 显示详情弹窗
     function showBalanceDetail(data) {
         // 获取业务类型和交易类型的中文映射
@@ -134,7 +177,7 @@ layui.use(['table', 'form', 'layer'], function(){
                             </colgroup>
                             <tbody>
                                 <tr><td>流水号</td><td>${data.transaction_id || '--'}</td></tr>
-                                <tr><td>交易时间</td><td>${data.transaction_time || '--'}</td></tr>
+                                <tr><td>交易时间</td><td>${formatTime(data.transaction_time)}</td></tr>
                                 <tr><td>卡号</td><td>${data.mask_card_number || '--'}</td></tr>
                                 <tr><td>卡ID</td><td>${data.card_id || '--'}</td></tr>
                                 <tr><td>交易金额</td><td>${data.amount} ${data.amount_currency}</td></tr>
@@ -171,6 +214,8 @@ layui.use(['table', 'form', 'layer'], function(){
         form.on('submit(formSearch)', function(data){
             var formData = data.field;
             
+            console.log("搜索条件:", formData); // 添加日志记录搜索条件
+            
             // 根据表单数据筛选记录
             var filteredData = allBalanceHistory.filter(function(item) {
                 if (formData.transaction_id && !item.transaction_id.includes(formData.transaction_id)) {
@@ -185,8 +230,45 @@ layui.use(['table', 'form', 'layer'], function(){
                 if (formData.version && item.version !== formData.version) {
                     return false;
                 }
+                
+                // 修改日期范围筛选的逻辑
+                if (formData.date_start || formData.date_end) {
+                    var transactionTime = item.transaction_time || '';
+                    if (!transactionTime) return false;
+                    
+                    // 直接创建Date对象，浏览器会自动处理ISO格式
+                    var transactionDate = new Date(transactionTime);
+                    console.log("记录时间:", transactionTime, "→", transactionDate);
+                    
+                    if (formData.date_start && formData.date_start.trim() !== '') {
+                        var startDate = new Date(formData.date_start);
+                        console.log("开始时间:", formData.date_start, "→", startDate);
+                        if (isNaN(startDate.getTime())) {
+                            console.error("无效的开始日期:", formData.date_start);
+                        } else if (transactionDate < startDate) {
+                            return false;
+                        }
+                    }
+                    
+                    if (formData.date_end && formData.date_end.trim() !== '') {
+                        var endDate = new Date(formData.date_end);
+                        console.log("结束时间:", formData.date_end, "→", endDate);
+                        if (isNaN(endDate.getTime())) {
+                            console.error("无效的结束日期:", formData.date_end);
+                        } else {
+                            // 设置结束日期为当天最后一秒
+                            endDate.setHours(23, 59, 59, 999);
+                            if (transactionDate > endDate) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                
                 return true;
             });
+            
+            console.log("筛选后记录数:", filteredData.length); // 添加日志记录筛选结果
             
             // 重新加载表格数据
             table.reload('balance-table', {

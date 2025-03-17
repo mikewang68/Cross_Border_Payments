@@ -1,9 +1,23 @@
 /* 交易记录页面样式 */
 
-/* 确保所有样式只应用于交易记录页面 */
+/* 表格容器样式 */
 .card-transactions-container .table-container {
+    margin-top: 15px;
+    width: 100%;
+    overflow-x: auto;
     position: relative;
+}
+
+/* 搜索表单样式 */
+.card-transactions-container .layui-form-pane .layui-form-label {
+    width: 120px;
     overflow: visible;
+    white-space: nowrap;
+    text-overflow: clip;
+}
+
+.card-transactions-container .layui-form-pane .layui-input-inline {
+    width: 200px;
 }
 
 /* 禁用表格固定高度 */
@@ -24,6 +38,9 @@
     padding: 8px 12px;
     position: relative;
     box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* 表格头部样式 */
@@ -57,4 +74,62 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* 表格工具栏样式 */
+.card-transactions-container .layui-table-tool-self {
+    position: absolute;
+    right: 17px;
+    top: 10px;
+}
+
+.card-transactions-container .layui-table-tool-self .layui-inline {
+    margin: 0 0 0 10px;
+}
+
+/* 详情弹窗样式 */
+.detail-section {
+    margin-bottom: 20px;
+}
+
+.detail-section-title {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 0;
+    border-bottom: 1px solid #e6e6e6;
+    margin-bottom: 10px;
+}
+
+.detail-section .layui-table {
+    margin: 0;
+}
+
+.detail-section .layui-table td {
+    padding: 8px 10px;
+}
+
+/* 确保表格在小屏幕上也能正常显示 */
+@media screen and (max-width: 992px) {
+    .card-transactions-container .layui-table-view {
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .card-transactions-container .layui-table-body {
+        min-width: 800px;
+    }
+}
+
+/* 确保内部padding合适 */
+.card-transactions-container .layui-form-pane .layui-input {
+    padding-left: 5px;
+    padding-right: 5px;
+    width: calc(100% - 2px);
+    box-sizing: border-box;
+}
+
+/* 为日期输入框调整样式 */
+#date_start, #date_end {
+    width: 100%;
+    box-sizing: border-box;
 } 

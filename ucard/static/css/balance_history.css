@@ -9,11 +9,22 @@
 
 /* 搜索表单样式 */
 .balance-history-container .layui-form-pane .layui-form-label {
-    width: 100px;
+    width: 120px;
+    overflow: visible;
+    white-space: nowrap;
+    text-overflow: clip;
 }
 
 .balance-history-container .layui-form-pane .layui-input-inline {
-    width: 180px;
+    width: 200px;
+}
+
+/* 确保内部padding合适 */
+.balance-history-container .layui-form-pane .layui-input {
+    padding-left: 5px;  /* 减少左内边距 */
+    padding-right: 5px; /* 减少右内边距 */
+    width: calc(100% - 2px); /* 确保输入框充满容器 */
+    box-sizing: border-box;
 }
 
 /* 详情弹窗样式 */
@@ -54,4 +65,10 @@
     .balance-history-container .layui-table-body {
         min-width: 800px;
     }
+}
+
+/* 为日期输入框调整样式 */
+#date_start, #date_end {
+    width: 100%;
+    box-sizing: border-box;
 } 
