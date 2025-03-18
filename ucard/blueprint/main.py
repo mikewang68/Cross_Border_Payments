@@ -2,30 +2,21 @@ from flask import Blueprint, render_template, session, jsonify, request, redirec
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
-from comm.db_api import query_all_from_table, insert_database
+from comm.db_api import query_all_from_table
 
 main_bp = Blueprint('main', __name__)
 
 # 定义一个函数将字符串转换为 datetime 对象
 def convert_time(time_str):
-    if not time_str:  # 处理空字符串或None的情况
-        return "--"
-    
-    # 移除末尾的 'Z'（如果有）
-    time_str_clean = time_str.rstrip('Z')
-    
-    # 尝试解析带毫秒的格式（例如 2024-10-30T06:14:12.123Z）
     try:
-        dt = datetime.strptime(time_str_clean, "%Y-%m-%dT%H:%M:%S.%f")
+        # 尝试使用包含毫秒的格式解析
+        if len(time_str) > 0:
+            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+        else:
+            return '--'
     except ValueError:
-        # 尝试解析不带毫秒的格式（例如 2024-10-30T06:14:12）
-        try:
-            dt = datetime.strptime(time_str_clean, "%Y-%m-%dT%H:%M:%S")
-        except ValueError:
-            return "--"  # 若格式不匹配，返回默认值
-    
-    # 格式化为目标字符串
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
+        # 如果失败，使用不包含毫秒的格式解析
+            return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ')
 
 @main_bp.route('/')
 @login_required
@@ -66,6 +57,41 @@ def wallet_balance():
         print(f"查询钱包数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
         return render_template('main/wallet_balance.html', wallet_balances=[], regions=[])
+    
+@main_bp.route('/wallet_transactions')
+@login_required
+def wallet_transactions():
+    try:
+        # 查询钱包交易记录
+        wallet_transactions = query_all_from_table('wallet_transactions')
+        # 查询钱包余额
+        wallet_balances = query_all_from_table('wallet_balance')
+        regions = query_all_from_table('region')
+        
+        # 打印调试信息
+        print(f"查询到 {len(wallet_balances) if wallet_balances else 0} 条钱包余额记录")
+        print(f"查询到 {len(wallet_transactions) if wallet_transactions else 0} 条地区记录")
+        
+        # 如果数据为空，添加测试数据（仅用于测试前端显示）
+        if not wallet_balances or len(wallet_balances) == 0:
+            # 添加测试数据，仅用于开发阶段
+            print("未找到钱包余额数据，使用测试数据")
+            wallet_balances = [
+                {"currency": "USD", "amount": 936.12, "user_id": "test_user", "update_time": "2023-03-13 18:48:52"}
+            ]
+        # if not wallet_transactions or len(wallet_transactions) == 0:
+        #     # 添加测试数据，仅用于开发阶段
+        #     print("未找到钱包交易记录，使用测试数据")
+        #     wallet_transactions = [
+        #         {"insert_time": "2023-03-13 18:48:52""currency": "USD", "amount": 936.12, "user_id": "test_user", }
+        #     ]
+        
+        # 将数据转换为JSON并返回给前端
+        return render_template('main/wallet_transactions.html', wallet_balances=wallet_balances, wallet_transactions=wallet_transactions, regions=regions)
+    except Exception as e:
+        print(f"查询钱包数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/wallet_transactions.html', wallet_balances=[], wallet_transactions=[], regions=[])
 
 @main_bp.route('/recharge')
 @login_required
@@ -85,10 +111,9 @@ def card_users():
         card_holders = query_all_from_table('card_holder')
         # 打印调试信息
         print(f"查询到 {len(card_holders) if card_holders else 0} 条用卡人记录")
-        for card_holder in card_holders:
-            card_holder['create_time'] = convert_time(card_holder['create_time'])
+        
         # 对列表进行排序，按 transaction_time 倒序排列
-        sorted_card_holders = sorted(card_holders, key=lambda x: x['create_time'], reverse=True)
+        sorted_card_holders = sorted(card_holders, key=lambda x: convert_time(x["create_time"]), reverse=True)
         return render_template('main/card_users.html', card_holders=sorted_card_holders)
     except Exception as e:
         print(f"查询用卡人数据时出错: {str(e)}")
@@ -100,45 +125,6 @@ def card_users():
 def card_holder_add():
     return render_template('main/card_user_add.html')
 
-@main_bp.route('/card_holders/edit_page')
-def card_holder_edit_page():
-    """渲染用卡人编辑页面"""
-    return render_template('main/card_user_edit.html')
-
-@main_bp.route('/card_holders/edit', methods=['PUT']) 
-def card_holder_edit():
-    """处理用卡人编辑请求"""
-    try:
-        # 获取JSON数据
-        data = request.get_json()
-        card_holder_id = data.pop('card_holder_id')  # 删除json['card_holder_id']并将其赋值给card_holder_id
-        version = data.pop('version')  # 删除json['version']并将其赋值给version
-        # print(data)
-        # print(card_holder_id)
-        # print(version)
-        # 创建API实例
-        gsalary_api = GSalaryAPI()
-        # 调用API创建用卡人
-        result = gsalary_api.update_card_holder(system_id = version, holder_id=card_holder_id, data=data)  # 替换实际的system_id
-        if result['result']['result'] == 'S':
-            return jsonify({
-                "code": 0,
-                "msg": "修改成功",
-                "data": result
-            })
-        else:
-            return jsonify({
-                "code": 1,
-                "msg": "修改失败",
-                "data": None
-            })
-    except Exception as e:
-        return jsonify({
-            "code": 1,
-            "msg": f"发生错误: {str(e)}",
-            "data": None
-        })
-    
 @main_bp.route('/transactions')
 @login_required
 def transactions():
@@ -159,9 +145,7 @@ def balance_history():
 
     print(f"查询到 {len(balance_history) if balance_history else 0} 条额度明细记录")
 
-    sorted_balance_history = sorted(balance_history, key=lambda x: convert_time(x["transaction_time"]), reverse=True)
-
-    return render_template('main/balance_history.html', balance_history=sorted_balance_history)
+    return render_template('main/balance_history.html', balance_history=balance_history)
 
 
 @main_bp.route('/all_cards')

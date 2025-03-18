@@ -172,3 +172,12 @@
 .zero-balance {
     color: #999;
 }
+
+/* 版权信息样式 */
+.footer-info {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px 0;
+    color: #999;
+    font-size: 12px;
+}

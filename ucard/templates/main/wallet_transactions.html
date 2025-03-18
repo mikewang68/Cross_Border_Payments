@@ -1,0 +1,82 @@
+<!-- 钱包交易明细弹窗内容 -->
+<div class="transactions-container">
+    <div class="transactions-header">
+        <div class="currency-info">
+            <div class="currency-flag" id="currency-flag">
+                <!-- 国旗图片将通过JS动态添加 -->
+            </div>
+            <div class="currency-name-container">
+                <span class="currency-code" id="currency-code">USD</span>
+                <span class="currency-name" id="currency-name-full">美元</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="balance-summary">
+        <div class="balance-item">
+            <div class="balance-label">账户总额</div>
+            <div class="balance-amount" id="total-balance">$ 877.52</div>
+        </div>
+        <div class="balance-item">
+            <div class="balance-label">共享卡已开卡余额</div>
+            <div class="balance-amount" id="shared-balance">$ 826.12</div>
+        </div>
+        <div class="balance-item">
+            <div class="balance-label">可用余额</div>
+            <div class="balance-amount" id="available-balance">$ 51.4</div>
+        </div>
+    </div>
+    
+    <div class="transactions-search">
+        <div class="search-input">
+            <input type="text" placeholder="请输入流水号" id="transaction-id-input" class="layui-input">
+        </div>
+        <div class="search-input">
+            <select id="transaction-type" class="layui-select">
+                <option value="">请选择交易类型</option>
+                <option value="income">收入</option>
+                <option value="expense">支出</option>
+            </select>
+        </div>
+        <div class="date-filter">
+            <input type="text" placeholder="开始日期" class="layui-input" id="date-start" readonly>
+            <span class="date-separator">-</span>
+            <input type="text" placeholder="结束日期" class="layui-input" id="date-end" readonly>
+        </div>
+        <div class="search-actions">
+            <button class="layui-btn search-btn" id="search-btn">搜索</button>
+            <button class="layui-btn layui-btn-primary export-btn" id="export-btn">导出</button>
+            <button class="layui-btn layui-btn-primary clear-btn" id="clear-btn">重置</button>
+        </div>
+    </div>
+    
+    <div class="transactions-table">
+        <!-- 表格将通过JS动态生成 -->
+    </div>
+    
+    <div class="transactions-pagination" id="transactions-pagination">
+        <!-- 分页将通过JS动态生成 -->
+    </div>
+    
+    <div class="footer-info">
+        © UCard管理系统
+    </div>
+</div>
+
+<!-- 将数据传递给JavaScript -->
+<script>
+    // 定义全局变量以便JavaScript脚本可以访问
+    var walletDataJson = document.getElementById('wallet-data').textContent;
+    var transactionsDataJson = document.getElementById('transactions-data').textContent;
+    var regionDataJson = document.getElementById('region-data').textContent;
+</script>
+
+<script id="wallet-data" type="application/json">
+    {{ wallet_balances|tojson|safe }}
+</script>
+<script id="transactions-data" type="application/json">
+    {{ wallet_transactions|tojson|safe }}
+</script>
+<script id="region-data" type="application/json">
+    {{ regions|tojson|safe }}
+</script>

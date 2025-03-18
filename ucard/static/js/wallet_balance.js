@@ -98,199 +98,258 @@ layui.use(['element', 'layer', 'form'], function() {
         return filteredData;
     }
     
-    // 初始化数据
-    function initWalletData(filteredData, selectedVersion) {
-        console.log('初始化钱包数据，版本:', selectedVersion);
+    // 初始化钱包数据
+    function initWalletData(data, selectedVersion) {
+        console.log('初始化钱包数据:', data);
+        console.log('选择的平台:', selectedVersion);
         
-        var dataToDisplay;
-        var platformLabel = '';
-        
-        // 如果传入了筛选后的数据，使用它，否则使用原始数据
-        var dataToUse = filteredData || originalWalletData;
-        
-        // 根据选择的平台汇总数据
-        if (!selectedVersion || selectedVersion === '') {
-            // 如果是"全部"平台，显示按货币汇总的数据
-            dataToDisplay = summarizeWalletData(dataToUse);
-            platformLabel = '全部';
-            console.log('显示全部平台数据，汇总结果:', dataToDisplay);
-        } else {
-            // 否则，筛选特定平台的数据
-            var filteredByVersion = dataToUse.filter(function(item) {
-                var match = item.version === selectedVersion;
-                // 添加调试日志
-                console.log(`检查 ${item.currency} 是否匹配平台 ${selectedVersion}:`, 
-                            item.version, 
-                            match ? '匹配' : '不匹配');
-                return match;
-            });
-            
-            console.log(`筛选平台 ${selectedVersion} 的数据，找到 ${filteredByVersion.length} 条记录:`, filteredByVersion);
-            
-            if (filteredByVersion.length === 0) {
-                console.warn(`警告: 平台 ${selectedVersion} 没有钱包数据`);
-                layer.msg('该平台暂无钱包余额数据', {icon: 5});
-                // 清空货币列表
-                document.getElementById('currency-list').innerHTML = '';
-                return;
-            }
-            
-            dataToDisplay = filteredByVersion;
-            platformLabel = selectedVersion;
+        // 清空货币列表
+        var currencyListElem = document.getElementById('currency-list');
+        if (currencyListElem) {
+            currencyListElem.innerHTML = '';
         }
         
-        // 如果没有数据，显示提示
-        if (!dataToDisplay || dataToDisplay.length === 0) {
-            layer.msg('暂无钱包余额数据', {icon: 5});
+        // 处理数据为空的情况
+        if (!data || data.length === 0) {
+            console.log('钱包数据为空');
+            var emptyNotice = document.createElement('div');
+            emptyNotice.className = 'layui-col-xs12 layui-col-sm12 layui-col-md12';
+            emptyNotice.innerHTML = '<div class="empty-notice">暂无钱包余额数据</div>';
+            currencyListElem.appendChild(emptyNotice);
             return;
         }
         
-        // 获取当前平台下存在的货币列表
-        var existingCurrencies = dataToDisplay.map(function(item) {
-            return item.currency;
-        });
-        console.log(`平台 ${platformLabel} 下存在的货币:`, existingCurrencies);
+        // 根据选定的版本/平台，汇总每种货币的余额
+        var summaryData = {};
         
-        // 默认显示第一条记录的更新时间
-        var updateTime = dataToDisplay[0].update_time || '';
-        document.getElementById('update-time').textContent = '（更新于' + updateTime + '）';
-        
-        // 清空货币列表
-        var currencyListEl = document.getElementById('currency-list');
-        currencyListEl.innerHTML = '';
-        
-        // 创建货币卡片
-        // 常见货币顺序：USD, EUR, GBP, JPY, AUD, CAD, CHF, CNY
-        var commonCurrencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD', 'CHF', 'CNY'];
-        
-        // 将钱包数据按照常见货币顺序排序
-        var sortedWalletData = [];
-        
-        // 首先添加常见货币
-        commonCurrencies.forEach(function(currency) {
-            // 查找钱包中是否有该货币
-            var walletItem = dataToDisplay.find(function(item) {
-                return item.currency === currency;
-            });
+        data.forEach(function(item) {
+            // 如果选择了特定平台，且当前项不是该平台，则跳过
+            if (selectedVersion && selectedVersion !== '' && item.version !== selectedVersion) {
+                return;
+            }
             
-            if (walletItem) {
-                sortedWalletData.push(walletItem);
-            } else {
-                // 如果钱包中没有该货币，但是地区数据中有，创建一个零余额数据
-                if (currencyToRegion[currency]) {
-                    sortedWalletData.push({
-                        currency: currency,
-                        amount: 0,
-                        user_id: dataToDisplay[0].user_id,
-                        update_time: updateTime,
-                        version: platformLabel
-                    });
-                }
-            }
-        });
-        
-        // 然后添加其他货币
-        dataToDisplay.forEach(function(item) {
-            if (!commonCurrencies.includes(item.currency)) {
-                sortedWalletData.push(item);
-            }
-        });
-        
-        // 确保所有地区数据中的货币都被添加
-        regionData.forEach(function(region) {
-            var currency = region.currency;
-            // 如果排序后的数据中没有该货币，添加一个零余额数据
-            if (!sortedWalletData.some(item => item.currency === currency)) {
-                sortedWalletData.push({
+            var currency = item.currency;
+            
+            // 如果该货币还没有在汇总中，则创建
+            if (!summaryData[currency]) {
+                summaryData[currency] = {
                     currency: currency,
                     amount: 0,
-                    user_id: dataToDisplay[0].user_id,
-                    update_time: updateTime,
-                    version: platformLabel
+                    available: 0, // 增加available字段用于计算
+                    user_id: item.user_id,
+                    update_time: item.update_time || new Date().toISOString(),
+                    version: selectedVersion || '全部'
+                };
+            }
+            
+            // 累加余额和可用余额
+            summaryData[currency].amount += parseFloat(item.amount || 0);
+            summaryData[currency].available += parseFloat(item.available || 0);
+        });
+        
+        // 将汇总数据转为数组并排序
+        var currencyList = Object.values(summaryData);
+        currencyList.sort(function(a, b) {
+            return b.amount - a.amount; // 按金额从高到低排序
+        });
+        
+        // 计算总余额
+        var totalAmount = 0;
+        currencyList.forEach(function(item) {
+            totalAmount += item.amount;
+        });
+        
+        // 更新总余额显示
+        var mainAmountElem = document.getElementById('main-amount');
+        if (mainAmountElem) {
+            mainAmountElem.textContent = totalAmount.toFixed(2);
+        }
+        
+        // 为每种货币创建卡片
+        currencyList.forEach(function(currencyData) {
+            var currencyCode = currencyData.currency;
+            var amount = parseFloat(currencyData.amount);
+            var regionInfo = currencyToRegion[currencyCode] || {};
+            
+            var colDiv = document.createElement('div');
+            colDiv.className = 'layui-col-xs12 layui-col-sm6 layui-col-md4 layui-col-lg3';
+            
+            var cardContent = `
+                <div class="currency-card" data-currency="${currencyCode}">
+                    <div class="card-header">
+                        <div class="flag-container">
+                            ${regionInfo.icon_base64 ? 
+                                `<img src="data:image/png;base64,${regionInfo.icon_base64}" alt="${currencyCode}" class="flag-icon">` :
+                                `<div class="flag-placeholder">${currencyCode.substring(0, 2)}</div>`
+                            }
+                        </div>
+                        <div class="currency-info">
+                            <div class="currency-code">${currencyCode}</div>
+                            <div class="currency-name">${regionInfo.name || currencyCode}</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="amount-container">
+                            <div class="amount">${amount.toFixed(2)}</div>
+                            <div class="available-amount">可用: ${(parseFloat(currencyData.available) || 0).toFixed(2)}</div>
+                        </div>
+                        <div class="transaction-btn">
+                            <button class="layui-btn layui-btn-normal layui-btn-sm view-transactions" data-currency="${currencyCode}">
+                                <i class="layui-icon layui-icon-list"></i> 明细
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            
+            colDiv.innerHTML = cardContent;
+            currencyListElem.appendChild(colDiv);
+            
+            // 为明细按钮添加点击事件
+            var transactionBtn = colDiv.querySelector('.view-transactions');
+            if (transactionBtn) {
+                transactionBtn.addEventListener('click', function() {
+                    openCurrencyTransactions(currencyData, regionInfo);
                 });
             }
         });
-        
-        console.log('排序后的钱包数据:', sortedWalletData);
-        
-        // 渲染所有货币卡片
-        sortedWalletData.forEach(function(item) {
-            createCurrencyCard(item, currencyListEl, selectedVersion);
-        });
-        
-        // 计算所有货币余额的总和
-        var totalAmount = 0;
-        dataToDisplay.forEach(function(item) {
-            totalAmount += parseFloat(item.amount || 0);
-        });
-        
-        // 将总额显示在主余额区域
-        document.getElementById('main-amount').textContent = totalAmount.toFixed(2);
-        document.getElementById('main-currency').textContent = '总额';
     }
     
-    // 创建货币卡片
-    function createCurrencyCard(item, container, currentPlatform) {
-        // 获取对应的地区数据
-        var region = currencyToRegion[item.currency] || {};
-        var iconBase64 = region.icon_base64 || '';
-        var currencyName = region.name || item.currency;
+    // 打开货币交易明细弹窗
+    function openCurrencyTransactions(walletItem, regionInfo) {
+        // 获取当前选择的平台
+        var formData = form.val('walletSearchForm');
+        var selectedVersion = formData.version || '';
         
-        // 处理Base64图标
-        var flagImage = '';
-        if (iconBase64) {
-            // 检查是否已经包含data:image前缀
-            if (iconBase64.startsWith('data:')) {
-                flagImage = iconBase64;
-            } else {
-                // 添加base64图像前缀
-                flagImage = 'data:image/png;base64,' + iconBase64;
+        var totalBalance = 0;
+        var availableBalance = 0;
+        var sharedBalance = 0;
+        
+        // 如果是特定平台，则使用该平台的金额和可用余额
+        if (selectedVersion && selectedVersion !== '') {
+            // 使用特定平台的余额
+            totalBalance = parseFloat(walletItem.amount);
+            availableBalance = parseFloat(walletItem.available || 0);
+        } else {
+            // 全部平台情况 - 需要根据相同货币和用户ID汇总不同平台的余额
+            var totalAmount = 0;
+            var totalAvailable = 0;
+            
+            originalWalletData.forEach(function(item) {
+                if (item.currency === walletItem.currency) {
+                    totalAmount += parseFloat(item.amount || 0);
+                    totalAvailable += parseFloat(item.available || 0);
+                }
+            });
+            
+            totalBalance = totalAmount;
+            availableBalance = totalAvailable;
+        }
+        
+        // 计算共享卡已开卡余额 = 总额 - 可用余额
+        sharedBalance = totalBalance - availableBalance;
+        
+        // 构建完整的钱包数据对象
+        var currencyData = {
+            currency_code: walletItem.currency,
+            currency_name: regionInfo.name || walletItem.currency,
+            balance: totalBalance,
+            shared_balance: sharedBalance,
+            available_balance: availableBalance,
+            user_id: walletItem.user_id,
+            update_time: walletItem.update_time,
+            version: selectedVersion || '全部',
+            // 添加国旗图标数据
+            icon_base64: regionInfo.icon_base64 || null
+        };
+        
+        // 检查交易明细函数是否已加载
+        if (typeof window.openTransactionDetails !== 'function') {
+            // 如果函数不存在，动态加载脚本
+            var script = document.createElement('script');
+            script.src = '/static/js/wallet_transactions.js';
+            script.onload = function() {
+                // 脚本加载完成后调用函数
+                window.openTransactionDetails(currencyData);
+            };
+            document.head.appendChild(script);
+            
+            // 加载CSS
+            if (!document.querySelector('link[href="/static/css/wallet_transactions.css"]')) {
+                var link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = '/static/css/wallet_transactions.css';
+                document.head.appendChild(link);
             }
         } else {
-            // 没有图标，使用默认图标
-            flagImage = '/static/images/flag-placeholder.png';
+            // 如果函数已存在，直接调用
+            window.openTransactionDetails(currencyData);
         }
-        
-        // 创建卡片元素
-        var cardEl = document.createElement('div');
-        cardEl.className = 'layui-col-xs12 layui-col-sm6 layui-col-md4 layui-col-lg3';
-        
-        // 设置卡片内容
-        var isZeroBalance = parseFloat(item.amount) === 0;
-        var amountClass = isZeroBalance ? 'currency-amount zero-balance' : 'currency-amount';
-        
-        // 添加平台信息（如果有）
-        var platformInfo = '';
-        
-        // 如果是所有平台模式，显示货币总额，否则显示当前平台
-        if (!currentPlatform || currentPlatform === '') {
-            platformInfo = '<div class="platform-info">全部</div>';
-        } else if (item.version) {
-            platformInfo = `<div class="platform-info">${item.version}</div>`;
-        }
-        
-        cardEl.innerHTML = `
-            <div class="currency-card" data-currency="${item.currency}" data-platform="${item.version || '全部'}">
-                <div class="flag-container">
-                    <img src="${flagImage}" alt="${item.currency}">
-                </div>
-                <div class="currency-info">
-                    <div class="currency-name">${currencyName}</div>
-                    <div class="${amountClass}">${parseFloat(item.amount).toFixed(2)}</div>
-                    ${platformInfo}
-                </div>
-            </div>
-        `;
-        
-        // 点击卡片更新主余额显示
-        cardEl.querySelector('.currency-card').addEventListener('click', function() {
-            document.getElementById('main-amount').textContent = parseFloat(item.amount).toFixed(2);
-            document.getElementById('main-currency').textContent = item.currency;
-        });
-        
-        // 添加到容器
-        container.appendChild(cardEl);
     }
+    
+    // 页面加载完成后初始化和自动刷新余额
+    initWalletData(walletData, '');
+    
+    // 自动刷新余额信息
+    var loadingIndex = layer.load(1, {
+        shade: [0.1, '#fff']
+    });
+    
+    // 发送AJAX请求获取最新数据
+    fetch('/api/wallet_data')
+        .then(response => response.json())
+        .then(data => {
+            layer.close(loadingIndex);
+            if (data.status === 'success') {
+                // 更新数据并重新渲染
+                originalWalletData = data.data.wallet_balances;
+                walletData = [...originalWalletData];
+                regionData = data.data.regions;
+                
+                // 检查数据中是否包含version字段
+                var hasVersionField = walletData.some(function(item) {
+                    return item.version !== undefined;
+                });
+                
+                if (!hasVersionField) {
+                    console.warn('警告: 刷新的钱包数据中没有version字段，将使用默认字段');
+                    // 如果没有version字段，为每条数据添加默认version
+                    walletData.forEach(function(item, index) {
+                        // 根据索引交替分配J1和J2
+                        item.version = index % 2 === 0 ? 'J1' : 'J2';
+                    });
+                    originalWalletData = [...walletData];
+                }
+                
+                // 重新创建映射
+                currencyToRegion = {};
+                if (regionData && regionData.length > 0) {
+                    regionData.forEach(function(region) {
+                        currencyToRegion[region.currency] = region;
+                    });
+                }
+                
+                // 更新可用货币列表
+                allAvailableCurrencies = regionData.map(function(region) {
+                    return region.currency;
+                });
+                
+                // 获取当前选择的平台
+                var formData = form.val('walletSearchForm');
+                var selectedVersion = formData.version || '';
+                
+                // 重新初始化显示
+                var filteredData = filterWalletData(formData);
+                initWalletData(filteredData, selectedVersion);
+                
+                layer.msg('余额已自动刷新', {icon: 1});
+            } else {
+                console.error('自动刷新失败:', data.message);
+            }
+        })
+        .catch(error => {
+            layer.close(loadingIndex);
+            console.error('自动刷新请求出错:', error.message);
+        });
     
     // 刷新余额按钮点击事件
     document.getElementById('refresh-balance').addEventListener('click', function() {
@@ -370,9 +429,92 @@ layui.use(['element', 'layer', 'form'], function() {
         initWalletData(filteredData, data.value);
     });
     
-    // 页面加载完成后初始化
-    initWalletData(null, '');
-    
     // 渲染表单元素
     form.render();
 });
+
+// 重构renderTransactionList函数，动态创建表格，不显示"暂无交易数据"
+function renderTransactionList(transactions) {
+    const tableContainer = document.querySelector('.transactions-table');
+    
+    // 创建表格结构
+    let tableHTML = `
+    <table class="layui-table" id="transactions-table" lay-skin="line">
+        <thead>
+            <tr>
+                <th>交易时间</th>
+                <th>流水号</th>
+                <th>交易类型</th>
+                <th>交易金额</th>
+                <th>账户金额</th>
+                <th>平台</th>
+                <th>交易备注</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>`;
+    
+    tableContainer.innerHTML = tableHTML;
+    
+    const tableBody = document.querySelector('#transactions-table tbody');
+    if (!tableBody) return;
+    
+    // 如果没有交易数据，仅渲染分页
+    if (!transactions || !transactions.length) {
+        renderPagination(0);
+        return;
+    }
+    
+    // 计算分页
+    totalPages = Math.ceil(transactions.length / pageSize);
+    const start = (currentPage - 1) * pageSize;
+    const end = Math.min(start + pageSize, transactions.length);
+    const pageTransactions = transactions.slice(start, end);
+    
+    // 渲染数据
+    pageTransactions.forEach(function(transaction) {
+        const row = document.createElement('tr');
+        
+        // 格式化日期
+        const transactionTime = transaction.transaction_time ? 
+            new Date(transaction.transaction_time).toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }).replace(/\//g, '-') : '-';
+        
+        // 确定金额的正负 (收入为正, 支出为负)
+        const amountValue = parseFloat(transaction.amount || 0);
+        const amountClass = amountValue >= 0 ? 'positive-amount' : 'negative-amount';
+        const amountDisplay = formatAmount(amountValue);
+        
+        // 账户金额
+        const afterBalanceAmount = parseFloat(transaction.after_balance_amount || 0);
+        const balanceDisplay = formatAmount(afterBalanceAmount);
+        
+        // 获取交易类型
+        const txnType = transaction.txn_type || '-';
+        
+        // 获取平台版本
+        const version = transaction.version || '-';
+        
+        row.innerHTML = `
+            <td>${transactionTime}</td>
+            <td>${transaction.transaction_id || '-'}</td>
+            <td>${txnType}</td>
+            <td class="${amountClass}">${amountDisplay}</td>
+            <td>${balanceDisplay}</td>
+            <td>${version}</td>
+            <td>${transaction.remark || '-'}</td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+    
+    // 渲染分页
+    renderPagination(transactions.length);
+}

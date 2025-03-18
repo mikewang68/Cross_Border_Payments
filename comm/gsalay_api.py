@@ -144,13 +144,13 @@ class GSalaryAPI:
         """
         params = {
             "page": page,
-            "page_size": page_size
+            "limit": page_size
         }
         if start_date:
             params["start_date"] = start_date
         if end_date:
             params["end_date"] = end_date
-        return self.make_gsalary_request("GET", "/wallet/transactions", system_id=system_id, params=params)
+        return self.make_gsalary_request("GET", "/v1/wallets/transactions", system_id=system_id, params=params)
     
     def wallet_deposit(self, system_id,data: Dict) -> Dict[str, Any]:
         """钱包充值

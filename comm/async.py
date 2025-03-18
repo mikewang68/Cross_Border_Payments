@@ -4,7 +4,7 @@ from db_api import insert_database, update_database
 from flat_data import flat_data
 from db_api import query_database
 from db_api import query_field_from_table
-from gsalay_api import GSalaryAPI
+from comm.gsalay_api import GSalaryAPI
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,15 @@ async def card_transactions(version):
         insert_database('card_transactions', flatten_data)
     except Exception as e:
         logger.error(f"插入交易明细时出错: {e}")
+# 插入钱包交易明细
+async def wallet_transactions(version):
+    try:
+        logger.info(f'插入{version}平台交易明细')
+        data = gsalary.get_wallet_transactions(version)
+        flatten_data = flat_data(version, data, 'data', 'trans')
+        insert_database('wallet_transactions', flatten_data)
+    except Exception as e:
+        logger.error(f"插入交易明细时出错: {e}")
 
 # 插入用户信息
 async def card_holder(version):
@@ -92,8 +101,6 @@ async def wallet_balance(version):
             'currency': 'USD',
             'version': f'{version}'
         }
-
-
         data = gsalary.get_wallet_balance(version,params )
         print(data)
         flatten_data = flat_data(version,data, 'data')
@@ -120,10 +127,11 @@ async def fetch_info():
     for version in version_data:
 
         tasks = [
-            card_transactions(version),
-            balance_history(version),
+            # card_transactions(version),
+            # balance_history(version),
             wallet_balance(version),
-            card_holder(version)
+            # card_holder(version),
+            # wallet_transactions(version)
         ]
         all_tasks.extend(tasks)
 
