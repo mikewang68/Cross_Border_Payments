@@ -1,0 +1,23 @@
+.layui-form-item .layui-input-inline {
+    width: 280px;
+}
+.layui-form {
+    margin: 20px;
+}
+.card-user-info {
+    margin: 20px 0;
+    font-size: 16px;
+    font-weight: bold;
+    border-left: 5px solid #1E9FFF;
+    padding-left: 10px;
+}
+.address-title {
+    margin: 30px 0 20px 0;
+    font-size: 16px;
+    font-weight: bold;
+    border-left: 5px solid #1E9FFF;
+    padding-left: 10px;
+}
+.layui-form-select dl {
+    max-height: 200px;
+}

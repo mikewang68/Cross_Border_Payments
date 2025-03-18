@@ -47,13 +47,13 @@ layui.use(['table', 'form', 'layer', 'laydate'], function(){
                 {field: 'transaction_time', title: '交易时间', width: 160, sort: true, templet: function(d){
                     return formatTime(d.transaction_time);
                 }},
-                {field: 'transaction_id', title: '流水号', width: 180},
+                {field: 'transaction_id', title: '流水号', width: 260},
                 {field: 'mask_card_number', title: '卡号', width: 160},
-                {field: 'card_id', title: '卡ID', width: 120},
+                {field: 'card_id', title: 'ID', width: 255},
                 {field: 'amount', title: '交易金额', width: 120, sort: true, templet: function(d){
                     return d.amount + ' ' + d.amount_currency;
                 }},
-                {field: 'txn_type', title: '业务类型', width: 120, templet: function(d){
+                {field: 'txn_type', title: '业务类型', width: 245, templet: function(d){
                     // 交易类型中文映射
                     var txnTypeMap = {
                         'CARD_PAYMENT': '交易结算',
@@ -95,7 +95,7 @@ layui.use(['table', 'form', 'layer', 'laydate'], function(){
                     return d.balance_after_transaction_amount + ' ' + d.balance_after_transaction_currency;
                 }},
                 {field: 'version', title: '平台', width: 80},
-                {fixed: 'right', title: '操作', toolbar: '#barTool', width: 80}
+                {fixed: 'right', title: '操作', toolbar: '#balance_history_barTool', width: 80}
             ]],
             done: function(res){
                 this.count = allBalanceHistory.length;

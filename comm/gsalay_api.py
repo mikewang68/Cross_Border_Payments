@@ -236,14 +236,14 @@ class GSalaryAPI:
         """
         return self.make_gsalary_request("GET", "/v1/card_holders", system_id=system_id, params=params)
 
-    def update_card_holder(self, system_id,holder_id: str, data: Dict) -> Dict[str, Any]:
+    def update_card_holder(self, system_id, holder_id: str, data: Dict) -> Dict[str, Any]:
         """更新持卡人信息
         
         Args:
             holder_id: 持卡人ID
             data: 需要更新的持卡人信息
         """
-        return self.make_gsalary_request("PUT", f"/card-holders/{holder_id}",system_id, data)
+        return self.make_gsalary_request("PUT", f"/v1/card_holders/{holder_id}",system_id, data)
     
     def delete_card_holder(self, system_id,holder_id: str) -> Dict[str, Any]:
         """删除持卡人

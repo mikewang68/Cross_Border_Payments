@@ -34,14 +34,18 @@ layui.use(['table', 'form', 'layer'], function(){
         // 假设原始数据存储在变量 data 中
         var transformedData = allCardHolders.map(item => {
             // 提取 first_name 和 last_name 的值
+            const mobileCode = item.mobile_nation_code || '';
+            const mobileNum = item.mobile || '';
             const firstName = item.first_name || '';
             const lastName = item.last_name || '';
             
+            
             // 创建新对象，删除原字段并添加 name
-            const { first_name, last_name, ...rest } = item;
+            const { ...rest } = item;
             return {
             ...rest,
-            name: `${firstName}${lastName}`
+            name: `${firstName}${lastName}`,
+            phone_number: `${'(+' + mobileCode + ')'}${mobileNum}`
             };
         });
         
@@ -78,18 +82,19 @@ layui.use(['table', 'form', 'layer'], function(){
                 cols: [[
                     {field: 'card_holder_id', title: 'ID', width: 250},
                     {field: 'name', title: '姓名', width: 120},
-                    {field: 'mobile', title: '手机号码', width: 150},
+                    {field: 'phone_number', title: '手机号码', width: 150},
+                    {field: 'region', title: '地区', width: 80},
                     {field: 'email', title: '邮箱', width: 180},
                     {field: 'version', title: '平台', width: 80},
                     {field: 'create_time', title: '创建时间', width: 160},
-                    {field: 'country', title: '国家', width: 80},  
-                    {field: 'state', title: '省份/州', width: 100},
-                    {field: 'city', title: '城市', width: 100},
-                    {field: 'address', title: '详细地址', width: 200},
-                    {field: 'status', title: '状态', width: 100, templet: function(d){
+                    {field: 'bill_address_country', title: '国家', width: 80},  
+                    {field: 'bill_address_state', title: '省份/州', width: 100},
+                    {field: 'bill_address_city', title: '城市', width: 100},
+                    {field: 'bill_address', title: '详细地址', width: 200},
+                    {field: 'status', title: '状态', width: 80, templet: function(d){
                         return d.status === 'ACTIVE' ? '<span class="layui-badge layui-bg-green">激活</span>' : '<span class="layui-badge layui-bg-gray">未激活</span>';
                     }},
-                    {fixed: 'right', title: '操作', toolbar: '#barTool', width: 120}
+                    {fixed: 'right', title: '操作', toolbar: '#card_holder_barTool', width: 120}
                 ]],
                 done: function(res){
                     // 确保分页正确显示
@@ -108,31 +113,31 @@ layui.use(['table', 'form', 'layer'], function(){
         function showCardHolderDetail(cardHolderData) {
             // 构建详情内容HTML
             var content = '<div class="layui-card">' +
-                '<div class="layui-card-header">用卡人详情</div>' +
+                '<div class="layui-card-header" font-weight:900>用卡人' + (cardHolderData.name || '--') + '详情</div>' +
                 '<div class="layui-card-body">' +
                 '<table class="layui-table">' +
                 '<colgroup><col width="30%"><col width="70%"></colgroup>' +
                 '<tbody>' +
                 // '<tr><td>用户编码</td><td>' + (cardHolderData.user_code || '--') + '</td></tr>' +
-                '<tr><td>用户ID</td><td>' + (cardHolderData.user_id || '--') + '</td></tr>' +
-                '<tr><td>用户姓名</td><td>' + (cardHolderData.user_name || '--') + '</td></tr>' +
+                '<tr><td>用户ID</td><td>' + (cardHolderData.card_holder_id || '--') + '</td></tr>' +
+                '<tr><td>姓名</td><td>' + (cardHolderData.name || '--') + '</td></tr>' +
                 '<tr><td>地区</td><td>' + (cardHolderData.region || '--') + '</td></tr>' +
                 '<tr><td>邮箱</td><td>' + (cardHolderData.email || '--') + '</td></tr>' +
-                '<tr><td>手机号码</td><td>' + (cardHolderData.mobile || '--') + '</td></tr>' +
+                '<tr><td>手机号码</td><td>' + (cardHolderData.phone_number || '--') + '</td></tr>' +
                 '<tr><td>平台</td><td>' + (cardHolderData.version || '--') + '</td></tr>' +
                 '<tr><td>出生日期</td><td>' + (cardHolderData.birth || '--') + '</td></tr>' +
-                '<tr><td>国家</td><td>' + (cardHolderData.country || '--') + '</td></tr>' +  
-                '<tr><td>省/州</td><td>' + (cardHolderData.state || '--') + '</td></tr>' +
-                '<tr><td>城市</td><td>' + (cardHolderData.city || '--') + '</td></tr>' +
-                '<tr><td>地址</td><td>' + (cardHolderData.address || '--') + '</td></tr>' +
-                '<tr><td>邮编</td><td>' + (cardHolderData.postcode || '--') + '</td></tr>' +
+                '<tr><td>国家</td><td>' + (cardHolderData.bill_address_country || '--') + '</td></tr>' +  
+                '<tr><td>省/州</td><td>' + (cardHolderData.bill_address_state || '--') + '</td></tr>' +
+                '<tr><td>城市</td><td>' + (cardHolderData.bill_address_city || '--') + '</td></tr>' +
+                '<tr><td>地址</td><td>' + (cardHolderData.bill_address || '--') + '</td></tr>' +
+                '<tr><td>邮编</td><td>' + (cardHolderData.bill_address_postcode || '--') + '</td></tr>' +
                 '<tr><td>创建时间</td><td>' + (cardHolderData.create_time || '--') + '</td></tr>' +
                 '<tr><td>状态</td><td>' + (cardHolderData.status === 'ACTIVE' ? 
-                    '<span class="layui-badge layui-bg-green">正常</span>' : 
-                    '<span class="layui-badge layui-bg-gray">冻结</span>') + '</td></tr>' +
+                    '<span class="layui-badge layui-bg-green">激活</span>' : 
+                    '<span class="layui-badge layui-bg-gray">未激活</span>') + '</td></tr>' +
                 '<tr><td>Telegram ID</td><td>' + (cardHolderData.telegram_id || '--') + '</td></tr>' +
                 '</tbody></table></div></div>';
-                
+                  
             // 显示弹窗
             layer.open({
                 type: 1,
@@ -199,8 +204,12 @@ layui.use(['table', 'form', 'layer'], function(){
                         area: ['800px', '600px'],
                         content: '/card_holders/edit_page',
                         end: function(){
-                            // 重新加载表格数据
-                            location.reload();
+                            table.reload('user-table', {
+                                page: {
+                                    curr: 1 // 重新从第一页开始
+                                }
+                            });
+
                         }
                     });
                 } else if(obj.event === 'detail'){

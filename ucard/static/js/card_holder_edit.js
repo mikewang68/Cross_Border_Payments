@@ -17,16 +17,20 @@ layui.use(['form', 'layer', 'laydate'], function(){
         if (data) {
             // 使用 form.val 方法填充表单
             form.val('card-holder-edit-form', {
-                "id": data.id,
+                "card_holder_id": data.card_holder_id,
+                "first_name": data.first_name,
+                "last_name": data.last_name,
+                "version": data.version,
                 "region": data.region,
                 "birth": data.birth,
                 "email": data.email,
+                "mobile_nation_code": data.mobile_nation_code,
                 "mobile": data.mobile,
-                "country": data.country,
-                "state": data.state,
-                "city": data.city,
-                "address": data.address,
-                "postcode": data.postcode
+                "bill_address_country": data.bill_address_country,
+                "bill_address_state": data.bill_address_state,
+                "bill_address_city": data.bill_address_city,
+                "bill_address": data.bill_address,
+                "bill_address_postcode": data.bill_address_postcode
             });
         } else {
             layer.msg('获取用卡人信息失败', {icon: 2});
@@ -45,6 +49,7 @@ layui.use(['form', 'layer', 'laydate'], function(){
     // 表单提交
     form.on('submit(card-holder-edit-submit)', function(data){
         var formData = data.field;
+        transfromData = transformData(formData);
         
         // 显示加载中
         var loadIndex = layer.load(2);
@@ -52,9 +57,9 @@ layui.use(['form', 'layer', 'laydate'], function(){
         // 向服务器提交数据
         $.ajax({
             url: '/card_holders/edit',
-            type: 'POST',
+            type: 'PUT',
             contentType: 'application/json',
-            data: JSON.stringify(formData),
+            data: JSON.stringify(transfromData),
             success: function(res) {
                 layer.close(loadIndex);
                 if (res.code === 0) {
@@ -77,4 +82,31 @@ layui.use(['form', 'layer', 'laydate'], function(){
         // 阻止表单默认提交
         return false;
     });
+
+    // 转换函数
+function transformData(original) {
+    return {
+      // 保留原始字段
+        card_holder_id : original.card_holder_id,
+        version: original.version,
+        first_name: original.first_name,
+        last_name: original.last_name,
+        birth: original.birth,
+        email: original.email,
+        // 重组手机号字段
+        mobile: {
+            nation_code: original.mobile_nation_code,
+            mobile: original.mobile
+        },
+        region: original.region,
+        // 重组账单地址字段
+        bill_address: {
+            postcode: original.bill_address_postcode,
+            address: original.bill_address,
+            city: original.bill_address_city,
+            state: original.bill_address_state,
+            country: original.bill_address_country
+        }
+    };
+  }
 });
