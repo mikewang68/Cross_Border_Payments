@@ -127,11 +127,11 @@ async def fetch_info():
     for version in version_data:
 
         tasks = [
-            # card_transactions(version),
-            # balance_history(version),
+            card_transactions(version),
+            balance_history(version),
             wallet_balance(version),
-            # card_holder(version),
-            # wallet_transactions(version)
+            card_holder(version),
+            wallet_transactions(version)
         ]
         all_tasks.extend(tasks)
 

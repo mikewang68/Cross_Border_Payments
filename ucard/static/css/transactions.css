@@ -43,11 +43,6 @@
     white-space: nowrap;
 }
 
-/* 表格头部样式 */
-.card-transactions-container .layui-table-header th {
-    font-weight: bold;
-    background-color: #f2f2f2;
-}
 
 /* 按钮样式微调 */
 .card-transactions-container .layui-btn-xs {

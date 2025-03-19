@@ -144,8 +144,9 @@ def balance_history():
     balance_history = query_all_from_table('balance_history')
 
     print(f"查询到 {len(balance_history) if balance_history else 0} 条额度明细记录")
-
-    return render_template('main/balance_history.html', balance_history=balance_history)
+    # 对列表进行排序，按 transaction_time 倒序排列
+    sorted_balance_history = sorted(balance_history, key=lambda x: convert_time(x["transaction_time"]), reverse=True)
+    return render_template('main/balance_history.html', balance_history=sorted_balance_history)
 
 
 @main_bp.route('/all_cards')
