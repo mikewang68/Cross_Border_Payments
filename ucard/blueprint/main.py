@@ -199,6 +199,45 @@ def create_card_holder():
             "data": None
         })
 
+@main_bp.route('/card_holders/edit_page')
+def card_holder_edit_page():
+    """渲染用卡人编辑页面"""
+    return render_template('main/card_user_edit.html')
+
+@main_bp.route('/card_holders/edit', methods=['PUT']) 
+def card_holder_edit():
+    """处理用卡人编辑请求"""
+    try:
+        # 获取JSON数据
+        data = request.get_json()
+        card_holder_id = data.pop('card_holder_id')  # 删除json['card_holder_id']并将其赋值给card_holder_id
+        version = data.pop('version')  # 删除json['version']并将其赋值给version
+        # print(data)
+        # print(card_holder_id)
+        # print(version)
+        # 创建API实例
+        gsalary_api = GSalaryAPI()
+        # 调用API创建用卡人
+        result = gsalary_api.update_card_holder(system_id = version, holder_id=card_holder_id, data=data)  # 替换实际的system_id
+        if result['result']['result'] == 'S':
+            return jsonify({
+                "code": 0,
+                "msg": "修改成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "修改失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+
 # API endpoints
 @main_bp.route('/api/wallet/balance', methods=['GET'])
 @login_required
