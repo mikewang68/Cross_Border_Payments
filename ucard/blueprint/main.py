@@ -144,8 +144,9 @@ def balance_history():
     balance_history = query_all_from_table('balance_history')
 
     print(f"查询到 {len(balance_history) if balance_history else 0} 条额度明细记录")
-
-    return render_template('main/balance_history.html', balance_history=balance_history)
+    # 对列表进行排序，按 transaction_time 倒序排列
+    sorted_balance_history = sorted(balance_history, key=lambda x: convert_time(x["transaction_time"]), reverse=True)
+    return render_template('main/balance_history.html', balance_history=sorted_balance_history)
 
 
 @main_bp.route('/all_cards')
@@ -190,6 +191,45 @@ def create_card_holder():
             return jsonify({
                 "code": 1,
                 "msg": "添加用卡人失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+
+@main_bp.route('/card_holders/edit_page')
+def card_holder_edit_page():
+    """渲染用卡人编辑页面"""
+    return render_template('main/card_user_edit.html')
+
+@main_bp.route('/card_holders/edit', methods=['PUT']) 
+def card_holder_edit():
+    """处理用卡人编辑请求"""
+    try:
+        # 获取JSON数据
+        data = request.get_json()
+        card_holder_id = data.pop('card_holder_id')  # 删除json['card_holder_id']并将其赋值给card_holder_id
+        version = data.pop('version')  # 删除json['version']并将其赋值给version
+        # print(data)
+        # print(card_holder_id)
+        # print(version)
+        # 创建API实例
+        gsalary_api = GSalaryAPI()
+        # 调用API创建用卡人
+        result = gsalary_api.update_card_holder(system_id = version, holder_id=card_holder_id, data=data)  # 替换实际的system_id
+        if result['result']['result'] == 'S':
+            return jsonify({
+                "code": 0,
+                "msg": "修改成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "修改失败",
                 "data": None
             })
     except Exception as e:
