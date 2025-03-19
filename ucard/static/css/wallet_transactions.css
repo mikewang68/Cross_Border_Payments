@@ -3,6 +3,8 @@
     padding: 0 20px 20px;
     width: 100%;
     box-sizing: border-box;
+    max-height: 78vh;
+    overflow-y: auto;
 }
 
 /* 头部样式 */
@@ -189,10 +191,18 @@
     transform: translateY(-1px);
 }
 
-/* 表格样式 */
+/* 表格容器样式确保内容可滚动 */
+.transactions-table {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* 确保表格在弹窗中正确显示 */
 #transactions-table {
+    min-width: 800px;
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 #transactions-table th {
@@ -200,6 +210,8 @@
     font-weight: bold;
     text-align: center;
     padding: 10px;
+    word-break: keep-all;
+    white-space: nowrap;
 }
 
 #transactions-table td {
@@ -207,6 +219,8 @@
     vertical-align: middle;
     text-align: center;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* 金额显示样式 */
@@ -266,21 +280,25 @@ td:nth-child(7) {
     }
     
     .transactions-search {
-        flex-direction: column;
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
     }
     
-    .search-box, .search-type, .date-filter, .search-actions {
+    .search-input, .search-box, .search-type {
         width: 100%;
     }
     
     .date-filter {
-        flex-wrap: wrap;
+        grid-column: span 2;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
     }
     
-    .date-filter input {
-        width: calc(50% - 15px);
+    .search-actions {
+        grid-column: span 2;
+        justify-content: center;
     }
 }
 
@@ -291,4 +309,48 @@ td:nth-child(7) {
     padding: 10px 0;
     color: #999;
     font-size: 12px;
+}
+
+/* 列宽度控制 */
+#transactions-table th:nth-child(1), 
+#transactions-table td:nth-child(1) {
+    width: 16%;
+}
+
+#transactions-table th:nth-child(2), 
+#transactions-table td:nth-child(2) {
+    width: 16%;
+}
+
+#transactions-table th:nth-child(3), 
+#transactions-table td:nth-child(3) {
+    width: 16%;
+}
+
+#transactions-table th:nth-child(4), 
+#transactions-table td:nth-child(4) {
+    width: 12%;
+    text-align: right;
+    padding-right: 15px;
+    min-width: 120px;
+}
+
+#transactions-table th:nth-child(5), 
+#transactions-table td:nth-child(5) {
+    width: 12%;
+    text-align: right;
+    padding-right: 15px;
+    min-width: 120px;
+}
+
+#transactions-table th:nth-child(6), 
+#transactions-table td:nth-child(6) {
+    width: 8%;
+}
+
+#transactions-table th:nth-child(7), 
+#transactions-table td:nth-child(7) {
+    width: 20%;
+    white-space: normal;
+    word-break: break-word;
 }

@@ -70,7 +70,7 @@ def wallet_transactions():
         
         # 打印调试信息
         print(f"查询到 {len(wallet_balances) if wallet_balances else 0} 条钱包余额记录")
-        print(f"查询到 {len(wallet_transactions) if wallet_transactions else 0} 条地区记录")
+        print(f"查询到 {len(wallet_transactions) if wallet_transactions else 0} 条交易明细记录")
         
         # 如果数据为空，添加测试数据（仅用于测试前端显示）
         if not wallet_balances or len(wallet_balances) == 0:

@@ -28,25 +28,36 @@
     </div>
     
     <div class="transactions-search">
-        <div class="search-input">
-            <input type="text" placeholder="请输入流水号" id="transaction-id-input" class="layui-input">
+        <div class="search-input search-box">
+            <input type="text" id="transaction-id-input" placeholder="流水号" class="layui-input" autocomplete="off">
         </div>
-        <div class="search-input">
-            <select id="transaction-type" class="layui-select">
-                <option value="">请选择交易类型</option>
+        <div class="search-input search-type">
+            <select id="transaction-type" class="layui-select" lay-filter="transaction-type">
+                <option value="">交易类型</option>
                 <option value="income">收入</option>
                 <option value="expense">支出</option>
+                <option value="ACCOUNT_PAY">账户支付</option>
+                <option value="ACCOUNT_PAY_FEE">账户支付手续费</option>
+                <option value="BALANCE_RECHARGE">充值到资金账户</option>
+                <option value="BALANCE_RECHARGE_FEE">充值手续费</option>
+                <option value="EXCHANGE_OUT">换汇支出</option>
+                <option value="EXCHANGE_IN">换汇买入</option>
+                <option value="ACCOUNT_PAY_REVERT">账户支付退回</option>
+                <option value="MANUAL">运营手动调账</option>
+                <option value="CARD_PAYMENT">虚拟卡交易结算</option>
+                <option value="CARD_REFUND">虚拟卡交易退款</option>
+                <option value="OTHER">其他</option>
             </select>
         </div>
-        <div class="date-filter">
-            <input type="text" placeholder="开始日期" class="layui-input" id="date-start" readonly>
-            <span class="date-separator">-</span>
-            <input type="text" placeholder="结束日期" class="layui-input" id="date-end" readonly>
+        <div class="search-input date-filter">
+            <input type="text" id="date-start" placeholder="起始日期" class="layui-input" autocomplete="off">
+            <span class="date-separator">至</span>
+            <input type="text" id="date-end" placeholder="结束日期" class="layui-input" autocomplete="off">
         </div>
         <div class="search-actions">
-            <button class="layui-btn search-btn" id="search-btn">搜索</button>
-            <button class="layui-btn layui-btn-primary export-btn" id="export-btn">导出</button>
-            <button class="layui-btn layui-btn-primary clear-btn" id="clear-btn">重置</button>
+            <button type="button" class="layui-btn layui-btn-normal" id="search-btn">搜索</button>
+            <button type="button" class="layui-btn" id="export-btn">导出</button>
+            <button type="button" class="layui-btn layui-btn-primary" id="clear-btn">重置</button>
         </div>
     </div>
     
