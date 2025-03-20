@@ -9,7 +9,7 @@ layui.use(['table', 'form', 'layer'], function(){
     var table = layui.table;
     var form = layui.form;
     var layer = layui.layer;
-    var $ = layui.jquery;
+    var $ = layui.jquery; // 使用jQuery
     
     try {
         // 获取后端传递的数据

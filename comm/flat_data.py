@@ -1,14 +1,14 @@
 # 用于格式化入库数据
 
 from datetime import datetime
-from utils import flatten_dict
+from comm.utils import flatten_dict
 
 def flat_data(version,json_data, p1=None, p2=None):
 
     if p1 is not None and p2 is not None:
         # 如果传入了 p1 和 p2，使用它们提取数据列表
         data_list = json_data[f'{p1}'][f'{p2}']
-        print('data_list:', data_list)
+        # print('data_list:', data_list)
     elif p1 is not None and p2 is None:
         # 如果传入了 p1
         data = json_data[f'{p1}']
@@ -31,7 +31,7 @@ def flat_data(version,json_data, p1=None, p2=None):
 
     flattened_records = []
     for data in data_list:
-        print(data)
+        # print(data)
 
         flat_data = flatten_dict(data)
         current_time = datetime.now()

@@ -1,0 +1,82 @@
+<div class="layui-fluid cards-page">
+    <div class = "layui-card">
+        <div class="layui-card-header">所有卡</div> 
+        <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="cardsSearchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">卡号后四位</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="card_last_digits" placeholder="请输入卡号后四位" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">平台</label>
+                        <div class="layui-input-inline">
+                            <select name="version">
+                                <option value="">全部</option>
+                                <option value="J1">J1</option>
+                                <option value="J2">J2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- 搜索 重置 -->
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- 表格容器 -->
+            <div class="table-container">
+                <table id="cards-table" lay-filter="cards-table"></table>
+            </div>
+
+            <!-- 表格工具栏 -->
+            <script type="text/html" id="toolbar_cards">
+            {% raw %}
+                <div class="layui-btn-container">
+                    <div class="layui-table-tool-self">
+                        <div class="layui-inline" title="筛选列" lay-event="LAYTABLE_COLS">
+                            <i class="layui-icon layui-icon-cols"></i>
+                        </div>
+                        <div class="layui-inline" title="导出" lay-event="LAYTABLE_EXPORT">
+                            <i class="layui-icon layui-icon-export"></i>
+                        </div>
+                    </div>
+                </div>
+            {% endraw %}
+            </script>
+
+            <script type="text/html" id="balance_history_barTool">
+            {% raw %}
+                <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+            {% endraw %}
+            </script>
+        </div>
+    </div>
+
+    <!-- 保存后端传递的数据 -->
+    <script id="cards-data" type="text/html">
+        {{ cards_data|tojson|safe }};
+    </script>
+    <script id="card-holders-data" type="application/json">
+        {{ card_holders|tojson|safe }}
+    </script>
+</div>
+
+<!-- 引入用卡人CSS和JS -->
+<link rel="stylesheet" href="/static/css/cards.css">
+<script src="/static/js/cards.js"></script> 

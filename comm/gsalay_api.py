@@ -262,9 +262,9 @@ class GSalaryAPI:
         """
         return self.make_gsalary_request("GET", f"/cards/{card_id}/quota")
 
-    def get_product_codes(self) -> Dict[str, Any]:
+    def get_product_codes(self, system_id) -> Dict[str, Any]:
         """获取可用产品代码列表"""
-        return self.make_gsalary_request("GET", "/cards/products")
+        return self.make_gsalary_request("GET", "/v1/card_support/products",system_id)
 
     def apply_new_card(self, system_id,data: Dict) -> Dict[str, Any]:
         """申请新卡
@@ -305,6 +305,13 @@ class GSalaryAPI:
             params: 查询参数，可包含持卡人ID、状态等
         """
         return self.make_gsalary_request("GET", "/v1/cards", system_id=system_id, params=params)
+    
+    def query_cards_info(self, system_id,card_id: str) -> Dict[str, Any]:
+        """查询卡片信息     
+        Args:
+            card_id: 卡片ID,用于查询卡片更详细的信息
+        """
+        return self.make_gsalary_request("GET", f"/cards/{card_id}", system_id=system_id)
 
 
     def modify_card(self, system_id,card_id: str, data: Dict) -> Dict[str, Any]:

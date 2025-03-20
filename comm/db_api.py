@@ -107,6 +107,53 @@ def update_database(table_name, set_columns_values, where_conditions):
         cursor.close()
         conn.close()
 
+# 对于单个表中的所有记录进行更新/暂时操作
+# table_name: 表名，set_columns_values: 更新的字段和值，condition1: 条件字段名1，condition2: 条件字段名2(如果表中含有两个主键，可添加condition2)
+def batch_update_database(table_name, set_columns_values, condition1=None, condition2=None):
+    conn = create_db_connection()
+    if conn is None:
+        logger.error("无法建立数据库连接，程序退出。")
+        return False
+    cursor = conn.cursor()
+    try:  
+        for i in set_columns_values:
+            # print(i)
+            if condition1 is not None and condition2 is None:
+                conditiondata1 = i.pop(condition1)
+            else:
+                conditiondata1 = i.pop(condition1)
+                conditiondata2 = i.pop(condition2)
+            # 构建set子句
+            set_clauses = []
+            values = []
+            for col, val in i.items():
+                set_clauses.append(f"{col} = %s")
+                values.append(val)
+            set_str = ", ".join(set_clauses)  
+            # 构建where子句
+            where_clause = []
+            if condition2 is None:
+                where_clause.append(f"{condition1} = %s")
+                values.append(conditiondata1)
+                where_str = ''.join(where_clause)
+            else:
+                where_clause.append(f"{condition1} = %s")
+                where_clause.append(f"{condition2} = %s")
+                values.append(conditiondata1)
+                values.append(conditiondata2)
+                where_str = ' AND '.join(where_clause)
+            
+            sql = f"UPDATE {table_name} SET {set_str} WHERE {where_str}"
+            cursor.execute(sql, values)
+            conn.commit()
+        return True
+    except pymysql.Error as err:
+        logger.error(f"更新数据时出现错误: {err}")
+        return False  
+    finally:
+        cursor.close()
+        conn.close()
+
 def query_database(table_name, column_name, query_value):
     conn = create_db_connection()
     if conn is None:

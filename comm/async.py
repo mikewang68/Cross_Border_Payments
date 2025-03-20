@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from db_api import insert_database, update_database
+from db_api import insert_database, update_database, batch_update_database
 from flat_data import flat_data
 from db_api import query_database
 from db_api import query_field_from_table
@@ -67,7 +67,7 @@ async def wallet_transactions(version):
         logger.error(f"插入交易明细时出错: {e}")
 
 # 插入用户信息
-async def card_holder(version):
+async def card_holder_insert(version):
     try:
         logger.info(f'插入{version}平台用户信息')
         data = gsalary.get_card_holders(version)
@@ -75,6 +75,16 @@ async def card_holder(version):
         insert_database('card_holder', flatten_data)
     except Exception as e:
         logger.error(f"插入用户信息时出错: {e}")
+
+# 对于card_holder表，更新所有用户信息
+async def card_holder_update(version):
+    try:
+        logger.info(f'更新{version}平台用户信息')
+        data = gsalary.get_card_holders(version)
+        flatten_data = flat_data(version, data, 'data', 'card_holders')
+        batch_update_database('card_holder', flatten_data, condition1='card_holder_id') 
+    except Exception as e:
+        logger.error(f"更新用户信息时出错: {e}")
 
 # 插入余额明细
 async def balance_history(version):
@@ -91,7 +101,7 @@ async def balance_history(version):
 async def wallet_balance(version):
     logger.info(f'更新{version}钱包余额明细')
     try:
-
+        
         params = {
             'currency': 'USD'
         }
@@ -110,7 +120,6 @@ async def wallet_balance(version):
         set = {
             'amount':  f'{amo}',
             'available': f'{ava}'
-
         }
 
         update_database('wallet_balance', set,where) #表名
@@ -127,11 +136,12 @@ async def fetch_info():
     for version in version_data:
 
         tasks = [
-            # card_transactions(version),
-            # balance_history(version),
+            card_transactions(version),
+            balance_history(version),
             wallet_balance(version),
-            # card_holder(version),
-            # wallet_transactions(version)
+            card_holder_insert(version),
+            wallet_transactions(version),
+            batch_update_database(version)
         ]
         all_tasks.extend(tasks)
 
