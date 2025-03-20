@@ -15,28 +15,94 @@ let searchParams = {
     transactionType: ''
 };
 
+// 交易类型映射表
+const TXN_TYPE_MAP = {
+    'ACCOUNT_PAY': '账户支付',
+    'ACCOUNT_PAY_FEE': '账户支付手续费',
+    'BALANCE_RECHARGE': '充值到资金账户',
+    'BALANCE_RECHARGE_FEE': '充值手续费',
+    'EXCHANGE_OUT': '换汇支出',
+    'EXCHANGE_IN': '换汇买入',
+    'ACCOUNT_PAY_REVERT': '账户支付退回',
+    'ACCOUNT_PAY_FEE_REVERT': '账户支付手续费退回',
+    'EXCHANGE_FEE': '换汇手续费',
+    'EXCHANGE_FEE_REVERT': '换汇手续费退回',
+    'MANUAL': '运营手动调账',
+    'CARD_PAYMENT': '虚拟卡交易结算',
+    'CARD_PAYMENT_FEE': '虚拟卡交易结算手续费',
+    'CARD_PAYMENT_FEE_REVERT': '虚拟卡交易手续费退回',
+    'CARD_REFUND': '虚拟卡交易退款',
+    'CARD_REFUND_FEE': '虚拟卡交易退款手续费',
+    'CARD_PAY_REVERT': '虚拟卡交易撤销',
+    'CARD_REFUND_REVERT': '虚拟卡交易退款撤销',
+    'CARD_REFUND_FEE_REVERT': '虚拟卡交易退款手续费退回',
+    'CARD_PRE_AUTH': '虚拟卡交易授权',
+    'CARD_PRE_AUTH_REVERT': '虚拟卡交易授权撤销',
+    'CARD_PRE_AUTH_FEE': '虚拟卡交易授权手续费',
+    'CHARGEBACK': 'Chargeback手续费',
+    'CARD_BALANCE_ADJUST': '卡余额调整',
+    'CARD_INIT_FEE': '虚拟卡开卡手续费',
+    'CARD_INIT_FEE_REVERT': '创建虚拟卡手续费退回',
+    'CARD_SERVICE_FEE': '虚拟卡服务费',
+    'CARD_CANCEL_FEE': '销卡手续费',
+    'OTHER': '其他'
+};
+
+// 获取交易类型的中文描述
+function getTxnTypeText(txnType) {
+    if (!txnType) return '-';
+    return TXN_TYPE_MAP[txnType] || txnType;
+}
+
 // 初始化页面
 function initTransactionsPage() {
+    console.log('初始化交易明细页面');
+    
     // 获取钱包数据
     if (typeof walletDataJson !== 'undefined') {
-        walletData = JSON.parse(walletDataJson);
-        currentCurrency = walletData.currency_code || '';
-        updateCurrencyInfo(walletData);
-        updateBalanceSummary(walletData);
+        try {
+            walletData = JSON.parse(walletDataJson);
+            currentCurrency = walletData.currency_code || '';
+            updateCurrencyInfo(walletData);
+            updateBalanceSummary(walletData);
+            console.log('已加载钱包数据:', walletData);
+        } catch (e) {
+            console.error('解析钱包数据错误:', e);
+        }
     }
 
     // 获取交易数据
     if (typeof transactionsDataJson !== 'undefined') {
-        transactionData = JSON.parse(transactionsDataJson) || [];
-        renderTransactionList(filterTransactions());
+        try {
+            transactionData = JSON.parse(transactionsDataJson) || [];
+            console.log('已加载交易数据:', transactionData.length, '条记录');
+            
+            // 初始化后立即渲染交易列表
+            let filteredTransactions = filterTransactions();
+            console.log('筛选后的交易数据:', filteredTransactions.length, '条记录');
+            renderTransactionList(filteredTransactions);
+        } catch (e) {
+            console.error('解析交易数据错误:', e);
+            transactionData = [];
+            renderTransactionList([]);
+        }
+    } else {
+        console.warn('未找到交易数据变量');
+        renderTransactionList([]);
     }
 
     // 获取区域数据
     if (typeof regionDataJson !== 'undefined') {
-        regionData = JSON.parse(regionDataJson) || {};
+        try {
+            regionData = JSON.parse(regionDataJson) || {};
+            console.log('已加载区域数据');
+        } catch (e) {
+            console.error('解析区域数据错误:', e);
+            regionData = {};
+        }
     }
 
-    // 初始化日期选择器
+    // 初始化日期选择器和表单
     layui.use(['laydate', 'form'], function() {
         const laydate = layui.laydate;
         const form = layui.form;
@@ -59,6 +125,18 @@ function initTransactionsPage() {
         
         // 渲染表单元素
         form.render('select');
+        
+        // 确保交易类型下拉框正常渲染
+        const transactionTypeSelect = document.querySelector('#transaction-type');
+        if (transactionTypeSelect) {
+            // 添加layui-form class以确保layui可以正确渲染下拉框
+            if (!transactionTypeSelect.classList.contains('layui-select')) {
+                transactionTypeSelect.classList.add('layui-select');
+            }
+            
+            // 确保所有交易类型都有对应的选项
+            form.render('select');
+        }
     });
 
     // 绑定事件
@@ -177,11 +255,25 @@ function bindEvents() {
 function filterTransactions() {
     if (!transactionData || !transactionData.length) return [];
     
-    return transactionData.filter(function(transaction) {
+    // 先筛选出与当前钱包币种和平台匹配的交易记录
+    let filteredByWallet = transactionData.filter(function(transaction) {
+        // 检查金额货币是否匹配
+        const currencyMatch = transaction.amount_currency === (currentCurrency || walletData.currency || walletData.currency_code);
+        
+        // 检查平台是否匹配（如果选择了特定平台）
+        let versionMatch = true;
+        if (walletData && walletData.version && walletData.version !== '全部') {
+            versionMatch = transaction.version === walletData.version;
+        }
+        
+        return currencyMatch && versionMatch;
+    });
+    
+    // 再根据搜索条件进一步筛选
+    let filteredBySearch = filteredByWallet.filter(function(transaction) {
         let matchTransactionId = true;
         let matchTransactionType = true;
         let matchDateRange = true;
-        let matchVersion = true;
         
         // 流水号搜索
         if (searchParams.transactionId) {
@@ -192,15 +284,15 @@ function filterTransactions() {
         // 交易类型搜索
         if (searchParams.transactionType) {
             if (searchParams.transactionType === 'income') {
+                // 收入 - 金额为正
                 matchTransactionType = parseFloat(transaction.amount || 0) > 0;
             } else if (searchParams.transactionType === 'expense') {
+                // 支出 - 金额为负
                 matchTransactionType = parseFloat(transaction.amount || 0) < 0;
+            } else {
+                // 特定交易类型匹配
+                matchTransactionType = transaction.txn_type === searchParams.transactionType;
             }
-        }
-        
-        // 平台(版本)筛选
-        if (walletData && walletData.version && walletData.version !== '全部') {
-            matchVersion = transaction.version === walletData.version;
         }
         
         // 日期范围搜索
@@ -218,8 +310,17 @@ function filterTransactions() {
             matchDateRange = transactionDate <= endDate;
         }
         
-        return matchTransactionId && matchTransactionType && matchDateRange && matchVersion;
+        return matchTransactionId && matchTransactionType && matchDateRange;
     });
+    
+    // 按交易时间倒序排序（最新的在前）
+    filteredBySearch.sort(function(a, b) {
+        const timeA = new Date(a.transaction_time || a.transaction_date || 0);
+        const timeB = new Date(b.transaction_time || b.transaction_date || 0);
+        return timeB - timeA; // 倒序排列
+    });
+    
+    return filteredBySearch;
 }
 
 // 渲染交易列表
@@ -249,8 +350,9 @@ function renderTransactionList(transactions) {
     const tableBody = document.querySelector('#transactions-table tbody');
     if (!tableBody) return;
     
-    // 如果没有交易数据，不显示任何内容
+    // 如果没有交易数据，显示空数据提示并渲染分页
     if (!transactions || !transactions.length) {
+        tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px;">暂无交易数据</td></tr>`;
         renderPagination(0);
         return;
     }
@@ -279,11 +381,13 @@ function renderTransactionList(transactions) {
         // 确定金额的正负 (收入为正, 支出为负)
         const amountValue = parseFloat(transaction.amount || 0);
         const amountClass = amountValue >= 0 ? 'positive-amount' : 'negative-amount';
-        const amountDisplay = formatAmount(amountValue);
+        const amountCurrency = transaction.amount_currency || '';
+        const amountDisplay = formatAmount(amountValue) + (amountCurrency ? ' ' + amountCurrency : '');
         
         // 账户金额
         const afterBalanceAmount = parseFloat(transaction.after_balance_amount || 0);
-        const balanceDisplay = formatAmount(afterBalanceAmount);
+        const afterBalanceCurrency = transaction.after_balance_currency || '';
+        const balanceDisplay = formatAmount(afterBalanceAmount) + (afterBalanceCurrency ? ' ' + afterBalanceCurrency : '');
         
         // 获取交易类型
         const txnType = transaction.txn_type || '-';
@@ -293,12 +397,12 @@ function renderTransactionList(transactions) {
         
         row.innerHTML = `
             <td>${transactionTime}</td>
-            <td>${transaction.transaction_id || '-'}</td>
-            <td>${txnType}</td>
+            <td title="${transaction.transaction_id || '-'}">${transaction.transaction_id || '-'}</td>
+            <td>${getTxnTypeText(txnType)}</td>
             <td class="${amountClass}">${amountDisplay}</td>
             <td>${balanceDisplay}</td>
             <td>${version}</td>
-            <td>${transaction.remark || '-'}</td>
+            <td title="${transaction.remark || '-'}">${transaction.remark || '-'}</td>
         `;
         
         tableBody.appendChild(row);
@@ -357,12 +461,16 @@ function exportTransactionData() {
                 second: '2-digit'
             }).replace(/\//g, '-') : '-';
         
+        // 添加货币单位
+        const amountWithCurrency = `${formatAmount(transaction.amount || 0)} ${transaction.amount_currency || ''}`;
+        const balanceWithCurrency = `${formatAmount(transaction.after_balance_amount || 0)} ${transaction.after_balance_currency || ''}`;
+        
         const row = [
             transactionTime,
             transaction.transaction_id || '-',
-            transaction.txn_type || '-',
-            formatAmount(transaction.amount || 0),
-            formatAmount(transaction.after_balance_amount || 0),
+            getTxnTypeText(transaction.txn_type || '-'),
+            amountWithCurrency,
+            balanceWithCurrency,
             transaction.version || '-',
             transaction.remark || '-'
         ];
@@ -400,7 +508,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function openTransactionDetails(currencyData) {
     // 保存当前货币数据
     walletData = currencyData;
-    currentCurrency = currencyData.currency_code;
+    currentCurrency = currencyData.currency_code || currencyData.currency || '';
+    
+    console.log('打开交易明细弹窗:', currentCurrency, '平台:', currencyData.version);
+    console.log('钱包数据:', walletData);
     
     layui.use(['layer'], function() {
         const layer = layui.layer;
@@ -411,69 +522,72 @@ function openTransactionDetails(currencyData) {
             title += ` (平台: ${currencyData.version})`;
         }
         
-        // 显示加载中
-        const loadingIndex = layer.load(1, {
-            shade: [0.1, '#fff']
-        });
-        
-        // 自动刷新交易数据
-        fetch(`/api/wallet_transactions?currency=${currencyData.currency_code}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`网络请求失败: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                layer.close(loadingIndex);
-                
-                if (data && data.status === 'success') {
-                    // 更新交易数据
-                    transactionData = data.data || [];
-                } else if (data) {
-                    console.warn('获取交易数据不成功:', data.message || '未知错误');
-                }
-                
-                // 打开弹窗
-                openTransactionsPopup(layer, title, currencyData);
-            })
-            .catch(error => {
-                layer.close(loadingIndex);
-                console.error('自动刷新交易数据请求出错:', error.message);
-                
-                // 失败时尝试使用页面上已有的数据
-                if (typeof transactionsDataJson !== 'undefined') {
-                    try {
-                        transactionData = JSON.parse(transactionsDataJson) || [];
-                    } catch (e) {
-                        console.error('解析现有交易数据失败:', e);
-                        transactionData = [];
-                    }
-                }
-                
-                // 出错时仍然打开弹窗但使用现有数据
-                openTransactionsPopup(layer, title, currencyData);
-            });
-    });
-}
-
-// 打开交易弹窗 - 提取为单独函数以避免代码重复
-function openTransactionsPopup(layer, title, currencyData) {
-    layer.open({
-        type: 1,
-        title: title,
-        area: ['900px', '80%'],
-        shadeClose: true,
-        content: $('#transactionsContainer'),
-        success: function() {
-            // 弹窗打开后初始化页面
-            updateCurrencyInfo(currencyData);
-            updateBalanceSummary(currencyData);
-            bindEvents();
-            renderTransactionList(filterTransactions());
+        // 直接使用页面上已有的数据
+        if (typeof transactionsDataJson !== 'undefined') {
+            try {
+                transactionData = JSON.parse(transactionsDataJson) || [];
+                console.log('加载交易数据:', transactionData.length, '条记录');
+            } catch (e) {
+                console.error('解析交易数据失败:', e);
+                transactionData = [];
+            }
         }
+        
+        // 打开弹窗
+        layer.open({
+            type: 1,
+            title: title,
+            area: ['90%', '80%'], // 修改为相对宽度而非固定宽度
+            maxWidth: 1200, // 设置最大宽度
+            shadeClose: true,
+            maxmin: true, // 允许最大化
+            content: $('#transactionsContainer'),
+            success: function(layero, index) {
+                // 调整弹窗位置，确保在屏幕中居中
+                $(layero).css({
+                    'top': '50%',
+                    'margin-top': -$(layero).height() / 2
+                });
+                
+                // 弹窗打开后初始化页面，先更新钱包信息，再处理交易数据
+                updateCurrencyInfo(currencyData);
+                updateBalanceSummary(currencyData);
+                
+                // 绑定事件
+                bindEvents();
+                
+                // 根据当前钱包币种和平台筛选并渲染交易列表
+                searchParams = {
+                    startDate: '',
+                    endDate: '',
+                    transactionId: '',
+                    transactionType: ''
+                };
+                
+                // 重置搜索框值
+                const transactionIdInput = document.querySelector('#transaction-id-input');
+                const transactionTypeSelect = document.querySelector('#transaction-type');
+                const dateStartInput = document.querySelector('#date-start');
+                const dateEndInput = document.querySelector('#date-end');
+                
+                if (transactionIdInput) transactionIdInput.value = '';
+                if (transactionTypeSelect) transactionTypeSelect.value = '';
+                if (dateStartInput) dateStartInput.value = '';
+                if (dateEndInput) dateEndInput.value = '';
+                
+                // 筛选并渲染交易列表
+                const filteredTransactions = filterTransactions();
+                console.log('筛选条件 - 币种:', currentCurrency, '平台:', currencyData.version);
+                console.log('筛选后交易记录数:', filteredTransactions.length);
+                if (filteredTransactions.length > 0) {
+                    console.log('示例交易记录:', filteredTransactions[0]);
+                }
+                
+                renderTransactionList(filteredTransactions);
+            }
+        });
     });
 }
 
-// 导出函数
+// 导出函数到全局，以供wallet_balance.js调用
 window.openTransactionDetails = openTransactionDetails;
