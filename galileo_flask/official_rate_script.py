@@ -85,9 +85,9 @@ def google_fetch_exchange_rate(currency):
     
 def xe_fetch_exchange_rate(currency):
     url = f"https://www.xe.com/currencyconverter/convert/?Amount=1&From={currency}&To=USD"
-    # user_agent = random.choice(user_agents)
+    user_agent = random.choice(user_agents)
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": f"{user_agent}"
     }
     response = requests.get(url, headers=headers, proxies=PROXY)
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -100,20 +100,29 @@ def xe_fetch_exchange_rate(currency):
     except AttributeError:
         return None
     
-def main():
-    for currency in currencies:
-        rate = google_fetch_exchange_rate(currency)
-        if rate is not None:
-            update_exchange_rate(currency, rate)
-            print(currency + '--USD:' + str(rate)+ ' (' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") +')')
-            print(currency + '已写入数据库')
-        else:
-            print(f"Failed to fetch rate for {currency}")
-        i = random.randint(10,20)
-        time.sleep(i)
-
-if __name__ == "__main__":
-    main()
+def fetch_exchange_rate(channel, currency):
+    if channel == 'google':
+        for currency in currencies:
+            rate = google_fetch_exchange_rate(currency)
+            if rate is not None:
+                update_exchange_rate(currency, rate)
+                print(currency + '--USD:' + str(rate)+ ' (' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") +')')
+                print(currency + '已写入数据库')
+            else:
+                print(f"Failed to fetch rate for {currency}")
+            i = random.randint(20,40)
+            time.sleep(i)
+    else:
+        for currency in currencies:
+            rate = xe_fetch_exchange_rate(currency)
+            if rate is not None:
+                update_exchange_rate(currency, rate)
+                print(currency + '--USD:' + str(rate)+ ' (' + datetime.now().strftime("%Y-%m-%d %H:%M:%S") +')')
+                print(currency + '已写入数据库')
+            else:
+                print(f"Failed to fetch rate for {currency}")
+            i = random.randint(20,40)
+            time.sleep(i)
 
 
     
