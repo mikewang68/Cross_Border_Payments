@@ -108,7 +108,7 @@ def update_database(table_name, set_columns_values, where_conditions):
         conn.close()
 
 # 对于单个表中的所有记录进行更新/暂时操作
-# table_name: 表名，set_columns_values: 更新的字段和值，condition1: 条件字段名1，condition2: 条件字段名2(如果表中含有两个主键，可添加condition2)
+# table_name: 表名，set_columns_values: 数据，condition1: 条件字段名1，condition2: 条件字段名2(如果表中含有两个主键，可添加condition2)
 def batch_update_database(table_name, set_columns_values, condition1=None, condition2=None):
     conn = create_db_connection()
     if conn is None:
