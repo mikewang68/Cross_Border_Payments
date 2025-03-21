@@ -34,7 +34,7 @@ def insert_database(table_name, records):
     if conn is None:
         logger.error("无法建立数据库连接，程序退出。")
         return
-
+    print(records)
     cursor = conn.cursor()
 
     # 获取表的实际字段列表

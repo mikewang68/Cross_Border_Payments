@@ -41,7 +41,7 @@ layui.use(['table', 'form', 'layer'], function(){
             
             
             // 创建新对象，删除原字段并添加 name
-            const { ...rest } = item;
+            const {...rest } = item;
             return {
             ...rest,
             name: `${firstName}${lastName}`,
@@ -55,9 +55,9 @@ layui.use(['table', 'form', 'layer'], function(){
         // console.log("用卡人数据:", allCardHolders);
         
         // 如果数据为null或undefined，初始化为空数组
-        if (!allCardHolders) {
+        if (!transformedData) {
             console.warn("数据为null或undefined，初始化为空数组");
-            allCardHolders = [];
+            transformedData = [];
         }
         
         // 初始化表单组件
@@ -98,11 +98,11 @@ layui.use(['table', 'form', 'layer'], function(){
                 ]],
                 done: function(res){
                     // 确保分页正确显示
-                    this.count = allCardHolders.length;
+                    this.count = transformedData.length;
                     console.log("表格渲染完成，数据条数：", this.count);
                     
                     // 如果没有数据，显示提示
-                    if(allCardHolders.length === 0) {
+                    if(transformedData.length === 0) {
                         layer.msg('暂无用卡人数据', {icon: 0});
                     }
                 }
@@ -224,7 +224,7 @@ layui.use(['table', 'form', 'layer'], function(){
                 console.log("搜索表单提交，数据：", formData);
                 
                 // 根据表单数据筛选用卡人记录
-                var filteredData = allCardHolders.filter(function(item) {
+                var filteredData = transformedData.filter(function(item) {
                     // 按姓名搜索
                     if (formData.name && item.user_name && !item.user_name.toLowerCase().includes(formData.name.toLowerCase())) {
                         return false;

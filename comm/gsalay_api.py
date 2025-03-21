@@ -311,7 +311,7 @@ class GSalaryAPI:
         Args:
             card_id: 卡片ID,用于查询卡片更详细的信息
         """
-        return self.make_gsalary_request("GET", f"/cards/{card_id}", system_id=system_id)
+        return self.make_gsalary_request("GET", f"/v1/cards/{card_id}", system_id=system_id)
 
 
     def modify_card(self, system_id,card_id: str, data: Dict) -> Dict[str, Any]:
