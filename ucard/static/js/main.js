@@ -17,7 +17,8 @@ layui.use(['element', 'layer'], function(){
             'card_users',
             'transactions',
             'balance_history',
-            'wallet_balance'
+            'wallet_balance',
+            'cards'
         ];
         
         // 检查功能是否已实现

@@ -317,13 +317,13 @@ def api_wallet_data():
 def cards():
     try: 
         # 查询所有卡数据
-        cards= query_all_from_table('cards')
+        cards_all_info = query_all_from_table('cards_all_info')
         card_holders = query_all_from_table('card_holder')
         # 打印调试信息
-        print(f"查询到 {len(cards) if cards else 0} 条卡记录")
-        print(f"查询到 {len(card_users) if card_users else 0} 条用卡人记录")
-        return render_template('main/cards.html', cards=cards, card_holders=card_holders)
+        print(f"查询到 {len(cards_all_info) if cards_all_info else 0} 条卡记录")
+        print(f"查询到 {len(card_holders) if card_holders else 0} 条用卡人记录")
+        return render_template('main/cards.html', cards_all_info=cards_all_info, card_holders=card_holders)
     except Exception as e:
         print(f"查询卡数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
-        return render_template('main/cards.html', cards=[], card_holders=[])
+        return render_template('main/cards.html', cards_all_info=[], card_holders=[])

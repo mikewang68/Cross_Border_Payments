@@ -27,6 +27,14 @@
                             </select>
                         </div>
                     </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">用卡人</label>
+                        <div class="layui-input-inline">
+                            <select name="card_holder_id" id="card_holder_select">
+                                <option value="">全部</option>
+                            </select>
+                        </div>
+                    </div>
                     <!-- 搜索 重置 -->
                     <div class="layui-inline">
                         <button class="layui-btn" lay-submit lay-filter="formSearch">
@@ -38,6 +46,15 @@
                     </div>
                 </div>
             </form>
+
+             <!-- 表格工具栏 -->
+             <script type="text/html" id="toolbar_card_list">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add_card">
+                        <i class="layui-icon">&#xe654;</i> 开卡
+                    </button>
+                </div>
+            </script>
 
             <!-- 表格容器 -->
             <div class="table-container">
@@ -60,9 +77,21 @@
             {% endraw %}
             </script>
 
-            <script type="text/html" id="balance_history_barTool">
+            <!-- 行工具栏 -->
+            <script type="text/html" id="card_barTool">
             {% raw %}
-                <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+                <div class="card-operations">
+                    <div class="operation-row">
+                        <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+                        <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="adjust">调额</a>
+                        <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="set_limit">设置限额</a> 
+                    </div>
+                    <div class="operation-row">
+                        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="cancel">销卡</a>
+                        <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="freeze">冻结</a>
+                        <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit_nickname">编辑昵称</a>
+                    </div>
+                </div>
             {% endraw %}
             </script>
         </div>
@@ -70,7 +99,7 @@
 
     <!-- 保存后端传递的数据 -->
     <script id="cards-data" type="text/html">
-        {{ cards_data|tojson|safe }};
+        {{ cards_all_info|tojson|safe }}
     </script>
     <script id="card-holders-data" type="application/json">
         {{ card_holders|tojson|safe }}
