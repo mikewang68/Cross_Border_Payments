@@ -56,6 +56,7 @@ async def card_transactions(version):
         insert_database('card_transactions', flatten_data)
     except Exception as e:
         logger.error(f"插入交易明细时出错: {e}")
+
 # 插入钱包交易明细
 async def wallet_transactions(version):
     try:
@@ -119,6 +120,7 @@ async def cards_info_insert(version):
         insert_database('cards_info', data)
     except Exception as e:
         logger.error(f"插入卡信息时出错: {e}")
+
 # 对于cards_info，获取具体卡的详细信息，更新到cards_info表中
 async def cards_info_update(version):
     try:
@@ -132,6 +134,7 @@ async def cards_info_update(version):
         batch_update_database('cards_info', data, condition1='card_id')
     except Exception as e:
         logger.error(f"更新卡信息时出错: {e}")
+
 # 对于cards_secure_info，获取所有卡的机密信息，插入到cards_secure_info表中
 async def cards_secure_info_insert(version):
     try:
@@ -146,6 +149,7 @@ async def cards_secure_info_insert(version):
         insert_database('cards_secure_info', data)
     except Exception as e:
         logger.error(f"插入卡机密信息时出错: {e}")
+
 # 对于cards_secure_info，获取所有卡的机密信息，更新到cards_secure_info表中
 async def cards_secure_info_update(version):
     try:
