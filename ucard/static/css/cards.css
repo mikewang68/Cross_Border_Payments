@@ -7,15 +7,31 @@
     margin-top: 15px;
     width: 100%;
     overflow-x: auto;
+    position: relative;
 }
 
 /* 搜索表单样式 */
 .cards-page .layui-form-pane .layui-form-label {
-    width: 80px;
+    width: 120px;
+    overflow: visible;
+    white-space: nowrap;
+    text-overflow: clip;
 }
 
 .cards-page .layui-form-pane .layui-input-inline {
     width: 180px;
+}
+
+/* 禁用表格固定高度 */
+/* .cards-page .layui-table-view {
+    height: auto !important;
+    margin-bottom: 10px;
+} */
+
+/* 防止分页栏被遮挡 */
+.cards-page .layui-card-body {
+    padding-bottom: 20px;
+    overflow: visible;
 }
 
 /* 卡片样式 */
@@ -39,14 +55,27 @@
 }
 
 .cards-page .list-card .card-number {
-    font-size: 12px;
-    margin-bottom: 5px;
+    font-size: 18px;
+    margin-bottom: 1px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .cards-page .list-card .card-currency {
     position: absolute;
     top: 10px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 3px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+/* 卡片尾号样式 */
+.cards-page .list-card .card-last-digits {
+    position: absolute;
+    bottom: 10px;
     right: 10px;
     background: rgba(255, 255, 255, 0.2);
     padding: 3px 5px;
@@ -71,15 +100,26 @@
 
 /* 状态标签样式 */
 .cards-page .layui-badge {
-    padding: 3px 8px;
+    width: 36px;
+    height: 22px;
+    align-content: center;
+    padding: 0px 5px;
     font-size: 12px;
 }
 
 /* 表格内容溢出处理 */
-.cards-page .layui-table-cell {
+.cards-page td.layui-table-cell {
+    height: 120px;
+    line-height: 22px;
+    padding: 8px 12px;
+    position: relative;
+    box-sizing: border-box;
+    /* align-items: center; */
+    align-content: center;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    
 }
 
 /* 表格行悬停效果 */
@@ -90,6 +130,33 @@
 /* 工具栏按钮间距 */
 .cards-page .layui-btn + .layui-btn {
     margin-left: 5px;
+}
+
+/* 按钮样式微调 */
+/* .cards-page .layui-btn-xs {
+    padding: 0 8px;
+    height: 22px;
+    line-height: 22px;
+} */
+
+/* 确保下拉菜单正确显示 */
+.cards-page .layui-form-select .layui-input {
+    padding-right: 30px;
+}
+
+.cards-page .layui-form-select dl {
+    top: 42px;
+    z-index: 999;
+    max-height: 300px;
+}
+
+/* 确保下拉菜单在其他元素之上 */
+.cards-page .layui-form-select dl dd, 
+.cards-page .layui-form-select dl dt {
+    line-height: 36px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* 操作按钮排列 */
@@ -104,11 +171,23 @@
     justify-content: center;
     gap: 5px;
 }
+.cards-page .card-operations .operation-row-key {
+    display: flex;
+    /* justify-content: center; */
+    margin-left: 7px;
+    gap: 17px;
+}
 
-.cards-page .card-operations .layui-btn-xs {
-    padding: 0 5px;
-    font-size: 11px;
-    line-height: 1.5;
+
+/* 表格工具栏样式 */
+.cards-page .layui-table-tool-self {
+    position: absolute;
+    right: 17px;
+    top: 10px;
+}
+
+.cards-page .layui-table-tool-self .layui-inline {
+    margin: 0 0 0 10px;
 }
 
 /* 确保表格在小屏幕上也能正常显示 */
@@ -122,12 +201,6 @@
         min-width: 900px;
     }
 } 
-
-.cards-page .layui-table-tool-self {
-    position: absolute;
-    right: 17px;
-    top: 10px;
-}
 
 /* 修复滚动条问题 */
 .cards-page .layui-table-body {
@@ -152,6 +225,10 @@
     position: relative;
 }
 
-.cards-page .layui-table-view {
-    margin-bottom: 10px;
+/* 确保内部padding合适 */
+.cards-page .layui-form-pane .layui-input {
+    padding-left: 5px;
+    padding-right: 5px;
+    width: calc(100% - 2px);
+    box-sizing: border-box;
 }

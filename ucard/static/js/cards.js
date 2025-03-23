@@ -64,13 +64,49 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
             form.on('submit(formSearch)', function(data) {
                 // 获取表单数据
                 var formData = data.field; 
-                // 执行搜索，重载表格
+                console.log("表单搜索条件:", formData);
+                
+                // 执行搜索，使用本地数据筛选
+                var filteredData = cardsData;
+                
+                // 按卡号后四位筛选
+                if (formData.card_last_digits && formData.card_last_digits.trim() !== '') {
+                    filteredData = filteredData.filter(function(item) {
+                        var cardNumber = item.mask_card_number || '';
+                        // 获取卡号后四位并进行精确匹配
+                        var lastFourDigits = cardNumber.slice(-4);
+                        return lastFourDigits === formData.card_last_digits;
+                    });
+                }
+                
+                // 按平台(version)筛选
+                if (formData.version && formData.version !== '') {
+                    filteredData = filteredData.filter(function(item) {
+                        return item.version === formData.version;
+                    });
+                }
+                
+                // 按用卡人筛选
+                if (formData.card_holder_id && formData.card_holder_id !== '') {
+                    filteredData = filteredData.filter(function(item) {
+                        return item.card_holder_id === formData.card_holder_id;
+                    });
+                }
+                
+                // 重载表格，使用筛选后的数据
                 table.reload('cards-table', {
-                    where: formData,
+                    data: filteredData,
                     page: {
                         curr: 1  // 重置到第一页
                     }
                 });
+                
+                // 如果没有找到匹配的数据，显示提示
+                if (filteredData.length === 0) {
+                    layer.msg('未找到符合条件的数据', {icon: 0});
+                } else {
+                    layer.msg('找到 ' + filteredData.length + ' 条符合条件的数据', {icon: 1});
+                }
                 
                 return false;  // 阻止表单默认提交
             });
@@ -97,7 +133,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                 url: null,
                 limit: 10,
                 limits: [10, 20, 50, 100],
-                height: 'full-220',
+                height: 'auto',
                 cols:[[
                     {
                         field: 'mask_card_number', 
@@ -132,9 +168,18 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         }
                     },
                     {
+                        field: 'name',
+                        title: '姓名',
+                        width: 150,
+                        align: 'center',
+                        templet: function(d){
+                            return d.first_name + ' ' + d.last_name;
+                        }
+                    },
+                    {
                         field: 'available_balance', 
                         title: '剩余额度', 
-                        width: 120,
+                        width: 150,
                         align: 'center',
                         templet: function(d){
                             var balance = d.available_balance || '0.00';
@@ -145,7 +190,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                     {
                         field: 'expire_date', 
                         title: '有效期', 
-                        width: 120,
+                        width: 80,
                         align: 'center',
                         templet: function(d) {
                             var months = calculateRemainingMonths(d.expire_year, d.expire_month);
@@ -155,7 +200,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                     {
                         field: 'cards_status', 
                         title: '状态', 
-                        width: 100,
+                        width: 80,
                         align: 'center',
                         templet: function(d){
                             var status = d.cards_status || 'INACTIVE';
@@ -171,7 +216,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                     {field: 'create_time', title: '申请时间', width: 180, align: 'center'},
                     {field: 'brand_code', title: '卡组织', width: 100, align: 'center'},
                     {field: 'version', title: '平台', width: 80, align: 'center'},
-                    {title: '操作', toolbar: '#card_barTool', width: 250, align: 'center', fixed: 'right'},
+                    {title: '操作', toolbar: '#card_barTool', width: 150, align: 'center'},
                 ]],
                 done: function(res){
                     // 确保分页正确显示
