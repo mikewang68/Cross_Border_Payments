@@ -185,7 +185,6 @@ layui.use(['element', 'layer', 'form'], function() {
                         </div>
                         <div class="currency-info">
                             <div class="currency-code">${currencyCode}</div>
-                            <div class="currency-name">${regionInfo.name || currencyCode}</div>
                         </div>
                     </div>
                     <div class="card-body">
@@ -270,6 +269,14 @@ layui.use(['element', 'layer', 'form'], function() {
         var loadingIndex = layer.load(1, {
             shade: [0.1, '#fff']
         });
+        
+        // 确保transactionsContainer存在
+        if (!document.getElementById('transactionsContainer')) {
+            var container = document.createElement('div');
+            container.id = 'transactionsContainer';
+            container.style.display = 'none'; // 默认隐藏
+            document.body.appendChild(container);
+        }
         
         // 先通过AJAX加载wallet_transactions.html的内容
         fetch('/wallet_transactions')

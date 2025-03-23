@@ -584,6 +584,16 @@ function openTransactionDetails(currencyData) {
                 }
                 
                 renderTransactionList(filteredTransactions);
+            },
+            end: function() {
+                // 弹窗关闭时清空容器内容，防止在主页面显示
+                const container = document.getElementById('transactionsContainer');
+                if (container) {
+                    // 保留容器但清空内容
+                    container.innerHTML = '';
+                    // 隐藏容器
+                    container.style.display = 'none';
+                }
             }
         });
     });

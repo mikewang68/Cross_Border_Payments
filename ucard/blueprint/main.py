@@ -58,6 +58,28 @@ def wallet_balance():
         # 返回空列表，避免模板渲染错误
         return render_template('main/wallet_balance.html', wallet_balances=[], regions=[])
     
+@main_bp.route('/exchange_usdt')
+@login_required
+def exchange_usdt():
+    try:
+        # 查询汇率
+        exchange_usdt = query_all_from_table('exchange_usdt')
+        
+        # 打印调试信息
+        print(f"查询到 {len(exchange_usdt) if exchange_usdt else 0} 条汇率记录")
+        
+        # 如果数据为空，添加测试数据（仅用于测试前端显示）
+        if not exchange_usdt or len(exchange_usdt) == 0:
+            # 添加测试数据，仅用于开发阶段
+            print("未找到钱包余额数据，使用测试数据")
+        
+        # 将数据转换为JSON并返回给前端
+        return render_template('main/exchange_usdt.html', exchange_usdt=exchange_usdt)
+    except Exception as e:
+        print(f"查询汇率数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/exchange_usdt.html', exchange_usdt=[])
+    
 @main_bp.route('/wallet_transactions')
 @login_required
 def wallet_transactions():
