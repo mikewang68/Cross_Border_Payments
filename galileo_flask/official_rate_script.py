@@ -53,7 +53,7 @@ def get_rate_parm(version):
         PERCENTAGE = parm.get('percentage')
 
 
-def update_exchange_rate(currency, rate,exchange_provider):
+def update_exchange_rate(currency, rate,version):
     # 创建数据库连接
     conn = create_db_connection()
     if conn is None:
@@ -64,7 +64,7 @@ def update_exchange_rate(currency, rate,exchange_provider):
 
 
     # 查询currency是否存在
-    cursor.execute("SELECT * FROM exchange_usdt WHERE currency = %s AND exchange_provider = %s",(currency,exchange_provider))
+    cursor.execute("SELECT * FROM exchange_usdt WHERE currency = %s AND version = %s",(currency,version))
     result = cursor.fetchone()
 
     # 计算usdt_cost, index_quote 和 percentage_quote
@@ -78,13 +78,13 @@ def update_exchange_rate(currency, rate,exchange_provider):
         cursor.execute("""
             UPDATE exchange_usdt
             SET official_rate = %s, usdt_cost = %s, index_quote = %s, percentage_quote = %s , fee = %s, percentage = %s,insert_time = %s
-            WHERE currency = %s AND exchange_provider = %s
-        """, (rate, usdt_cost, index_quote, percentage_quote, FEE, PERCENTAGE, insert_time, currency,exchange_provider))
+            WHERE currency = %s AND version = %s
+        """, (rate, usdt_cost, index_quote, percentage_quote, FEE, PERCENTAGE, insert_time, currency,version))
     else:  # 如果currency不存在，插入新数据
         cursor.execute("""
-            INSERT INTO exchange_usdt (currency, official_rate, exchange_provider, fee, usdt_cost, index_quote, percentage, percentage_quote, insert_time)
+            INSERT INTO exchange_usdt (currency, official_rate, version, fee, usdt_cost, index_quote, percentage, percentage_quote, insert_time)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (currency, rate,exchange_provider, FEE, usdt_cost, index_quote, PERCENTAGE, percentage_quote, insert_time))  # 假设其他字段的值为默认值
+        """, (currency, rate,version, FEE, usdt_cost, index_quote, PERCENTAGE, percentage_quote, insert_time))  # 假设其他字段的值为默认值
 
     # 提交更改并关闭连接
     conn.commit()
