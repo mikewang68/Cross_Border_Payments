@@ -53,6 +53,9 @@
                     <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add_card">
                         <i class="layui-icon">&#xe654;</i> 开卡
                     </button>
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="wallet_balance">
+                        <i class="layui-icon">&#xe659;</i> 查看余额
+                    </button>
                 </div>
             </script>
 
@@ -109,6 +112,9 @@
     </script>
     <script id="card-holders-data" type="application/json">
         {{ card_holders|tojson|safe }}
+    </script>
+    <script id="wallet_balance-data" type="application/json">
+        {{ wallet_balance|tojson|safe }}
     </script>
 </div>
 

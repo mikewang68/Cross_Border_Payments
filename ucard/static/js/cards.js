@@ -14,8 +14,9 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
         //获取后端数据
         var cardsdataElement = document.getElementById('cards-data');
         var cardholderdataElement = document.getElementById('card-holders-data');
-        if (!cardsdataElement && !cardholderdataElement) {
-            console.error("找不到数据元素 #cardsdata 或 #card-holders-data");
+        var wallet_balance_dataElement = document.getElementById('wallet_balance-data');
+        if (!cardsdataElement && !cardholderdataElement && !wallet_balance_dataElement) {
+            console.error("找不到数据元素 #cardsdata 或 #card-holders-data 或 #wallet_balance-data");
             layer.msg('数据加载失败：找不到数据元素', {icon: 2});
             return;
         }
@@ -28,14 +29,17 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
         }
         var cardsData = JSON.parse(cardsText);
         var cardholdersData = JSON.parse(cardholdersText);
+        var wallet_balance_data = JSON.parse(wallet_balance_dataElement.textContent);
 
         console.log("卡数据:", cardsData);
         console.log("用卡人数据:", cardholdersData);
+        console.log("钱包余额数据:", wallet_balance_data);
 
-        if (!cardsData && !cardholdersData) {
+        if (!cardsData && !cardholdersData && !wallet_balance_data) {
             console.warn("数据为null或undefined,初始化为空数组");
             cardsData = [];
             cardholdersData = [];
+            wallet_balance_data = [];
         }
         
         // 初始化表单组件
@@ -112,6 +116,29 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
             });
         }
 
+        function formatTime(timeStr) {
+            if (!timeStr) return '--';
+            
+            // 处理ISO格式时间
+            try {
+                var date = new Date(timeStr);
+                
+                // 检查日期是否有效
+                if (isNaN(date.getTime())) return timeStr;
+                
+                var year = date.getFullYear();
+                var month = String(date.getMonth() + 1).padStart(2, '0');
+                var day = String(date.getDate()).padStart(2, '0');
+                var hours = String(date.getHours()).padStart(2, '0');
+                var minutes = String(date.getMinutes()).padStart(2, '0');
+                var seconds = String(date.getSeconds()).padStart(2, '0');
+                return `<div class="date-part">${year}-${month}-${day}</div><div class="time-part">${hours}:${minutes}:${seconds}</div>`;
+            } catch (e) {
+                console.error("时间格式化错误:", e);
+                return timeStr; // 发生错误时返回原始时间字符串
+            }
+        }
+
         // 计算剩余有效期（月份）
         function calculateRemainingMonths(expire_year, expire_month) {
             if (!expire_year || !expire_month) return 0;
@@ -131,8 +158,8 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                 data: cardsData,
                 page: true,
                 url: null,
-                limit: 10,
-                limits: [10, 20, 50, 100],
+                limit: 5,
+                limits: [5, 10, 20],
                 height: 'auto',
                 cols:[[
                     {
@@ -170,7 +197,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                     {
                         field: 'name',
                         title: '姓名',
-                        width: 150,
+                        width: 140,
                         align: 'center',
                         templet: function(d){
                             return d.first_name + ' ' + d.last_name;
@@ -213,7 +240,15 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                             }
                         }
                     },
-                    {field: 'create_time', title: '申请时间', width: 180, align: 'center'},
+                    {
+                        field: 'create_time', 
+                        title: '申请时间', 
+                        width: 120, 
+                        align: 'center',
+                        templet: function(d){
+                            return formatTime(d.create_time);
+                        },
+                    },
                     {field: 'brand_code', title: '卡组织', width: 100, align: 'center'},
                     {field: 'version', title: '平台', width: 80, align: 'center'},
                     {title: '操作', toolbar: '#card_barTool', width: 150, align: 'center'},
@@ -231,12 +266,73 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
             });
         }
 
+        function showBalanceDetail(balanceData) {
+            var rows = [];
+            for (var version in balanceData) {
+                if (balanceData.hasOwnProperty(version)) {
+                    // 版本标题
+                    rows.push('<tr><td colspan="3" style="font-weight: bold;background-color:#f2f2f2">版本 ' + version + '</td></tr>');
+                    
+                    // 表头
+                    rows.push(
+                        '<tr>' + 
+                            '<th style="width:22%;background-color:#f8f8f8">币种</th>' +
+                            '<th style="width:39%;background-color:#f8f8f8">总金额</th>' +
+                            '<th style="width:39%;background-color:#f8f8f8">可用余额</th>' +
+                        '</tr>'
+                    );
+
+                    // 数据行
+                    var currencies = balanceData[version];
+                    for (var currency in currencies) {
+                        var info = currencies[currency];
+                        rows.push(
+                            '<tr>' +
+                                '<td>' + currency + '</td>' +
+                                '<td>' + (info.amount || '--') + '</td>' +
+                                '<td>' + (info.available || '--') + '</td>' +
+                            '</tr>'
+                        );
+                    }
+                }
+            }
+
+            var content = '<div class="layui-card">' +
+                '<div class="layui-card-header" style="font-weight: 900">账户余额详情</div>' +
+                '<div class="layui-card-body">' +
+                '<table class="layui-table">' +
+                '<tbody>' + rows.join('') + '</tbody>' +
+                '</table></div></div>';
+
+            layer.open({
+                type: 1,
+                title: '账户余额详情',
+                area: ['700px', '600px'], // 加宽以适应三列
+                content: content
+            });
+        }
+
+
         // 初始化事件监听
         function initEventListeners() {
             // 监听表格工具栏事件
             table.on('toolbar(cards-table)', function(obj){
                 if (obj.event === 'add_card') {
-                    layer.msg('开卡功能待实现', {icon: 0});
+                    layer.open({
+                        type: 2,
+                        title: '开卡',
+                        area: ['800px', '600px'],
+                        content: '/cards/cards_apply',
+                        end: function(){
+                            table.reload('user-table', {
+                                page: {
+                                    curr: 1 // 重新从第一页开始
+                                }
+                            });
+                        }
+                    });
+                }else if (obj.event === 'wallet_balance') {
+                    showBalanceDetail(wallet_balance_data);
                 }
             });
             

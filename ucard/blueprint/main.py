@@ -3,6 +3,7 @@ from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import query_all_from_table
+import uuid
 
 main_bp = Blueprint('main', __name__)
 
@@ -17,6 +18,31 @@ def convert_time(time_str):
     except ValueError:
         # 如果失败，使用不包含毫秒的格式解析
             return datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%SZ')
+    
+def wallet_balance_transform(data):
+    result = {}
+    for item in data:
+        available = item.get('available')
+        if available is None:
+            continue  # 跳过available为None的条目
+        version = item['version']
+        currency = item['currency']
+        amount = item['amount']
+        
+        # 转换为字符串
+        amount_str = str(amount)
+        available_str = str(available)
+
+        currency_info = {
+            'amount': amount_str,
+            'available': available_str
+        }
+        # 更新到结果字典中
+        if version not in result:
+            result[version] = {}
+        result[version][currency] = currency_info
+    return result
+
 
 @main_bp.route('/')
 @login_required
@@ -223,11 +249,13 @@ def create_card_holder():
         })
 
 @main_bp.route('/card_holders/edit_page')
+@login_required
 def card_holder_edit_page():
     """渲染用卡人编辑页面"""
     return render_template('main/card_user_edit.html')
 
 @main_bp.route('/card_holders/edit', methods=['PUT']) 
+@login_required
 def card_holder_edit():
     """处理用卡人编辑请求"""
     try:
@@ -341,11 +369,59 @@ def cards():
         # 查询所有卡数据
         cards_all_info = query_all_from_table('cards_all_info')
         card_holders = query_all_from_table('card_holder')
+        wallet_balance = query_all_from_table('wallet_balance')
+        transform_wallet_balance = wallet_balance_transform(wallet_balance)
+        
         # 打印调试信息
         print(f"查询到 {len(cards_all_info) if cards_all_info else 0} 条卡记录")
         print(f"查询到 {len(card_holders) if card_holders else 0} 条用卡人记录")
-        return render_template('main/cards.html', cards_all_info=cards_all_info, card_holders=card_holders)
+        return render_template('main/cards.html', cards_all_info=cards_all_info, card_holders=card_holders, wallet_balance=transform_wallet_balance)
     except Exception as e:
         print(f"查询卡数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
         return render_template('main/cards.html', cards_all_info=[], card_holders=[])
+    
+# 开卡页面路由
+@main_bp.route('/cards/cards_apply')
+def cards_apply():
+    card_holders = query_all_from_table('card_holder')
+    cards_product = query_all_from_table('cards_product')
+    wallet_balance = query_all_from_table('wallet_balance')
+    transform_wallet_balance = wallet_balance_transform(wallet_balance)
+
+    return render_template('main/cards_apply.html', card_holders=card_holders, cards_product=cards_product, wallet_balance=transform_wallet_balance)
+
+@main_bp.route('/cards/newcard', methods=['POST'])
+@login_required
+def apply_new_card():
+    try:
+        # 获取表单数据
+        data = request.get_json()
+        request_id = str(uuid.uuid4())
+        # {'currency': 'USD', 'card_holder_id': '2025031513232401010010302501', 'init_balance': '0', 'limit_per_day': '', 'limit_per_month': '', 'limit_per_transaction': '', 'product_code': 'G68796'}
+        version = data.pop('platform')
+        data['request_id'] = request_id
+        print(data)
+        # 创建API实例
+        gsalary_api = GSalaryAPI()
+        
+        # 调用API创建用卡人
+        result = gsalary_api.apply_new_card(version, data)
+        if result['result']['result'] == 'S':
+            return jsonify({
+                "code": 0,
+                "msg": "添加用卡人成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "添加用卡人失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
