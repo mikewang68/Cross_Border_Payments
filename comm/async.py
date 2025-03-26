@@ -219,9 +219,16 @@ async def fetch_info():
             card_transactions(version),
             balance_history(version),
             wallet_balance(version),
-            card_holder_insert(version),
             wallet_transactions(version),
-            batch_update_database(version)
+            card_holder_insert(version),
+            card_holder_update(version),
+            cards_secure_info_insert(version),
+            cards_secure_info_update(version),
+            cards_info_insert(version),
+            cards_info_update(version),
+            cards_insert(version),
+            cards_update(version)
+
         ]
         all_tasks.extend(tasks)
 
