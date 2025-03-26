@@ -192,7 +192,6 @@ async def wallet_balance(version):
             'version': f'{version}'
         }
         data = gsalary.get_wallet_balance(version,params )
-        print(data)
         flatten_data = flat_data(version,data, 'data')
         amo = flatten_data.get('amount')
         ava = flatten_data.get('available')
