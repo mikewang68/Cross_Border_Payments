@@ -3,6 +3,8 @@ from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import query_all_from_table
+from sync.realtime import realtime_card_info_update
+import time
 import uuid
 
 main_bp = Blueprint('main', __name__)
@@ -373,11 +375,11 @@ def cards():
         card_holders = query_all_from_table('card_holder')
         wallet_balance = query_all_from_table('wallet_balance')
         transform_wallet_balance = wallet_balance_transform(wallet_balance)
-        
+        sorted_cards_all_info = sorted(cards_all_info, key=lambda x: convert_time(x["create_time"]), reverse=True)      
         # 打印调试信息
         print(f"查询到 {len(cards_all_info) if cards_all_info else 0} 条卡记录")
         print(f"查询到 {len(card_holders) if card_holders else 0} 条用卡人记录")
-        return render_template('main/cards.html', cards_all_info=cards_all_info, card_holders=card_holders, wallet_balance=transform_wallet_balance)
+        return render_template('main/cards.html', cards_all_info=sorted_cards_all_info, card_holders=card_holders, wallet_balance=transform_wallet_balance)
     except Exception as e:
         print(f"查询卡数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
@@ -421,6 +423,55 @@ def apply_new_card():
                 "msg": "添加用卡人失败",
                 "data": None
             })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+    
+# 冻结或者解冻卡片
+@main_bp.route('/cards/freeze_unfreeze', methods=['PUT'])
+@login_required
+def cards_freeze_unfreeze():
+    try:
+        # 获取表单数据
+        data = request.get_json()
+        card_id = data.pop('card_id')
+        version = data.pop('version')
+        gsalary_api = GSalaryAPI()
+        # 调用API进行冻结或者解冻
+        result = gsalary_api.freeze_unfreeze_card(system_id=version, card_id=card_id, data= data)
+        if data['freeze']:
+            if result['result']['result'] == 'S':
+                time.sleep(15)
+                realtime_card_info_update(version, card_id)
+                return jsonify({
+                    "code": 0,
+                    "msg": "冻结成功",
+                    "data": result
+                })
+            else:
+                return jsonify({
+                    "code": 1,
+                    "msg": "冻结失败",
+                    "data": None
+                })
+        else:
+            if result['result']['result'] == 'S':
+                time.sleep(15)
+                realtime_card_info_update(version, card_id)
+                return jsonify({
+                    "code": 0,
+                    "msg": "解冻成功",
+                    "data": result
+                })
+            else:
+                return jsonify({
+                    "code": 1,
+                    "msg": "解冻失败",
+                    "data": None
+                })
     except Exception as e:
         return jsonify({
             "code": 1,

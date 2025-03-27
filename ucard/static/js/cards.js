@@ -235,8 +235,20 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 return '<span class="layui-badge layui-bg-green">激活</span>';
                             } else if (status === 'FROZEN') {
                                 return '<span class="layui-badge layui-bg-orange">冻结</span>';
+                            } else if (status === 'CANCELLED'){
+                                return '<span class="layui-badge layui-bg-red">销卡</span>';
+                            } else if (status === 'EXPIRED'){
+                                return '<span class="layui-badge layui-bg-black">过期</span>';
+                            } else if (status === 'INACTIVE'){
+                                return '<span class="layui-badge layui-bg-cyan">待激活</span>';
+                            } else if (status === 'FREEZING'){
+                                return '<span class="layui-badge layui-bg-cyan">冻结中</span>';
+                            } else if (status === 'UNFREEZING'){
+                                return '<span class="layui-badge layui-bg-cyan">解冻中</span>';
+                            } else if (status === 'CANCELLING') {
+                                return '<span class="layui-badge layui-bg-cyan">销卡中</span>';
                             } else {
-                                return '<span class="layui-badge layui-bg-gray">未激活</span>';
+                                return '<span class="layui-badge layui-bg-cyan">未知</span>';
                             }
                         }
                     },
@@ -359,8 +371,93 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         break;
                     case 'freeze':
                         layer.confirm('确定要冻结该卡吗？', function(index){
-                            layer.msg('冻结功能待实现', {icon: 0});
-                            layer.close(index);
+                            console.log('冻结卡', data);
+                            layer.msg('正在冻结，需要等待几秒', {icon: 0});
+                            if (data && data.cards_status === 'ACTIVE') {
+                                // 显示加载中
+                                var loadIndex = layer.load(2);
+                                
+                                // 构建要发送的数据
+                                var formData = {
+                                    "card_id": data.card_id,
+                                    "version": data.version,
+                                    "freeze": true
+                                };
+                                
+                                // 向服务器提交数据
+                                $.ajax({
+                                    url: '/cards/freeze_unfreeze',
+                                    type: 'PUT',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify(formData),
+                                    success: function(res) {
+                                        layer.close(loadIndex);
+                                        if (res.code === 0) {
+                                            layer.msg('冻结成功', {icon: 1, time: 5000});
+                                            layer.close(index); // 关闭确认弹窗
+                                            
+                                            // 重新加载表格数据
+                                            table.reload('cards-table');
+                                        } else {
+                                            layer.msg(res.msg || '冻结失败', {icon: 2});
+                                        }
+                                    },
+                                    error: function(xhr, status, error) {
+                                        layer.close(loadIndex);
+                                        console.error('AJAX错误:', status, error);
+                                        layer.msg('服务器错误，请稍后重试: ' + error, {icon: 2});
+                                    }
+                                });
+                            } else {
+                                layer.msg('只能冻结激活状态的卡', {icon: 2});
+                                layer.close(index);
+                            }
+                        });
+                        break;
+                    case 'unfreeze':
+                        layer.confirm('确定要解冻该卡吗？', function(index){
+                            console.log('解冻卡', data);
+                            layer.msg('正在解冻，需要等待几秒', {icon: 0});
+                            if (data && data.cards_status === 'FROZEN') {
+                                // 显示加载中
+                                var loadIndex = layer.load(2);
+                                
+                                // 构建要发送的数据
+                                var formData = {
+                                    "card_id": data.card_id,
+                                    "version": data.version,
+                                    "freeze": false
+                                };
+                                
+                                // 向服务器提交数据
+                                $.ajax({
+                                    url: '/cards/freeze_unfreeze',
+                                    type: 'PUT',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify(formData),
+                                    success: function(res) {
+                                        console.log('解冻结果', res);
+                                        layer.close(loadIndex);
+                                        if (res.code === 0) {
+                                            layer.msg('解冻成功', {icon: 1, time: 5000});
+                                            layer.close(index); // 关闭确认弹窗
+                                            
+                                            // 重新加载表格数据
+                                            table.reload('cards-table');
+                                        } else {
+                                            layer.msg(res.msg || '解冻失败', {icon: 2});
+                                        }
+                                    },
+                                    error: function(xhr, status, error) {
+                                        layer.close(loadIndex);
+                                        console.error('AJAX错误:', status, error);
+                                        layer.msg('服务器错误，请稍后重试: ' + error, {icon: 2});
+                                    }
+                                });
+                            } else {
+                                layer.msg('只能解冻冻结状态的卡', {icon: 2});
+                                layer.close(index);
+                            }
                         });
                         break;
                     case 'edit_nickname':
