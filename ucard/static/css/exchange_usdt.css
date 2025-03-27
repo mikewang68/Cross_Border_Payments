@@ -119,20 +119,20 @@
 }
 
 /* 待开发功能区域 */
-.coming-soon {
+.feature-coming-soon {
     padding: 100px 0;
     text-align: center;
     background-color: #f9f9f9;
     border-radius: 5px;
 }
 
-.coming-soon h3 {
-    font-size: 24px;
-    color: #009688;
+.feature-coming-soon i {
+    font-size: 48px;
     margin-bottom: 10px;
+    color: #999;
 }
 
-.coming-soon p {
+.feature-coming-soon p {
     color: #999;
     font-size: 16px;
 }

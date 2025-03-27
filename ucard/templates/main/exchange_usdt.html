@@ -11,7 +11,7 @@
             <div class="layui-tab" lay-filter="exchange-tab">
                 <ul class="layui-tab-title">
                     <li class="layui-this">U换本币报价</li>
-                    <li>待开发功能1</li>
+                    <li>本币换U报价</li>
                     <li>待开发功能2</li>
                 </ul>
                 <div class="layui-tab-content">
@@ -63,7 +63,10 @@
                                     </div>
                                     <div class="result-item">
                                         <div class="result-label">手续费率</div>
-                                        <div class="result-value" id="result-fee">--</div>
+                                        <div class="result-value">
+                                            <input type="number" id="result-fee-input" class="layui-input" style="width: 100px; display: inline-block;">
+                                            <span>%</span>
+                                        </div>
                                     </div>
                                     <div class="result-item">
                                         <div class="result-label">本币金额</div>
@@ -88,10 +91,8 @@
                                 <thead>
                                     <tr>
                                         <th lay-data="{field:'currency', sort:true}">币种</th>
-                                        <th lay-data="{field:'currency_name'}">币种名称</th>
                                         <th lay-data="{field:'official_rate', sort:true}">官方汇率</th>
                                         <th lay-data="{field:'fee', sort:true}">手续费率</th>
-                                        <th lay-data="{field:'version'}">平台</th>
                                         <th lay-data="{field:'insert_time', sort:true}">更新时间</th>
                                     </tr>
                                 </thead>
@@ -102,19 +103,98 @@
                         </div>
                     </div>
                     
-                    <!-- 待开发功能1 -->
+                    <!-- 本币换U报价 -->
                     <div class="layui-tab-item">
-                        <div class="coming-soon">
-                            <h3>功能开发中</h3>
-                            <p>该功能正在开发中，敬请期待...</p>
+                        <div class="exchange-calculator">
+                            <div class="calculator-header">
+                                <h3>本币换U汇率计算器</h3>
+                                <p class="calculator-desc">根据选择的币种和输入金额，计算最终兑换报价</p>
+                            </div>
+                            <div class="calculator-body">
+                                <form class="layui-form" lay-filter="reverseCalculatorForm">
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">本币币种</label>
+                                        <div class="layui-input-block">
+                                            <select name="reverse-currency" id="reverse-currency-select" lay-filter="reverse-currency-select" lay-verify="required">
+                                                <option value="">请选择币种</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <label class="layui-form-label">USDT金额</label>
+                                        <div class="layui-input-block">
+                                            <input type="number" name="reverse-amount" placeholder="请输入USDT金额" autocomplete="off" class="layui-input" id="reverse-amount-input">
+                                        </div>
+                                    </div>
+                                    <div class="layui-form-item">
+                                        <div class="layui-input-block">
+                                            <button type="button" class="layui-btn layui-btn-normal" id="reverse-calculate-btn">计算报价</button>
+                                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            
+                            <div class="result-container" id="reverse-result-container" style="display: none;">
+                                <div class="result-header">
+                                    <h3>计算结果</h3>
+                                </div>
+                                <div class="result-body">
+                                    <div class="result-item">
+                                        <div class="result-label">币种</div>
+                                        <div class="result-value" id="reverse-result-currency">--</div>
+                                    </div>
+                                    <div class="result-item">
+                                        <div class="result-label">官方汇率</div>
+                                        <div class="result-value" id="reverse-result-rate">--</div>
+                                    </div>
+                                    <div class="result-item">
+                                        <div class="result-label">手续费率</div>
+                                        <div class="result-value">
+                                            <input type="number" id="reverse-result-fee-input" class="layui-input" style="width: 100px; display: inline-block;">
+                                            <span>%</span>
+                                        </div>
+                                    </div>
+                                    <div class="result-item">
+                                        <div class="result-label">USDT金额</div>
+                                        <div class="result-value" id="reverse-result-amount">--</div>
+                                    </div>
+                                    <div class="result-item result-highlight">
+                                        <div class="result-label">本币应收金额</div>
+                                        <div class="result-value" id="reverse-result-total">--</div>
+                                    </div>
+                                    <div class="result-item result-highlight">
+                                        <div class="result-label">最终汇率</div>
+                                        <div class="result-value" id="reverse-result-final-rate">--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 汇率表格 -->
+                        <div class="exchange-rates-table">
+                            <h3>当前汇率一览（单位本币换U）</h3>
+                            <table class="layui-table" lay-filter="reverse-exchange-table">
+                                <thead>
+                                    <tr>
+                                        <th lay-data="{field:'currency', sort:true}">币种</th>
+                                        <th lay-data="{field:'official_rate', sort:true}">官方汇率</th>
+                                        <th lay-data="{field:'fee', sort:true}">手续费率</th>
+                                        <th lay-data="{field:'insert_time', sort:true}">更新时间</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reverse-exchange-rates-body">
+                                    <!-- 汇率数据将通过JavaScript动态生成 -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                     
                     <!-- 待开发功能2 -->
                     <div class="layui-tab-item">
-                        <div class="coming-soon">
-                            <h3>功能开发中</h3>
-                            <p>该功能正在开发中，敬请期待...</p>
+                        <div class="feature-coming-soon">
+                            <i class="layui-icon layui-icon-console"></i>
+                            <p>功能正在开发中...</p>
                         </div>
                     </div>
                 </div>
@@ -125,6 +205,9 @@
     <!-- 将数据传递给JavaScript -->
     <script id="exchange-data" type="application/json">
         {{ exchange_usdt|tojson|safe }}
+    </script>
+    <script id="region-data" type="application/json">
+        {{ regions|tojson|safe }}
     </script>
     
     <!-- 引入样式和脚本 -->
