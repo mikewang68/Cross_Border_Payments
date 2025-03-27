@@ -7,15 +7,31 @@
     margin-top: 15px;
     width: 100%;
     overflow-x: auto;
+    position: relative;
 }
 
 /* 搜索表单样式 */
 .card-holders-page .layui-form-pane .layui-form-label {
-    width: 80px;
+    width: 120px;
+    overflow: visible;
+    white-space: nowrap;
+    text-overflow: clip;
 }
 
 .card-holders-page .layui-form-pane .layui-input-inline {
     width: 180px;
+}
+
+/* 禁用表格固定高度 */
+.card-holders-page .layui-table-view {
+    height: auto !important;
+    margin-bottom: 10px;
+}
+
+/* 防止分页栏被遮挡 */
+.card-holders-page .layui-card-body {
+    padding-bottom: 20px;
+    overflow: visible;
 }
 
 /* 详情弹窗样式 */
@@ -30,12 +46,20 @@
 
 /* 状态标签样式 */
 .card-holders-page .layui-badge {
-    padding: 3px 8px;
+    width: 36px;
+    height: 22px;
+    align-content: center;
+    padding: 0px 5px;
     font-size: 12px;
 }
 
 /* 表格内容溢出处理 */
 .card-holders-page .layui-table-cell {
+    height: auto;
+    line-height: 22px;
+    padding: 8px 12px;
+    position: relative;
+    box-sizing: border-box;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -51,6 +75,44 @@
     margin-left: 8px;
 }
 
+/* 按钮样式微调 */
+.card-holders-page .layui-btn-xs {
+    padding: 0 8px;
+    height: 22px;
+    line-height: 22px;
+}
+
+/* 确保下拉菜单正确显示 */
+.card-holders-page .layui-form-select .layui-input {
+    padding-right: 30px;
+}
+
+.card-holders-page .layui-form-select dl {
+    top: 42px;
+    z-index: 999;
+    max-height: 300px;
+}
+
+/* 确保下拉菜单在其他元素之上 */
+.card-holders-page .layui-form-select dl dd, 
+.card-holders-page .layui-form-select dl dt {
+    line-height: 36px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 表格工具栏样式 */
+.card-holders-page .layui-table-tool-self {
+    position: absolute;
+    right: 17px;
+    top: 10px;
+}
+
+.card-holders-page .layui-table-tool-self .layui-inline {
+    margin: 0 0 0 10px;
+}
+
 /* 确保表格在小屏幕上也能正常显示 */
 @media screen and (max-width: 992px) {
     .card-holders-page .layui-table-view {
@@ -62,12 +124,6 @@
         min-width: 800px;
     }
 } 
-
-.card-holders-page .layui-table-tool-self {
-    position: absolute;
-    right: 17px;
-    top: 10px;
-}
 
 /* 用卡人页面 - 修复滚动条问题 */
 .card-holders-page .layui-table-body {
@@ -92,6 +148,10 @@
     position: relative;
 }
 
-.card-holders-page .layui-table-view {
-    margin-bottom: 10px;
+/* 确保内部padding合适 */
+.card-holders-page .layui-form-pane .layui-input {
+    padding-left: 5px;
+    padding-right: 5px;
+    width: calc(100% - 2px);
+    box-sizing: border-box;
 }

@@ -1,7 +1,7 @@
 import schedule
 import asyncio
 import logging
-from db_api import query_database, query_field_from_table
+from db_api import query_database
 from galileo_flask.official_rate_script import fetch_exchange_rate
 
 logger = logging.getLogger(__name__)
@@ -15,18 +15,7 @@ logger.addHandler(handler)
 time_sync_start = '10:00'
 time_sync_end = '16:00'
 
-# 初始化版本数据
-version_data = []
 
-
-# 获取平台列表
-async def query_version():
-    global version_data
-    try:
-        version_data = query_field_from_table('async_ctrl', 'version')
-
-    except Exception as e:
-        logger.error(f"查询版本信息时出错: {e}")
 
 
 async def update_schedule():
@@ -59,12 +48,10 @@ async def update_schedule():
 
 
 async def get_rate():
-    """获取汇率"""
     try:
         loop = asyncio.get_running_loop()
-        for version in version_data:
-            logger.info('开始获取汇率')
-            await loop.run_in_executor(None, fetch_exchange_rate, version)
+        logger.info('开始获取汇率')
+        await loop.run_in_executor(None, fetch_exchange_rate)
     except Exception as e:
         logger.error(f"获取汇率失败: {e}")
 
@@ -97,8 +84,6 @@ async def run_schedule():
 async def main():
     # 初始化定时任务
     await update_schedule()
-    # 查询平台
-    await query_version()
 
     # 启动多个协程
     await asyncio.gather(

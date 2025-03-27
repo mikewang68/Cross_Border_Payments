@@ -4,6 +4,10 @@ from dotenv import load_dotenv
 
 # 加载 .env 文件中的环境变量
 load_dotenv()
+# 配置日志记录
+
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def flatten_dict(d, parent_key='', sep='_'):
     """
@@ -21,10 +25,6 @@ def flatten_dict(d, parent_key='', sep='_'):
             items.append((new_key, v))
     return dict(items)
 
-
-# 配置日志记录
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
-
 def get_db():
     db_config = {}
     required_vars = ['DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_DATABASE']
@@ -41,3 +41,15 @@ def get_db():
                 return None
         db_config[var[3:].lower()] = value
     return db_config
+
+
+def get_tele_token():
+    var = 'BOT_TOKEN'
+    value = os.getenv(var)
+
+    if value is None:
+        logging.error(f"环境变量 {var} 未设置，请检查。")
+        return None
+
+    tele_config = {var.lower(): value}  # 统一键名格式为小写
+    return tele_config

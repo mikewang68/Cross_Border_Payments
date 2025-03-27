@@ -76,15 +76,15 @@ layui.use(['table', 'form', 'layer'], function(){
                 data: transformedData,  // 使用本地数据
                 url: null,             // 不使用URL加载数据
                 page: true,             // 开启分页
-                limit: 10,              // 默认每页显示10条
+                limit: 10,               // 默认每页显示10条
                 limits: [10, 20, 50, 100],
-                height: 'full-220',     // 使用自动高度，不要固定高度
+                height: 'auto',         // 使用自动高度，不要固定高度
                 cols: [[
                     {field: 'card_holder_id', title: 'ID', width: 250},
                     {field: 'name', title: '姓名', width: 120},
                     {field: 'phone_number', title: '手机号码', width: 150},
                     {field: 'region', title: '地区', width: 80},
-                    {field: 'email', title: '邮箱', width: 180},
+                    {field: 'email', title: '邮箱', width: 210},
                     {field: 'version', title: '平台', width: 80},
                     {field: 'create_time', title: '创建时间', width: 160},
                     {field: 'bill_address_country', title: '国家', width: 80},  
