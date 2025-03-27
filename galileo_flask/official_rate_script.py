@@ -94,7 +94,7 @@ def update_from_usd(currency, rate):
 
 
     # 查询currency是否存在
-    cursor.execute("SELECT * FROM exchange_usdtWHERE currency_to = %s AND currency_from = 'USD'",(currency,))
+    cursor.execute("SELECT * FROM exchange_usdt WHERE currency_to = %s AND currency_from = 'USD'",(currency,))
     result = cursor.fetchone()
     current_time = datetime.now()
     insert_time = current_time.strftime("%Y%m%d%H%M%S%f")
