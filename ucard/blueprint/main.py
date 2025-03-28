@@ -478,3 +478,38 @@ def cards_freeze_unfreeze():
             "msg": f"发生错误: {str(e)}",
             "data": None
         })
+    
+# 冻结或者解冻卡片
+@main_bp.route('/cards/cancel_card', methods=['DELETE'])
+@login_required
+def cancel_card():
+    try:
+        # 获取表单数据
+        data = request.get_json()
+        print(data)
+        card_id = data.pop('card_id')
+        version = data.pop('version')
+        gsalary_api = GSalaryAPI()
+        # 调用API进行冻结或者解冻
+        result = gsalary_api.cancel_card(system_id=version, card_id=card_id)
+        
+        if result['result']['result'] == 'S':
+            time.sleep(15)
+            realtime_card_info_update(version, card_id)
+            return jsonify({
+                "code": 0,
+                "msg": "销卡成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "销卡失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
