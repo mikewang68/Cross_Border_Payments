@@ -80,13 +80,24 @@
                                         <div class="result-label">最终汇率</div>
                                         <div class="result-value" id="result-final-rate">--</div>
                                     </div>
+                                    <div class="result-item">
+                                        <div class="result-label">兑换费率</div>
+                                        <div class="result-value">
+                                            <input type="number" id="result-exchange-rate-input" class="layui-input" style="width: 100px; display: inline-block;">
+                                            <span>%</span>
+                                        </div>
+                                    </div>
+                                    <div class="result-item result-highlight">
+                                        <div class="result-label">兑换额</div>
+                                        <div class="result-value" id="result-exchange-amount">--</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- 汇率表格 -->
                         <div class="exchange-rates-table">
-                            <h3>当前汇率一览（单位本币换U）</h3>
+                            <h3>当前汇率一览（单位U换本币）</h3>
                             <table class="layui-table" lay-filter="exchange-table">
                                 <thead>
                                     <tr>
@@ -167,6 +178,17 @@
                                         <div class="result-label">最终汇率</div>
                                         <div class="result-value" id="reverse-result-final-rate">--</div>
                                     </div>
+                                    <div class="result-item">
+                                        <div class="result-label">兑换费率</div>
+                                        <div class="result-value">
+                                            <input type="number" id="reverse-result-exchange-rate-input" class="layui-input" style="width: 100px; display: inline-block;">
+                                            <span>%</span>
+                                        </div>
+                                    </div>
+                                    <div class="result-item result-highlight">
+                                        <div class="result-label">兑换额</div>
+                                        <div class="result-value" id="reverse-result-exchange-amount">--</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -204,10 +226,16 @@
     
     <!-- 将数据传递给JavaScript -->
     <script id="exchange-data" type="application/json">
-        {{ exchange_usdt|tojson|safe }}
+        {{ exchange_usdt_new|tojson|safe }}
     </script>
     <script id="region-data" type="application/json">
         {{ regions|tojson|safe }}
+    </script>
+    <script id="rate_ctrl-data" type="application/json">
+        {{ rate_ctrl|tojson|safe }}
+    </script>
+    <script id="exchange_merchants-data" type="application/json">
+        {{ exchange_merchants|tojson|safe }}
     </script>
     
     <!-- 引入样式和脚本 -->

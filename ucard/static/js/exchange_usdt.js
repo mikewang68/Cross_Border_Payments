@@ -7,6 +7,8 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
     
     // 全局变量
     var exchangeData = [];
+    var rateCtrlData = [];
+    var exchangeMerchantsData = [];
     var selectedCurrency = null;
     var reverseSelectedCurrency = null; // 本币换U的选中币种
     
@@ -17,8 +19,14 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         // 获取后端传递的汇率数据
         try {
             var exchangeDataJson = document.getElementById('exchange-data').textContent;
+            var rateCtrlJson = document.getElementById('rate_ctrl-data').textContent;
+            var exchangeMerchantsJson = document.getElementById('exchange_merchants-data').textContent;
             exchangeData = JSON.parse(exchangeDataJson) || [];
+            rateCtrlData = JSON.parse(rateCtrlJson) || [];
+            exchangeMerchantsData = JSON.parse(exchangeMerchantsJson) || [];
             console.log('加载汇率数据:', exchangeData.length, '条记录');
+            console.log('加载费率控制数据:', rateCtrlData.length, '条记录');
+            console.log('加载商户数据:', exchangeMerchantsData.length, '条记录');
             
             // 初始化币种下拉框（U换本币和本币换U）
             initCurrencySelect();
@@ -28,9 +36,11 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
             renderExchangeRatesTable();
             renderReverseExchangeRatesTable();
         } catch (e) {
-            console.error('解析汇率数据失败:', e);
+            console.error('解析数据失败:', e);
             exchangeData = [];
-            layer.msg('加载汇率数据失败，请刷新页面重试', {icon: 2});
+            rateCtrlData = [];
+            exchangeMerchantsData = [];
+            layer.msg('加载数据失败，请刷新页面重试', {icon: 2});
         }
         
         // 绑定事件
@@ -45,16 +55,16 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         // 清空选项
         select.innerHTML = '<option value="">请选择币种</option>';
         
-        // 过滤J2平台且is=1的数据
-        var j2Data = exchangeData.filter(function(item) {
-            return item.version === 'J2' && item.is === 1;
+        // 过滤USD兑换且is=1的数据
+        var usdData = exchangeData.filter(function(item) {
+            return item.currency_from === 'USD' && item.is === 1;
         });
         
         // 添加选项
-        j2Data.forEach(function(item) {
+        usdData.forEach(function(item) {
             var option = document.createElement('option');
-            option.value = item.currency;
-            option.textContent = item.currency;
+            option.value = item.currency_to;
+            option.textContent = item.currency_to;
             select.appendChild(option);
         });
         
@@ -70,16 +80,16 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         // 清空选项
         select.innerHTML = '<option value="">请选择币种</option>';
         
-        // 过滤J2平台且is=1的数据
-        var j2Data = exchangeData.filter(function(item) {
-            return item.version === 'J2' && item.is === 1;
+        // 过滤USD兑换且is=1的数据，使用currency_from作为选项
+        var usdData = exchangeData.filter(function(item) {
+            return item.currency_to === 'USD' && item.is === 1;
         });
         
         // 添加选项
-        j2Data.forEach(function(item) {
+        usdData.forEach(function(item) {
             var option = document.createElement('option');
-            option.value = item.currency;
-            option.textContent = item.currency;
+            option.value = item.currency_from;
+            option.textContent = item.currency_from;
             select.appendChild(option);
         });
         
@@ -95,25 +105,31 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         // 清空表格内容
         tbody.innerHTML = '';
         
-        // 过滤J2平台且is=1的数据
-        var j2Data = exchangeData.filter(function(item) {
-            return item.version === 'J2' && item.is === 1;
+        // 过滤USD兑换且is=1的数据
+        var usdData = exchangeData.filter(function(item) {
+            return item.currency_from === 'USD' && item.is === 1;
         });
         
+        // 获取J2平台的默认手续费率
+        var j2RateCtrl = rateCtrlData.find(function(item) {
+            return item.version === 'J2';
+        });
+        var defaultFee = j2RateCtrl ? parseFloat(j2RateCtrl.fee || 0) : 0;
+        
         // 无数据提示
-        if (!j2Data || j2Data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无J2平台有效汇率数据</td></tr>';
+        if (!usdData || usdData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无有效汇率数据</td></tr>';
             return;
         }
         
         // 添加表格行
-        j2Data.forEach(function(item) {
+        usdData.forEach(function(item) {
             var row = document.createElement('tr');
             
             // 格式化数据
-            var currency = item.currency || '-';
+            var currency = item.currency_to || '-';
             var officialRate = parseFloat(item.official_rate || 0).toFixed(4);
-            var fee = (parseFloat(item.fee || 0) * 100).toFixed(2) + '%';
+            var fee = (defaultFee * 100).toFixed(2) + '%';
             var updateTime = item.insert_time || '-';
             
             // 创建表格单元格
@@ -143,25 +159,31 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         // 清空表格内容
         tbody.innerHTML = '';
         
-        // 过滤J2平台且is=1的数据
-        var j2Data = exchangeData.filter(function(item) {
-            return item.version === 'J2' && item.is === 1;
+        // 过滤USD兑换且is=1的数据
+        var usdData = exchangeData.filter(function(item) {
+            return item.currency_to === 'USD' && item.is === 1;
         });
         
+        // 获取J2平台的默认手续费率
+        var j2RateCtrl = rateCtrlData.find(function(item) {
+            return item.version === 'J2';
+        });
+        var defaultFee = j2RateCtrl ? parseFloat(j2RateCtrl.fee || 0) : 0;
+        
         // 无数据提示
-        if (!j2Data || j2Data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无J2平台有效汇率数据</td></tr>';
+        if (!usdData || usdData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">暂无有效汇率数据</td></tr>';
             return;
         }
         
         // 添加表格行
-        j2Data.forEach(function(item) {
+        usdData.forEach(function(item) {
             var row = document.createElement('tr');
             
             // 格式化数据
-            var currency = item.currency || '-';
+            var currency = item.currency_from || '-';
             var officialRate = parseFloat(item.official_rate || 0).toFixed(4);
-            var fee = (parseFloat(item.fee || 0) * 100).toFixed(2) + '%';
+            var fee = (defaultFee * 100).toFixed(2) + '%';
             var updateTime = item.insert_time || '-';
             
             // 创建表格单元格
@@ -193,10 +215,28 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
                 return;
             }
             
-            // 查找选中的币种数据，限定J2平台且is=1
+            // 查找选中的币种数据，限定USD兑换且is=1
             selectedCurrency = exchangeData.find(function(item) {
-                return item.currency === currencyCode && item.version === 'J2' && item.is === 1;
+                return item.currency_to === currencyCode && item.currency_from === 'USD' && item.is === 1;
             });
+            
+            // 获取J2平台的默认手续费率
+            if (selectedCurrency) {
+                var j2RateCtrl = rateCtrlData.find(function(item) {
+                    return item.version === 'J2';
+                });
+                if (j2RateCtrl) {
+                    document.getElementById('result-fee-input').value = (parseFloat(j2RateCtrl.fee || 0) * 100).toFixed(2);
+                }
+                
+                // 获取商户默认兑换费率
+                var merchant = exchangeMerchantsData.find(function(item) {
+                    return item.merchant_name === '1';
+                });
+                if (merchant) {
+                    document.getElementById('result-exchange-rate-input').value = (parseFloat(merchant.exchange_rate || 0) * 100).toFixed(2);
+                }
+            }
             
             console.log('选择币种 (U换本币):', selectedCurrency);
         });
@@ -214,6 +254,8 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
             selectedCurrency = null;
             // 清空手续费率输入框
             document.getElementById('result-fee-input').value = '';
+            // 清空兑换费率输入框
+            document.getElementById('result-exchange-rate-input').value = '';
         });
         
         // U换本币 - 金额输入框回车事件
@@ -231,6 +273,13 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
             }
         });
         
+        // U换本币 - 兑换费率输入框变化事件
+        document.getElementById('result-exchange-rate-input').addEventListener('input', function() {
+            if (selectedCurrency && document.getElementById('amount-input').value) {
+                calculateExchange();
+            }
+        });
+        
         // 本币换U - 币种选择事件
         form.on('select(reverse-currency-select)', function(data) {
             var currencyCode = data.value;
@@ -239,10 +288,28 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
                 return;
             }
             
-            // 查找选中的币种数据，限定J2平台且is=1
+            // 查找选中的币种数据，限定USD兑换且is=1
             reverseSelectedCurrency = exchangeData.find(function(item) {
-                return item.currency === currencyCode && item.version === 'J2' && item.is === 1;
+                return item.currency_from === currencyCode && item.currency_to === 'USD' && item.is === 1;
             });
+            
+            // 获取J2平台的默认手续费率
+            if (reverseSelectedCurrency) {
+                var j2RateCtrl = rateCtrlData.find(function(item) {
+                    return item.version === 'J2';
+                });
+                if (j2RateCtrl) {
+                    document.getElementById('reverse-result-fee-input').value = (parseFloat(j2RateCtrl.fee || 0) * 100).toFixed(2);
+                }
+                
+                // 获取商户默认兑换费率
+                var merchant = exchangeMerchantsData.find(function(item) {
+                    return item.merchant_name === '1';
+                });
+                if (merchant) {
+                    document.getElementById('reverse-result-exchange-rate-input').value = (parseFloat(merchant.exchange_rate || 0) * 100).toFixed(2);
+                }
+            }
             
             console.log('选择币种 (本币换U):', reverseSelectedCurrency);
         });
@@ -260,6 +327,8 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
             reverseSelectedCurrency = null;
             // 清空手续费率输入框
             document.getElementById('reverse-result-fee-input').value = '';
+            // 清空兑换费率输入框
+            document.getElementById('reverse-result-exchange-rate-input').value = '';
         });
         
         // 本币换U - 金额输入框回车事件
@@ -272,6 +341,13 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         
         // 本币换U - 手续费率输入框变化事件
         document.getElementById('reverse-result-fee-input').addEventListener('input', function() {
+            if (reverseSelectedCurrency && document.getElementById('reverse-amount-input').value) {
+                calculateReverseExchange();
+            }
+        });
+        
+        // 本币换U - 兑换费率输入框变化事件
+        document.getElementById('reverse-result-exchange-rate-input').addEventListener('input', function() {
             if (reverseSelectedCurrency && document.getElementById('reverse-amount-input').value) {
                 calculateReverseExchange();
             }
@@ -300,9 +376,12 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         var feeInput = document.getElementById('result-fee-input');
         var fee = parseFloat(feeInput.value) / 100;
         
-        // 如果手续费率输入框为空，使用数据库中的值
+        // 如果手续费率输入框为空，使用J2平台的默认值
         if (isNaN(fee)) {
-            fee = parseFloat(selectedCurrency.fee || 0);
+            var j2RateCtrl = rateCtrlData.find(function(item) {
+                return item.version === 'J2';
+            });
+            fee = parseFloat(j2RateCtrl.fee || 0);
             feeInput.value = (fee * 100).toFixed(2);
         }
         
@@ -312,18 +391,36 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         }
         
         // 计算最终报价
-        // 公式：W = T * (1 + fee) * official_rate，其中T为本币金额
-        var finalPrice = amount * (1 + fee) * officialRate;
+        // 公式：W = T * (1 + fee) / official_rate，其中T为本币金额
+        var finalPrice = amount * (1 + fee) / officialRate;
         
-        // 计算最终汇率：W / T
-        var finalRate = finalPrice / amount;
+        // 计算最终汇率：T / W
+        var finalRate = amount / finalPrice;
+        
+        // 获取兑换费率
+        var exchangeRateInput = document.getElementById('result-exchange-rate-input');
+        var exchangeRate = parseFloat(exchangeRateInput.value) / 100;
+        
+        // 如果兑换费率输入框为空，使用商户默认值
+        if (isNaN(exchangeRate)) {
+            var merchant = exchangeMerchantsData.find(function(item) {
+                return item.merchant_name === '1';
+            });
+            exchangeRate = merchant ? parseFloat(merchant.exchange_rate || 0) : 0;
+            exchangeRateInput.value = (exchangeRate * 100).toFixed(2);
+        }
+        
+        // 计算兑换额
+        // 公式：D = T * (1 + exchange_rate) / official_rate
+        var exchangeAmount = amount * (1 + exchangeRate) / officialRate;
         
         // 更新结果显示
-        document.getElementById('result-currency').textContent = selectedCurrency.currency;
+        document.getElementById('result-currency').textContent = selectedCurrency.currency_to;
         document.getElementById('result-rate').textContent = officialRate.toFixed(4);
         document.getElementById('result-amount').textContent = amount.toFixed(2);
         document.getElementById('result-total').textContent = finalPrice.toFixed(2);
         document.getElementById('result-final-rate').textContent = finalRate.toFixed(4);
+        document.getElementById('result-exchange-amount').textContent = exchangeAmount.toFixed(2);
         
         // 显示结果容器
         document.getElementById('result-container').style.display = 'block';
@@ -354,9 +451,12 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         var feeInput = document.getElementById('reverse-result-fee-input');
         var fee = parseFloat(feeInput.value) / 100;
         
-        // 如果手续费率输入框为空，使用数据库中的值
+        // 如果手续费率输入框为空，使用J2平台的默认值
         if (isNaN(fee)) {
-            fee = parseFloat(reverseSelectedCurrency.fee || 0);
+            var j2RateCtrl = rateCtrlData.find(function(item) {
+                return item.version === 'J2';
+            });
+            fee = parseFloat(j2RateCtrl.fee || 0);
             feeInput.value = (fee * 100).toFixed(2);
         }
         
@@ -366,18 +466,36 @@ layui.use(['element', 'layer', 'form', 'table'], function() {
         }
         
         // 计算最终报价
-        // 公式：W = B * (1 - X) / Y，其中W为本币数量，B为U数量，X为手续费率，Y为汇率
+        // 公式：W = B * (1 - fee) / official_rate，其中W为本币数量，B为U数量
         var finalPrice = amount * (1 - fee) / officialRate;
         
-        // 计算最终汇率：B / W = B / (B * (1 - X) / Y) = Y / (1 - X)
+        // 计算最终汇率：B / W = B / (B * (1 - fee) / official_rate) = official_rate / (1 - fee)
         var finalRate = officialRate / (1 - fee);
         
+        // 获取兑换费率
+        var exchangeRateInput = document.getElementById('reverse-result-exchange-rate-input');
+        var exchangeRate = parseFloat(exchangeRateInput.value) / 100;
+        
+        // 如果兑换费率输入框为空，使用商户默认值
+        if (isNaN(exchangeRate)) {
+            var merchant = exchangeMerchantsData.find(function(item) {
+                return item.merchant_name === '1';
+            });
+            exchangeRate = merchant ? parseFloat(merchant.exchange_rate || 0) : 0;
+            exchangeRateInput.value = (exchangeRate * 100).toFixed(2);
+        }
+        
+        // 计算兑换额
+        // 公式：D = B * (1 - exchange_rate) / official_rate
+        var exchangeAmount = amount * (1 - exchangeRate) / officialRate;
+        
         // 更新结果显示
-        document.getElementById('reverse-result-currency').textContent = reverseSelectedCurrency.currency;
+        document.getElementById('reverse-result-currency').textContent = reverseSelectedCurrency.currency_from;
         document.getElementById('reverse-result-rate').textContent = officialRate.toFixed(4);
         document.getElementById('reverse-result-amount').textContent = amount.toFixed(2);
         document.getElementById('reverse-result-total').textContent = finalPrice.toFixed(2);
         document.getElementById('reverse-result-final-rate').textContent = finalRate.toFixed(4);
+        document.getElementById('reverse-result-exchange-amount').textContent = exchangeAmount.toFixed(2);
         
         // 显示结果容器
         document.getElementById('reverse-result-container').style.display = 'block';
