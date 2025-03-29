@@ -91,24 +91,27 @@ def wallet_balance():
 def exchange_usdt():
     try:
         # 查询汇率
-        exchange_usdt = query_all_from_table('exchange_usdt')
+        exchange_usdt_new = query_all_from_table('exchange_usdt_new')
         regions = query_all_from_table('region')
+        rate_ctrl = query_all_from_table('rate_ctrl')
+        exchange_merchants = query_all_from_table('exchange_merchants')
         
         # 打印调试信息
-        print(f"查询到 {len(exchange_usdt) if exchange_usdt else 0} 条汇率记录")
+        print(f"查询到 {len(exchange_usdt_new) if exchange_usdt_new else 0} 条汇率记录")
         print(f"查询到 {len(regions) if regions else 0} 条地区记录")
+        print(f"查询到 {len(exchange_merchants) if exchange_merchants else 0} 条兑换商记录")
         
         # 如果数据为空，添加测试数据（仅用于测试前端显示）
-        if not exchange_usdt or len(exchange_usdt) == 0:
+        if not exchange_usdt_new or len(exchange_usdt_new) == 0:
             # 添加测试数据，仅用于开发阶段
             print("未找到钱包余额数据，使用测试数据")
         
         # 将数据转换为JSON并返回给前端
-        return render_template('main/exchange_usdt.html', exchange_usdt=exchange_usdt, regions=regions)
+        return render_template('main/exchange_usdt.html', exchange_usdt_new=exchange_usdt_new, regions=regions, rate_ctrl=rate_ctrl, exchange_merchants=exchange_merchants)
     except Exception as e:
         print(f"查询汇率数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
-        return render_template('main/exchange_usdt.html', exchange_usdt=[], regions=[])
+        return render_template('main/exchange_usdt.html', exchange_usdt_new=[], regions=[], rate_ctrl=[], exchange_merchants=[])
     
 @main_bp.route('/wallet_transactions')
 @login_required
