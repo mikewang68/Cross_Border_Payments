@@ -3,10 +3,8 @@ import logging
 from comm.utils import get_db
 
 logger = logging.getLogger(__name__)
-
 logger.setLevel(logging.DEBUG)
-
-handler = logging.FileHandler("db.log")
+handler = logging.FileHandler("error.log")
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 

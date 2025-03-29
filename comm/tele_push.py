@@ -6,7 +6,7 @@ from db_api import query_database
 from flat_data import flat_messages
 
 class TelegramPusher:
-    def __init__(self, log_file="tele_push.log"):
+    def __init__(self, log_file="error.log"):
         # 配置日志记录
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.DEBUG)

@@ -15,10 +15,8 @@ from comm.db_api import query_database
 
 # 配置日志记录
 logger = logging.getLogger(__name__)
-
 logger.setLevel(logging.DEBUG)
-
-handler = logging.FileHandler("gsalay_api.log")
+handler = logging.FileHandler("error.log")
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
