@@ -1,5 +1,7 @@
 import asyncio
 import logging
+
+from comm.tele_push import push_card_transactions
 from db_api import insert_database, update_database, batch_update_database
 from flat_data import flat_data
 from db_api import query_database
@@ -70,7 +72,7 @@ async def wallet_transactions(version):
 # 插入用户信息
 async def card_holder_insert(version):
     try:
-        logger.info(f'插入{version}平台用户信息')
+        logger.info(f'插入{version}平台card_holder信息')
         data = gsalary.get_card_holders(version)
         flatten_data = flat_data(version, data, 'data', 'card_holders')
         insert_database('card_holder', flatten_data)
@@ -80,7 +82,7 @@ async def card_holder_insert(version):
 # 对于card_holder表，更新所有用户信息
 async def card_holder_update(version):
     try:
-        logger.info(f'更新{version}平台用户信息')
+        logger.info(f'更新{version}平台card_holder信息')
         data = gsalary.get_card_holders(version)
         flatten_data = flat_data(version, data, 'data', 'card_holders')
         batch_update_database('card_holder', flatten_data, condition1='card_holder_id') 
@@ -90,7 +92,7 @@ async def card_holder_update(version):
 # 对于cards表，获取已开卡的基础信息，插入cards表中
 async def cards_insert(version):
     try:
-        logger.info(f'更新{version}平台所有卡基础信息')
+        logger.info(f'插入{version}平台cards信息')
         data = gsalary.query_cards(version)
         flatten_data = flat_data(version, data, 'data', 'cards')
         insert_database('cards', flatten_data)
@@ -100,7 +102,7 @@ async def cards_insert(version):
 # 对于cards表，获取所有卡的基础信息，更新到cards表中
 async def cards_update(version):
     try:
-        logger.info(f'更新{version}平台所有卡基础信息')
+        logger.info(f'更新{version}平台cards信息')
         data = gsalary.query_cards(version)
         flatten_data = flat_data(version, data, 'data', 'card_holders')
         batch_update_database('cards', flatten_data, condition1='card_id') 
@@ -110,6 +112,7 @@ async def cards_update(version):
 # 对于cards_info，获取具体卡的详细信息，插入到cards_info表中
 async def cards_info_insert(version):
     try:
+        logger.info(f'插入{version}平台cards_info信息')
         card_id_data = query_database('cards', 'version', version)
         data = []
         for i in card_id_data:
@@ -124,6 +127,7 @@ async def cards_info_insert(version):
 # 对于cards_info，获取具体卡的详细信息，更新到cards_info表中
 async def cards_info_update(version):
     try:
+        logger.info(f'更新{version}平台cards_info信息')
         card_id_data = query_database('cards', 'version', version)
         data = []
         for i in card_id_data:
@@ -138,6 +142,7 @@ async def cards_info_update(version):
 # 对于cards_secure_info，获取所有卡的机密信息，插入到cards_secure_info表中
 async def cards_secure_info_insert(version):
     try:
+        logger.info(f'插入{version}平台cards_secure_info信息')
         card_id_data = query_database('cards', 'version', version)
         data = []
         for i in card_id_data:
@@ -153,6 +158,7 @@ async def cards_secure_info_insert(version):
 # 对于cards_secure_info，获取所有卡的机密信息，更新到cards_secure_info表中
 async def cards_secure_info_update(version):
     try:
+        logger.info(f'更新{version}平台cards_secure_info信息')
         card_id_data = query_database('cards', 'version', version)
         data = []
         for i in card_id_data:
@@ -204,6 +210,16 @@ async def wallet_balance(version):
         update_database('wallet_balance', set,where) #表名
     except Exception as e:
         logger.error(f"插入钱包余额明细时出错: {e}")
+
+
+async def push_tele_messages():
+    logger.info(f'推送实时消息')
+    try:
+        # 交易明细
+        push_card_transactions()
+    except Exception as e:
+        logger.error(f"推送实时消息时出错: {e}")
+
 
 # 主任务函数，异步执行所有信息获取
 async def fetch_info():

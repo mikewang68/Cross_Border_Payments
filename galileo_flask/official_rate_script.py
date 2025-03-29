@@ -59,20 +59,20 @@ def update_to_usd(currency, rate):
 
 
     # 查询currency是否存在
-    cursor.execute("SELECT * FROM exchange_usdt_new WHERE currency_from = %s AND currency_to = 'USD'",(currency,))
+    cursor.execute("SELECT * FROM exchange_usdt WHERE currency_from = %s AND currency_to = 'USD'",(currency,))
     result = cursor.fetchone()
     current_time = datetime.now()
     insert_time = current_time.strftime("%Y%m%d%H%M%S%f")
 
     if result:  # 如果currency存在，更新official_rate
         cursor.execute("""
-            UPDATE exchange_usdt_new
+            UPDATE exchange_usdt
             SET official_rate = %s,insert_time = %s
             WHERE currency_from = %s AND currency_to = 'USD'
         """, (rate, insert_time, currency))
     else:  # 如果currency不存在，插入新数据
         cursor.execute("""
-            INSERT INTO exchange_usdt_new (currency_from, currency_to,official_rate, insert_time)
+            INSERT INTO exchange_usdt (currency_from, currency_to,official_rate, insert_time)
             VALUES (%s, %s, %s, %s)
         """, (currency, 'USD',rate, insert_time))  # 假设其他字段的值为默认值
 
@@ -94,20 +94,20 @@ def update_from_usd(currency, rate):
 
 
     # 查询currency是否存在
-    cursor.execute("SELECT * FROM exchange_usdt_new WHERE currency_to = %s AND currency_from = 'USD'",(currency,))
+    cursor.execute("SELECT * FROM exchange_usdt WHERE currency_to = %s AND currency_from = 'USD'",(currency,))
     result = cursor.fetchone()
     current_time = datetime.now()
     insert_time = current_time.strftime("%Y%m%d%H%M%S%f")
 
     if result:  # 如果currency存在，更新official_rate
         cursor.execute("""
-            UPDATE exchange_usdt_new
+            UPDATE exchange_usdt
             SET official_rate = %s,insert_time = %s
             WHERE currency_to = %s AND currency_from = 'USD'
         """, (rate, insert_time, currency))
     else:  # 如果currency不存在，插入新数据
         cursor.execute("""
-            INSERT INTO exchange_usdt_new (currency_from, currency_to,official_rate, insert_time)
+            INSERT INTO exchange_usdt (currency_from, currency_to,official_rate, insert_time)
             VALUES (%s, %s, %s, %s)
         """, ('USD', currency,rate, insert_time))  # 假设其他字段的值为默认值
 

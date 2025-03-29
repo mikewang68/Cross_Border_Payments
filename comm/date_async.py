@@ -6,7 +6,6 @@ from galileo_flask.official_rate_script import fetch_exchange_rate
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 handler = logging.FileHandler("async.log")
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)

@@ -15,10 +15,8 @@ from comm.db_api import query_database
 
 # 配置日志记录
 logger = logging.getLogger(__name__)
-
 logger.setLevel(logging.DEBUG)
-
-handler = logging.FileHandler("gsalay_api.log")
+handler = logging.FileHandler("error.log")
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
@@ -321,7 +319,7 @@ class GSalaryAPI:
             card_id: 卡片ID
             data: 需要修改的卡片信息
         """
-        return self.make_gsalary_request("PUT", f"/cards/{card_id}", data)
+        return self.make_gsalary_request("PUT", f"/v1/cards/{card_id}", system_id=system_id, data = data)
 
     def cancel_card(self, system_id,card_id: str) -> Dict[str, Any]:
         """注销卡片
@@ -329,7 +327,7 @@ class GSalaryAPI:
         Args:
             card_id: 卡片ID
         """
-        return self.make_gsalary_request("DELETE", f"/cards/{card_id}")
+        return self.make_gsalary_request("DELETE", f"/v1/cards/{card_id}",system_id=system_id)
 
 
     def get_card_secure_info(self, system_id,card_id: str) -> Dict[str, Any]:
@@ -373,15 +371,15 @@ class GSalaryAPI:
         """
         return self.make_gsalary_request("GET", f"/cards/batch-balance/{batch_id}")
 
-    def freeze_unfreeze_card(self, system_id,card_id: str, freeze: bool) -> Dict[str, Any]:
+    def freeze_unfreeze_card(self, system_id,card_id: str, data: Dict) -> Dict[str, Any]:
         """冻结/解冻卡片
         
         Args:
             card_id: 卡片ID
             freeze: True表示冻结，False表示解冻
         """
-        action = "freeze" if freeze else "unfreeze"
-        return self.make_gsalary_request("PUT", f"/cards/{card_id}/{action}")
+        # action = "freeze" if freeze else "unfreeze"
+        return self.make_gsalary_request("PUT", f"/v1/cards/{card_id}/freeze_status",system_id=system_id,data=data)
 
 
     def get_card_transactions(self, system_id, params: Optional[Dict] = None) -> Dict[str, Any]:
