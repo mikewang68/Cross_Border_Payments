@@ -242,7 +242,8 @@ async def fetch_info():
             cards_info_insert(version),
             cards_info_update(version),
             cards_insert(version),
-            cards_update(version)
+            cards_update(version),
+            push_tele_messages()
 
         ]
         all_tasks.extend(tasks)

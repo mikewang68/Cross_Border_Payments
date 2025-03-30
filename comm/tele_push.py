@@ -87,7 +87,8 @@ def push_card_transactions ():
                         logging.warning(f"未找到 card_id {card_id} 的 Telegram chat_id，跳过推送。")
                         continue
 
-                    if user_login != 1:
+                    if user_login != '1':
+
                         logging.warning(f"用户 {card_id} 处于解绑状态，跳过推送。")
                         continue
 
@@ -101,6 +102,8 @@ def push_card_transactions ():
                     transaction = info[0]
 
                     push_message = "\n".join([f"{key}: {value}" for key, value in transaction.items()])
+
+                    print(push_message)
 
                     # 逐条推送信息
                     response = tele_pusher.push_message(push_message, chat_id)
