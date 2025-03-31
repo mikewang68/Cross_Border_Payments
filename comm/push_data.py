@@ -3,7 +3,7 @@ from db_api import update_database, query_all_from_table, query_database, query_
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler("push_data.log")
+handler = logging.FileHandler("error.log")
 handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(handler)
 
@@ -74,7 +74,12 @@ def match_last_insert_time(last_insert_time,db_last_insert_time):
 
 # 获取新插入数据
 def get_new_ins_data(table_name,column_name,column_value,m):
+    try:
+        all_data = query_match_from_table(table_name, column_name,column_value,m)
 
-    all_data = query_match_from_table(table_name, column_name,column_value,m)
+        return all_data
 
-    return all_data
+    except Exception as e:
+        logger.error(f"获取新插入数据时出错: {e}")
+
+

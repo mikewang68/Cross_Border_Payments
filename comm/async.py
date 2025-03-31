@@ -1,5 +1,7 @@
 import asyncio
 import logging
+
+from comm.tele_push import push_card_transactions
 from db_api import insert_database, update_database, batch_update_database
 from flat_data import flat_data
 from db_api import query_database
@@ -209,6 +211,16 @@ async def wallet_balance(version):
     except Exception as e:
         logger.error(f"插入钱包余额明细时出错: {e}")
 
+
+async def push_tele_messages():
+    logger.info(f'推送实时消息')
+    try:
+        # 交易明细
+        push_card_transactions()
+    except Exception as e:
+        logger.error(f"推送实时消息时出错: {e}")
+
+
 # 主任务函数，异步执行所有信息获取
 async def fetch_info():
     # 查询平台
@@ -230,7 +242,8 @@ async def fetch_info():
             cards_info_insert(version),
             cards_info_update(version),
             cards_insert(version),
-            cards_update(version)
+            cards_update(version),
+            push_tele_messages()
 
         ]
         all_tasks.extend(tasks)
