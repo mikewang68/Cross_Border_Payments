@@ -3,7 +3,7 @@ from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import query_all_from_table
-from sync.realtime import realtime_card_info_update
+from sync.realtime import realtime_card_info_update, modify_response_data_insert
 import time
 import uuid
 
@@ -505,6 +505,51 @@ def cancel_card():
             return jsonify({
                 "code": 1,
                 "msg": "销卡失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+
+@main_bp.route('/cards/modify_card_balance')
+@login_required
+def modify_card_balance():
+    return render_template('main/modify_card_balance.html')
+
+# 冻结或者解冻卡片
+@main_bp.route('/cards/modify_card', methods=['POST'])
+@login_required
+def modify_card():
+    try:
+        # 获取表单数据
+        data = request.get_json()
+        request_id = str(uuid.uuid4())
+        data['request_id'] = request_id
+        version = data.pop('version')
+        gsalary_api = GSalaryAPI()
+        # 调用API进行冻结或者解冻
+        result = gsalary_api.modify_card_balance(system_id=version, data = data)
+        if result['result']['result'] == 'S':
+            modify_response_data_insert(version, result)
+            if result['data']['status'] == 'SUCCESS':
+                return jsonify({
+                    "code": 0,
+                    "msg": "调额成功",
+                    "data": result
+                })
+            else:
+                return jsonify({
+                "code": 1,
+                "msg": "调额失败",
+                "data": None
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "服务器访问出错，调额失败",
                 "data": None
             })
     except Exception as e:

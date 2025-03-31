@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>调整卡额度</title>
+    <link rel="stylesheet" href="/static/layui/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/css/modify_card_balance.css" media="all">
+    <script src="/static/layui/layui.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="layui-container">
+        <div class="card-info">
+            <h3>卡信息</h3>
+            <div class="layui-form-item">
+                <label class="layui-form-label">卡ID:</label>
+                <div class="layui-input-block">
+                    <input type="text" id="card_id" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">卡号:</label>
+                <div class="layui-input-block">
+                    <input type="text" id="mask_card_number" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名:</label>
+                <div class="layui-input-block">
+                    <input type="text" id="full_name" class="layui-input" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">平台号:</label>
+                <div class="layui-input-block">
+                    <input type="text" id="version" class="layui-input" readonly>
+                </div>
+            </div>
+        </div>
+
+        <form class="layui-form">
+            <h3>调整金额</h3>
+            <div class="layui-form-item">
+                <label class="layui-form-label">操作类型:</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="type" value="INCREASE" title="增加" checked>
+                    <input type="radio" name="type" value="DECREASE" title="减少">
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label">金额:</label>
+                <div class="layui-input-block">
+                    <input type="number" step="0.01" id="amount" name="amount" placeholder="请输入调整金额" class="layui-input" required lay-verify="required|number">
+                    <span id="currency_label">USD</span>
+                    <span id="account_balance_label" class="account-balance-info"></span>
+                    <span id="platform_balance_label" class="account-balance-info"></span>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="submitForm">提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <script src="/static/js/modify_card_balance.js"></script>
+</body>
+</html>
