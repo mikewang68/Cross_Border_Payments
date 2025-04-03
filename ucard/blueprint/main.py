@@ -598,7 +598,7 @@ def modify_card_info():
         # 调用API进行冻结或者解冻
         result = gsalary_api.modify_card(system_id=version, data = data)
         if result['result']['result'] == 'S':
-            modify_response_data_insert(version, result)
+            modify_response_data_insert(version = version, result = result)
             if result['data']['status'] == 'SUCCESS':
                 return jsonify({
                     "code": 0,
