@@ -87,7 +87,8 @@ def push_card_transactions ():
                         logging.warning(f"未找到 card_id {card_id} 的 Telegram chat_id，跳过推送。")
                         continue
 
-                    if user_login != 1:
+                    if user_login != '1':
+
                         logging.warning(f"用户 {card_id} 处于解绑状态，跳过推送。")
                         continue
 
@@ -111,6 +112,15 @@ def push_card_transactions ():
                         upd_last_insert_time(fun, data_insert_time)
                     else:
                         logging.error(f"向 {chat_id} 发送失败: {response}")
+
+
+def push_daily_report ():
+
+    push_message="日报"
+    chat_id = "7212691236"
+    response = tele_pusher.push_message(push_message, chat_id)
+
+    return response
 
 
 

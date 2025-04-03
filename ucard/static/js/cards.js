@@ -336,7 +336,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         area: ['800px', '600px'],
                         content: '/cards/cards_apply',
                         end: function(){
-                            table.reload('user-table', {
+                            table.reload('cards-table', {
                                 page: {
                                     curr: 1 // 重新从第一页开始
                                 }
@@ -357,8 +357,34 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                     case 'detail':
                         layer.msg('查看详情功能待实现', {icon: 0});
                         break;
-                    case 'adjust':
-                        layer.msg('调额功能待实现', {icon: 0});
+                    case 'modify':
+                        // 打开调额弹窗 - 使用iframe加载独立的HTML页面
+                        layer.open({
+                            type: 2,  // iframe类型
+                            title: '调整卡额度',
+                            area: ['500px', '500px'],
+                            content: '/cards/modify_card_balance',  // 加载后端路由
+                            success: function(layero, index) {
+                                // 获取iframe中的window对象
+                                var iframeWin = window[layero.find('iframe')[0]['name']];
+                                
+                                // 传递数据到iframe
+                                iframeWin.initCardData({
+                                    card_id: data.card_id,
+                                    mask_card_number: data.mask_card_number,
+                                    first_name: data.first_name,
+                                    last_name: data.last_name,
+                                    version: data.version,
+                                    available_balance: data.available_balance,
+                                    card_currency: data.card_currency || 'USD',
+                                    wallet_balance_data: wallet_balance_data
+                                });
+                            },
+                            end: function() {
+                                // 弹窗关闭后刷新表格
+                                table.reload('cards-table');
+                            }
+                        });
                         break;
                     case 'set_limit':
                         layer.msg('设置限额功能待实现', {icon: 0});

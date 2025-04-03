@@ -338,14 +338,14 @@ class GSalaryAPI:
         """
         return self.make_gsalary_request("GET", f"/v1/cards/{card_id}/secure_info",system_id=system_id)
 
-    def modify_card_balance(self, system_id,card_id: str, data: Dict) -> Dict[str, Any]:
+    def modify_card_balance(self, system_id, data: Dict) -> Dict[str, Any]:
         """修改卡片余额
         
         Args:
             card_id: 卡片ID
             data: 余额修改信息，包含金额、币种、描述等
         """
-        return self.make_gsalary_request("POST", f"/cards/{card_id}/balance", data)
+        return self.make_gsalary_request("POST", f"/v1/cards/balance_modifies", system_id=system_id, data = data)
     
     def batch_modify_balance(self, system_id,data: Dict) -> Dict[str, Any]:
         """批量修改卡片余额

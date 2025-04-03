@@ -213,7 +213,7 @@ def fetch_exchange_rate():
     global currencies
     global channel
 
-    data = query_field_from_table('region', 'currency', 'is_referenced = 1')
+    data = query_field_from_table('region', 'currency')
     currencies = list(set(data))
 
     print(currencies)

@@ -184,7 +184,7 @@ def query_database(table_name, column_name, query_value):
         conn.close()
 
 
-def query_field_from_table(table_name, field_name):
+def query_field_from_table(table_name, field_name, condition=None):
     conn = create_db_connection()
     if conn is None:
         logger.error("无法建立数据库连接，程序退出。")
@@ -192,8 +192,10 @@ def query_field_from_table(table_name, field_name):
 
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     try:
-        # 构建查询指定字段的 SQL 语句
+        # 构建查询 SQL 语句
         sql = f"SELECT {field_name} FROM {table_name}"
+        if condition:
+            sql += f" WHERE {condition}"
         cursor.execute(sql)
         results = cursor.fetchall()
         # 提取指定字段的值
@@ -229,7 +231,6 @@ def query_all_from_table(table_name):
     finally:
         cursor.close()
         conn.close()
-
 
 def query_match_from_table(table_name, column_name,column_value,m):
     conn = create_db_connection()
