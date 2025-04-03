@@ -540,7 +540,9 @@ function openTransactionDetails(currencyData) {
             area: ['90%', '80%'], // 修改为相对宽度而非固定宽度
             maxWidth: 1200, // 设置最大宽度
             shadeClose: true,
-            maxmin: true, // 允许最大化
+            move: false,  // 禁止移动
+            maxmin: false,  // 禁用最大化和最小化
+            resize: false,  // 禁止调整大小
             content: $('#transactionsContainer'),
             success: function(layero, index) {
                 // 调整弹窗位置，确保在屏幕中居中

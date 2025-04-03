@@ -103,8 +103,6 @@ def push_card_transactions ():
 
                     push_message = "\n".join([f"{key}: {value}" for key, value in transaction.items()])
 
-                    print(push_message)
-
                     # 逐条推送信息
                     response = tele_pusher.push_message(push_message, chat_id)
 
@@ -114,6 +112,15 @@ def push_card_transactions ():
                         upd_last_insert_time(fun, data_insert_time)
                     else:
                         logging.error(f"向 {chat_id} 发送失败: {response}")
+
+
+def push_daily_report ():
+
+    push_message="日报"
+    chat_id = "7212691236"
+    response = tele_pusher.push_message(push_message, chat_id)
+
+    return response
 
 
 
