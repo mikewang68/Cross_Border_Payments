@@ -1,29 +1,41 @@
 <!-- 钱包交易明细弹窗内容 -->
 <div class="transactions-container">
-    <div class="transactions-header">
-        <div class="currency-info">
+    <!-- 钱包信息卡片 -->
+    <div class="wallet-info-card">
+        <div class="wallet-header">
             <div class="currency-flag" id="currency-flag">
                 <!-- 国旗图片将通过JS动态添加 -->
             </div>
-            <div class="currency-name-container">
-                <span class="currency-code" id="currency-code">USD</span>
-                <!-- 移除货币全称显示 -->
+            <div class="currency-icon">
+                <i class="layui-icon layui-icon-dollar" style="font-size: 24px; color: rgba(255,255,255,0.9);"></i>
+            </div>
+            <div class="currency-info">
+                <div class="currency-code">USD</div>
+                
             </div>
         </div>
-    </div>
-    
-    <div class="balance-summary">
-        <div class="balance-item">
-            <div class="balance-label">账户总额</div>
-            <div class="balance-amount" id="total-balance">$ 877.52</div>
-        </div>
-        <div class="balance-item">
-            <div class="balance-label">共享卡已开卡余额</div>
-            <div class="balance-amount" id="shared-balance">$ 826.12</div>
-        </div>
-        <div class="balance-item">
-            <div class="balance-label">可用余额</div>
-            <div class="balance-amount" id="available-balance">$ 51.4</div>
+        <div class="balance-info">
+            <div class="balance-item">
+                <div class="balance-label">账户总额</div>
+                <div class="balance-value">
+                    723.91
+                    <span class="balance-currency">USD</span>
+                </div>
+            </div>
+            <div class="balance-item">
+                <div class="balance-label">共享卡已开卡余额</div>
+                <div class="balance-value">
+                    672.50
+                    <span class="balance-currency">USD</span>
+                </div>
+            </div>
+            <div class="balance-item">
+                <div class="balance-label">可用余额</div>
+                <div class="balance-value">
+                    51.41
+                    <span class="balance-currency">USD</span>
+                </div>
+            </div>
         </div>
     </div>
     

@@ -19,7 +19,8 @@ layui.use(['element', 'layer'], function(){
             'balance_history',
             'wallet_balance',
             'cards',
-            'exchange_usdt'
+            'exchange_usdt',
+            'daily'
         ];
         
         // 检查功能是否已实现

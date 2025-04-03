@@ -1,0 +1,356 @@
+/* 钱包交易明细样式 */
+.transactions-container {
+    padding: 0 20px 20px;
+    width: 100%;
+    box-sizing: border-box;
+    max-height: 78vh;
+    overflow-y: auto;
+}
+
+/* 头部样式 */
+.transactions-header {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.currency-info {
+    display: flex;
+    align-items: center;
+}
+
+.currency-flag {
+    width: 36px;
+    height: 24px;
+    margin-right: 10px;
+    overflow: hidden;
+    border-radius: 3px;
+}
+
+.currency-flag img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 国旗占位符样式 */
+.flag-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+}
+
+.currency-name-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.currency-code {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.currency-name {
+    font-size: 12px;
+    color: #999;
+}
+
+/* 余额摘要样式 */
+.balance-summary {
+    display: flex;
+    justify-content: space-between;
+    background-color: #f8f8f8;
+    padding: 15px;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.balance-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.balance-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.balance-amount {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 搜索栏样式 */
+.transactions-search {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+    flex-wrap: wrap;
+    gap: 12px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.search-input {
+    width: 180px;
+    flex-shrink: 0;
+}
+
+.search-input input,
+.search-input select {
+    width: 100%;
+    height: 38px;
+    line-height: 38px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+    background-color: #fff;
+    color: #333;
+}
+
+.search-input input:focus,
+.search-input select:focus {
+    border-color: #1E9FFF;
+    box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.1);
+    outline: none;
+}
+
+.search-input input::placeholder,
+.search-input select::placeholder {
+    color: #aaa;
+}
+
+/* 保留这些样式用于兼容性 */
+.search-box, .search-type {
+    width: 180px;
+    flex-shrink: 0;
+}
+
+.date-filter {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 300px;
+}
+
+.date-filter input {
+    flex: 1;
+    min-width: 120px;
+    height: 38px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    background-color: #fff;
+}
+
+.date-filter input:focus {
+    border-color: #1E9FFF;
+    box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.1);
+    outline: none;
+}
+
+.date-separator {
+    margin: 0 8px;
+    flex-shrink: 0;
+    color: #666;
+}
+
+.search-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.search-actions button {
+    min-width: 80px;
+    height: 38px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.search-actions button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* 表格容器样式确保内容可滚动 */
+.transactions-table {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* 确保表格在弹窗中正确显示 */
+#transactions-table {
+    min-width: 800px;
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+#transactions-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    word-break: keep-all;
+    white-space: nowrap;
+}
+
+#transactions-table td {
+    padding: 8px 10px;
+    vertical-align: middle;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 金额显示样式 */
+.positive-amount {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.negative-amount {
+    color: #F44336;
+    font-weight: bold;
+}
+
+/* 交易类型样式 */
+td:nth-child(3) {
+    font-weight: bold;
+}
+
+/* 让备注列可以换行 */
+td:nth-child(7) {
+    white-space: normal;
+    max-width: 200px;
+    word-break: break-word;
+}
+
+/* 响应式表格 */
+@media screen and (max-width: 768px) {
+    #transactions-table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+/* 分页样式 */
+.transactions-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* 弹窗样式 */
+.layui-layer-title {
+    background-color: #fff;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.layui-layer-dialog .layui-layer-content {
+    padding: 0;
+    overflow: hidden;
+}
+
+/* 适应移动设备 */
+@media (max-width: 768px) {
+    .balance-summary {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .transactions-search {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .search-input, .search-box, .search-type {
+        width: 100%;
+    }
+    
+    .date-filter {
+        grid-column: span 2;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+    }
+    
+    .search-actions {
+        grid-column: span 2;
+        justify-content: center;
+    }
+}
+
+/* 版权信息样式 */
+.footer-info {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px 0;
+    color: #999;
+    font-size: 12px;
+}
+
+/* 列宽度控制 */
+#transactions-table th:nth-child(1), 
+#transactions-table td:nth-child(1) {
+    width: 16%;
+}
+
+#transactions-table th:nth-child(2), 
+#transactions-table td:nth-child(2) {
+    width: 16%;
+}
+
+#transactions-table th:nth-child(3), 
+#transactions-table td:nth-child(3) {
+    width: 16%;
+}
+
+#transactions-table th:nth-child(4), 
+#transactions-table td:nth-child(4) {
+    width: 12%;
+    text-align: right;
+    padding-right: 15px;
+    min-width: 120px;
+}
+
+#transactions-table th:nth-child(5), 
+#transactions-table td:nth-child(5) {
+    width: 12%;
+    text-align: right;
+    padding-right: 15px;
+    min-width: 120px;
+}
+
+#transactions-table th:nth-child(6), 
+#transactions-table td:nth-child(6) {
+    width: 8%;
+}
+
+#transactions-table th:nth-child(7), 
+#transactions-table td:nth-child(7) {
+    width: 20%;
+    white-space: normal;
+    word-break: break-word;
+}

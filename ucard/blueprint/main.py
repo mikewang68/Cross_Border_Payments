@@ -134,13 +134,7 @@ def wallet_transactions():
             wallet_balances = [
                 {"currency": "USD", "amount": 936.12, "user_id": "test_user", "update_time": "2023-03-13 18:48:52"}
             ]
-        # if not wallet_transactions or len(wallet_transactions) == 0:
-        #     # 添加测试数据，仅用于开发阶段
-        #     print("未找到钱包交易记录，使用测试数据")
-        #     wallet_transactions = [
-        #         {"insert_time": "2023-03-13 18:48:52""currency": "USD", "amount": 936.12, "user_id": "test_user", }
-        #     ]
-        
+           
         # 将数据转换为JSON并返回给前端
         return render_template('main/wallet_transactions.html', wallet_balances=wallet_balances, wallet_transactions=wallet_transactions, regions=regions)
     except Exception as e:
@@ -148,6 +142,35 @@ def wallet_transactions():
         # 返回空列表，避免模板渲染错误
         return render_template('main/wallet_transactions.html', wallet_balances=[], wallet_transactions=[], regions=[])
 
+@main_bp.route('/daily')
+@login_required
+def daily():
+    try:
+        # 查询钱包交易记录
+        wallet_transactions = query_all_from_table('wallet_transactions')
+        # 查询钱包余额
+        wallet_balances = query_all_from_table('wallet_balance')
+        # 
+        cards = query_all_from_table('cards')
+        # 
+        balance_history = query_all_from_table('balance_history')
+        card_transactions = query_all_from_table('card_transactions')     
+        # 打印调试信息
+        print(f"查询到 {len(cards) if cards else 0} 条卡记录")
+        print(f"查询到 {len(balance_history) if balance_history else 0} 条交易明细记录")
+        print(f"查询到 {len(card_transactions) if card_transactions else 0} 条卡交易明细记录")
+        # 如果数据为空，添加测试数据（仅用于测试前端显示）
+        if not cards or len(cards) == 0:
+            # 添加测试数据，仅用于开发阶段
+            print("未找到卡数据，使用测试数据")
+                    
+        # 将数据转换为JSON并返回给前端
+        return render_template('main/daily.html', cards=cards, balance_history=balance_history, card_transactions=card_transactions, wallet_transactions=wallet_transactions, wallet_balances=wallet_balances)
+    except Exception as e:
+        print(f"查询钱包数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/daily.html', cards=[], balance_history=[], card_transactions=[],wallet_transactions=[],wallet_balances=[])
+    
 @main_bp.route('/recharge')
 @login_required
 def recharge():
