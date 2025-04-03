@@ -522,7 +522,7 @@ def cancel_card():
 def modify_card_balance():
     return render_template('main/modify_card_balance.html')
 
-# 冻结或者解冻卡片
+# 调额
 @main_bp.route('/cards/modify_card', methods=['POST'])
 @login_required
 def modify_card():
@@ -535,6 +535,45 @@ def modify_card():
         gsalary_api = GSalaryAPI()
         # 调用API进行冻结或者解冻
         result = gsalary_api.modify_card_balance(system_id=version, data = data)
+        if result['result']['result'] == 'S':
+            modify_response_data_insert(version, result)
+            if result['data']['status'] == 'SUCCESS':
+                return jsonify({
+                    "code": 0,
+                    "msg": "调额成功",
+                    "data": result
+                })
+            else:
+                return jsonify({
+                "code": 1,
+                "msg": "调额失败",
+                "data": None
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "服务器访问出错，调额失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+    
+# 修改卡信息包括卡昵称和每日限额，每月限额，单笔交易限额
+@main_bp.route('/cards/modify_card_info', methods=['PUT'])
+@login_required
+def modify_card_info():
+    try:
+        # 获取表单数据
+        data = request.get_json()
+        version = data.pop('version')
+        type = data.pop('type')
+        gsalary_api = GSalaryAPI()
+        # 调用API进行冻结或者解冻
+        result = gsalary_api.modify_card(system_id=version, data = data)
         if result['result']['result'] == 'S':
             modify_response_data_insert(version, result)
             if result['data']['status'] == 'SUCCESS':

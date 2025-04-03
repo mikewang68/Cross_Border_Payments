@@ -324,6 +324,57 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
             });
         }
 
+        // 显示卡片详情弹窗
+        function showCardDetail(data) {
+            // 获取卡片状态中文映射
+            var statusMap = {
+                'ACTIVE': '激活',
+                'FROZEN': '冻结',
+                'CANCELLED': '销卡',
+                'EXPIRED': '过期',
+                'INACTIVE': '待激活',
+                'FREEZING': '冻结中',
+                'UNFREEZING': '解冻中',
+                'CANCELLING': '销卡中'
+            };
+
+            // 计算剩余有效期
+            var remainingMonths = calculateRemainingMonths(data.expire_year, data.expire_month);
+
+            layer.open({
+                type: 1,
+                title: '卡片详情',
+                area: ['600px', '550px'],
+                content: `
+                    <div class="layui-card">
+                        <div class="layui-card-body">
+                            <table class="layui-table">
+                                <colgroup>
+                                    <col width="30%">
+                                    <col width="70%">
+                                </colgroup>
+                                <tbody>
+                                    <tr><td>卡号</td><td>${data.mask_card_number || '--'}</td></tr>
+                                    <tr><td>卡ID</td><td>${data.card_id || '--'}</td></tr>
+                                    <tr><td>姓名</td><td>${data.first_name || ''} ${data.last_name || ''}</td></tr>
+                                    <tr><td>卡昵称</td><td>${data.card_name || '--'}</td></tr>
+                                    <tr><td>卡组织</td><td>${data.brand_code || '--'}</td></tr>
+                                    <tr><td>平台</td><td>${data.version || '--'}</td></tr>
+                                    <tr><td>币种</td><td>${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>可用余额</td><td>${data.available_balance || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>单笔限额</td><td>${data.limit_per_transaction || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>日限额</td><td>${data.limit_per_day || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>月限额</td><td>${data.limit_per_month || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>有效期</td><td>${data.expire_month || '--'}月/${data.expire_year || '--'}年 (剩余${remainingMonths}个月)</td></tr>
+                                    <tr><td>卡片状态</td><td>${statusMap[data.cards_status] || data.cards_status || '--'}</td></tr>
+                                    <tr><td>申请时间</td><td>${formatTime(data.create_time)}</td></tr>
+                                    <tr><td>激活时间</td><td>${formatTime(data.active_time)}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>`
+            });
+        }
 
         // 初始化事件监听
         function initEventListeners() {
@@ -355,7 +406,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                 
                 switch(layEvent) {
                     case 'detail':
-                        layer.msg('查看详情功能待实现', {icon: 0});
+                        showCardDetail(data);
                         break;
                     case 'modify':
                         // 打开调额弹窗 - 使用iframe加载独立的HTML页面
@@ -388,6 +439,16 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         break;
                     case 'set_limit':
                         layer.msg('设置限额功能待实现', {icon: 0});
+                        break;
+                    case 'edit_nickname':
+                        layer.prompt({
+                            formType: 0,
+                            title: '编辑卡昵称',
+                                alue: data.card_name || ''
+                        }, function(value, index){
+                            layer.msg('昵称修改功能待实现', {icon: 0});
+                            layer.close(index);
+                        });
                         break;
                     case 'cancel':
                         layer.confirm('确定要销卡吗？确定后销卡操作无法撤回', function(index){
@@ -586,16 +647,6 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 layer.msg('只能解冻冻结状态的卡', {icon: 2});
                                 layer.close(index);
                             }
-                        });
-                        break;
-                    case 'edit_nickname':
-                        layer.prompt({
-                            formType: 0,
-                            title: '编辑卡昵称',
-                            value: data.card_name || ''
-                        }, function(value, index){
-                            layer.msg('昵称修改功能待实现', {icon: 0});
-                            layer.close(index);
                         });
                         break;
                 }
