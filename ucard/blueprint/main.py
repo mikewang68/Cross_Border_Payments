@@ -4,8 +4,11 @@ from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import query_all_from_table
 from sync.realtime import realtime_card_info_update, modify_response_data_insert
+from comm.db_api import batch_update_database
+
 import time
 import uuid
+
 
 main_bp = Blueprint('main', __name__)
 
@@ -91,27 +94,27 @@ def wallet_balance():
 def exchange_usdt():
     try:
         # 查询汇率
-        exchange_usdt_new = query_all_from_table('exchange_usdt_new')
+        exchange_usdt = query_all_from_table('exchange_usdt')
         regions = query_all_from_table('region')
         rate_ctrl = query_all_from_table('rate_ctrl')
         exchange_merchants = query_all_from_table('exchange_merchants')
         
         # 打印调试信息
-        print(f"查询到 {len(exchange_usdt_new) if exchange_usdt_new else 0} 条汇率记录")
+        print(f"查询到 {len(exchange_usdt) if exchange_usdt else 0} 条汇率记录")
         print(f"查询到 {len(regions) if regions else 0} 条地区记录")
         print(f"查询到 {len(exchange_merchants) if exchange_merchants else 0} 条兑换商记录")
         
         # 如果数据为空，添加测试数据（仅用于测试前端显示）
-        if not exchange_usdt_new or len(exchange_usdt_new) == 0:
+        if not exchange_usdt or len(exchange_usdt) == 0:
             # 添加测试数据，仅用于开发阶段
             print("未找到钱包余额数据，使用测试数据")
         
         # 将数据转换为JSON并返回给前端
-        return render_template('main/exchange_usdt.html', exchange_usdt_new=exchange_usdt_new, regions=regions, rate_ctrl=rate_ctrl, exchange_merchants=exchange_merchants)
+        return render_template('main/exchange_usdt.html', exchange_usdt=exchange_usdt, regions=regions, rate_ctrl=rate_ctrl, exchange_merchants=exchange_merchants)
     except Exception as e:
         print(f"查询汇率数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
-        return render_template('main/exchange_usdt.html', exchange_usdt_new=[], regions=[], rate_ctrl=[], exchange_merchants=[])
+        return render_template('main/exchange_usdt.html', exchange_usdt=[], regions=[], rate_ctrl=[], exchange_merchants=[])
     
 @main_bp.route('/wallet_transactions')
 @login_required
@@ -584,3 +587,108 @@ def modify_card():
             "msg": f"发生错误: {str(e)}",
             "data": None
         })
+
+
+@main_bp.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    """管理员密码修改功能"""
+    if request.method == 'GET':
+        # 渲染密码修改页面，并在页面中显示当前登录的用户名
+        user_account = session.get('user_account', '')
+        print(f"当前登录用户: {user_account}")
+        return render_template('main/change_password.html')
+    
+    # 处理POST请求，接收JSON数据
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({
+            'code': 1,
+            'msg': '请求数据无效'
+        })
+    
+    # 获取表单数据
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+    confirm_password = data.get('confirm_password')
+    
+    # 验证数据完整性
+    if not all([old_password, new_password, confirm_password]):
+        return jsonify({
+            'code': 1,
+            'msg': '请填写所有必填字段'
+        })
+    
+    # 验证新密码与确认密码是否一致
+    if new_password != confirm_password:
+        return jsonify({
+            'code': 1,
+            'msg': '两次输入的新密码不一致'
+        })
+    
+    try:
+        # 获取当前登录的管理员账号
+        admin_account = session.get('user_account')
+        
+        print(f"获取到的管理员账号: {admin_account}")
+        
+        if not admin_account:
+            return jsonify({
+                'code': 1,
+                'msg': '无法获取当前登录信息，请重新登录'
+            })
+        
+        # 查询管理员信息，验证原密码
+        admin_list = query_all_from_table('admins')
+        print(f"管理员列表: {admin_list}")
+        
+        current_admin = None
+        for admin in admin_list:
+            if admin.get('admin_account') == admin_account:
+                current_admin = admin
+                break
+        
+        if not current_admin:
+            return jsonify({
+                'code': 1,
+                'msg': '当前管理员账号不存在'
+            })
+        
+        # 验证原密码是否正确
+        if current_admin.get('admin_password') != old_password:
+            return jsonify({
+                'code': 1,
+                'msg': '原密码不正确'
+            })
+        
+        # 更新密码
+        update_data = [{
+            'admin_account': admin_account,
+            'admin_password': new_password
+        }]
+        
+        # 正确调用batch_update_database方法
+        result = batch_update_database('admins', update_data, 'admin_account')
+        
+        if result:
+            # 更新成功
+            return jsonify({
+                'code': 0,
+                'msg': '密码修改成功'
+            })
+        else:
+            # 更新失败
+            return jsonify({
+                'code': 1,
+                'msg': '密码修改失败，请稍后重试'
+            })
+            
+    except Exception as e:
+        # 记录错误日志
+        print(f"修改密码时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+

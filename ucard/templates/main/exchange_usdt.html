@@ -226,7 +226,7 @@
     
     <!-- 将数据传递给JavaScript -->
     <script id="exchange-data" type="application/json">
-        {{ exchange_usdt_new|tojson|safe }}
+        {{ exchange_usdt|tojson|safe }}
     </script>
     <script id="region-data" type="application/json">
         {{ regions|tojson|safe }}

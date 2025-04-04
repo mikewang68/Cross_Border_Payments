@@ -132,71 +132,91 @@ layui.use(['form', 'laydate', 'table'], function(){
 
         // 计算每张卡的消费金额和次数
         var cardStats = {};
+        // 只对筛选后的交易数据进行统计
         filteredCardTrans.forEach(function(trans) {
             var cardNumber = trans.mask_card_number;
             if (!cardNumber) return; // 跳过没有卡号的交易
             
             if (!cardStats[cardNumber]) {
                 cardStats[cardNumber] = {
-                    totalAmount: 0,
                     count: 0,
-                    currencies: {}
+                    totalAmount: 0,
+                    currencies: {'USD': 0} // 默认至少有一种币种，避免空数组
                 };
             }
             
+            cardStats[cardNumber].count++; // 增加消费次数计数
+            
+            // 统计消费金额
             if (trans.accounting_amount) {
-                var amount = parseFloat(trans.accounting_amount);
-                var currency = trans.accounting_amount_currency || 'USD';
-                if (!isNaN(amount)) {
-                    cardStats[cardNumber].totalAmount += amount;
-                    if (!cardStats[cardNumber].currencies[currency]) {
-                        cardStats[cardNumber].currencies[currency] = 0;
+                try {
+                    var amount = parseFloat(trans.accounting_amount);
+                    var currency = trans.accounting_amount_currency || 'USD';
+                    if (!isNaN(amount)) {
+                        if (!cardStats[cardNumber].currencies[currency]) {
+                            cardStats[cardNumber].currencies[currency] = 0;
+                        }
+                        cardStats[cardNumber].currencies[currency] += amount;
+                        cardStats[cardNumber].totalAmount += amount;
                     }
-                    cardStats[cardNumber].currencies[currency] += amount;
+                } catch (e) {
+                    console.warn("金额解析错误:", e, trans);
                 }
             }
-            cardStats[cardNumber].count++;
-        });
-
-        // 检查是否有卡片数据
-        if (Object.keys(cardStats).length === 0) {
-            console.log('未找到任何卡片消费数据');
-        } else {
-            console.log('找到 ' + Object.keys(cardStats).length + ' 张卡的消费数据');
-        }
-
-        // 转换为数组并排序
-        var cardStatsArray = Object.entries(cardStats).map(function([cardNumber, stats]) {
-            return {
-                cardNumber: cardNumber,
-                totalAmount: stats.totalAmount,
-                count: stats.count,
-                currencies: stats.currencies
-            };
         });
         
-        // 创建两个独立的数组副本，分别用于金额排序和次数排序
-        var countSortArray = [...cardStatsArray];
+        console.log(`根据筛选条件(日期:${date}, 平台:${platform})找到 ${Object.keys(cardStats).length} 张卡的消费数据`);
+        
+        // 转换为数组以便排序
+        var cardStatsArray = [];
+        for (var cardNumber in cardStats) {
+            var stats = cardStats[cardNumber];
+            var currenciesFormatted = [];
+            
+            // 格式化币种金额
+            for (var currency in stats.currencies) {
+                var amount = stats.currencies[currency];
+                if (amount > 0 || currency === 'USD') { // 只保留有消费的币种或默认USD
+                    currenciesFormatted.push({
+                        currency: currency,
+                        amount: amount,
+                        formatted: amount.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        }) + ' ' + currency
+                    });
+                }
+            }
+            
+            cardStatsArray.push({
+                cardNumber: cardNumber,
+                count: stats.count,
+                totalAmount: stats.totalAmount,
+                currencies: currenciesFormatted
+            });
+        }
         
         // 按消费次数排序
-        var countTop3 = countSortArray.sort(function(a, b) {
+        var countTop3 = cardStatsArray.sort(function(a, b) {
             return b.count - a.count;
         }).slice(0, 3);
         
-        // 输出TOP3消费次数的卡片
-        console.log('消费次数TOP3卡片:');
-        countTop3.forEach(function(card, index) {
-            console.log((index + 1) + '. 卡号: ' + card.cardNumber + 
-                      ', 消费总额: ' + card.totalAmount.toFixed(2) + 
-                      ', 消费次数: ' + card.count);
-        });
-
         // 更新消费次数TOP3显示
         var countTop3Container = document.getElementById('countTop3');
+        if (!countTop3Container) {
+            console.error("未找到countTop3容器元素");
+            return;
+        }
+        
         var countItems = countTop3Container.getElementsByClassName('top3-item');
         for (var i = 0; i < 3; i++) {
             var cardInfo = countTop3[i];
             var item = countItems[i];
+            if (!item) {
+                console.warn(`未找到第${i+1}个top3-item元素`);
+                continue;
+            }
+            
             var cardNumberEl = item.querySelector('.card-number');
             var countEl = item.querySelector('.count');
             
@@ -205,14 +225,9 @@ layui.use(['form', 'laydate', 'table'], function(){
                 countEl.textContent = cardInfo.count + ' 笔';
                 
                 // 添加标题提示，显示明细
-                var amountText = Object.entries(cardInfo.currencies)
-                    .map(function([currency, amount]) {
-                        return amount.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        }) + ' ' + currency;
-                    })
-                    .join(', ');
+                var currenciesText = cardInfo.currencies.map(function(c) {
+                    return c.formatted;
+                }).join(', ');
                 
                 item.title = "卡号: " + cardInfo.cardNumber + 
                              "\n消费次数: " + cardInfo.count + " 笔" + 
@@ -220,11 +235,15 @@ layui.use(['form', 'laydate', 'table'], function(){
                                  minimumFractionDigits: 2,
                                  maximumFractionDigits: 2
                              }) +
-                             "\n币种明细: " + amountText;
+                             "\n币种明细: " + currenciesText;
+                             
+                // 设置点击事件
+                item.setAttribute('data-card-number', cardInfo.cardNumber);
             } else {
                 cardNumberEl.textContent = '--';
                 countEl.textContent = '--';
                 item.title = "";
+                item.removeAttribute('data-card-number');
             }
         }
 
@@ -448,11 +467,11 @@ layui.use(['form', 'laydate', 'table'], function(){
 
     // 初始化页面加载完成后设置点击事件
     $(document).ready(function() {
-        // 为次数TOP3项目添加点击事件
-        $('#countTop3 .top3-item').on('click', function() {
-            var cardNumber = $(this).find('.card-number').text();
+        // 为TOP3项目添加点击事件处理
+        $('#countTop3').on('click', '.top3-item', function() {
+            var cardNumber = $(this).attr('data-card-number');
             if (cardNumber && cardNumber !== '--') {
-                // 如果有日期和平台筛选，在点击时保持筛选条件
+                // 使用当前筛选条件
                 var date = $('#dateFilter').val();
                 var platform = $('select[name="platform"]').val();
                 
@@ -462,10 +481,13 @@ layui.use(['form', 'laydate', 'table'], function(){
         });
     });
     
-    // 显示卡片交易详情
+    // 显示卡片交易详情 - 确保使用当前筛选条件
     function showCardTransactionDetails(cardNumber, date, platform) {
-        // 筛选该卡的所有交易
-        var cardTrans = cardTransactionsData.filter(function(trans) {
+        // 获取原始交易数据
+        var allCardTrans = cardTransactionsData;
+        
+        // 根据筛选条件过滤交易数据
+        var filteredTrans = allCardTrans.filter(function(trans) {
             var matchCard = trans.mask_card_number === cardNumber;
             var matchDate = true;
             var matchPlatform = true;
@@ -482,10 +504,12 @@ layui.use(['form', 'laydate', 'table'], function(){
             return matchCard && matchDate && matchPlatform;
         });
         
+        console.log(`找到卡号 ${cardNumber} 的 ${filteredTrans.length} 条交易记录`);
+        
         // 计算总额
         var totalByCurrency = {}; // 交易本金(资金账户)汇总
         var transactionTotalByCurrency = {}; // 交易金额汇总
-        cardTrans.forEach(function(trans) {
+        filteredTrans.forEach(function(trans) {
             // 统计交易本金(资金账户)
             if (trans.accounting_amount) {
                 var amount = parseFloat(trans.accounting_amount);
@@ -529,12 +553,12 @@ layui.use(['form', 'laydate', 'table'], function(){
         var content = '<div class="card-detail-popup">';
         content += '<div class="card-info">';
         content += '<div class="card-number">卡号: ' + cardNumber + '</div>';
-        content += '<div class="card-stats">消费笔数: ' + cardTrans.length + ' 笔</div>';
+        content += '<div class="card-stats">消费笔数: ' + filteredTrans.length + ' 笔</div>';
         content += '<div class="card-stats">交易本金(资金账户): ' + (totalAmountText || '0.00') + '</div>';
         content += '<div class="card-stats">交易金额: ' + (transactionTotalText || '0.00') + '</div>';
         content += '</div>';
         
-        if (cardTrans.length > 0) {
+        if (filteredTrans.length > 0) {
             content += '<div class="transaction-list">';
             content += '<table class="layui-table">';
             content += '<thead><tr>';
@@ -549,7 +573,7 @@ layui.use(['form', 'laydate', 'table'], function(){
             content += '</tr></thead>';
             content += '<tbody>';
             
-            cardTrans.forEach(function(trans) {
+            filteredTrans.forEach(function(trans) {
                 var transTime = trans.transaction_time ? new Date(trans.transaction_time).toLocaleString('zh-CN') : '-';
                 
                 // 交易本金(资金账户)

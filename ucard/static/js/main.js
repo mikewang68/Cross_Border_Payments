@@ -20,7 +20,8 @@ layui.use(['element', 'layer'], function(){
             'wallet_balance',
             'cards',
             'exchange_usdt',
-            'daily'
+            'daily',
+            'change_password'
         ];
         
         // 检查功能是否已实现
