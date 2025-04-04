@@ -174,6 +174,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                             // 生成卡片模板，模仿图片样式
                             return '<div class="list-card">' +
                                    '<span class="card-number">' + cardNumber + '</span>' +
+                                   '<span class="card-name">' + cardName + '</span>' +
                                    '<div class="card-currency">' + currency + '</div>' +
                                    '</div>';
                         }
@@ -324,6 +325,57 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
             });
         }
 
+        // 显示卡片详情弹窗
+        function showCardDetail(data) {
+            // 获取卡片状态中文映射
+            var statusMap = {
+                'ACTIVE': '激活',
+                'FROZEN': '冻结',
+                'CANCELLED': '销卡',
+                'EXPIRED': '过期',
+                'INACTIVE': '待激活',
+                'FREEZING': '冻结中',
+                'UNFREEZING': '解冻中',
+                'CANCELLING': '销卡中'
+            };
+
+            // 计算剩余有效期
+            var remainingMonths = calculateRemainingMonths(data.expire_year, data.expire_month);
+
+            layer.open({
+                type: 1,
+                title: '卡片详情',
+                area: ['600px', '550px'],
+                content: `
+                    <div class="layui-card">
+                        <div class="layui-card-body">
+                            <table class="layui-table">
+                                <colgroup>
+                                    <col width="30%">
+                                    <col width="70%">
+                                </colgroup>
+                                <tbody>
+                                    <tr><td>卡号</td><td>${data.mask_card_number || '--'}</td></tr>
+                                    <tr><td>卡ID</td><td>${data.card_id || '--'}</td></tr>
+                                    <tr><td>姓名</td><td>${data.first_name || ''} ${data.last_name || ''}</td></tr>
+                                    <tr><td>卡昵称</td><td>${data.card_name || '--'}</td></tr>
+                                    <tr><td>卡组织</td><td>${data.brand_code || '--'}</td></tr>
+                                    <tr><td>平台</td><td>${data.version || '--'}</td></tr>
+                                    <tr><td>币种</td><td>${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>可用余额</td><td>${data.available_balance || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>单笔限额</td><td>${data.limit_per_transaction || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>日限额</td><td>${data.limit_per_day || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>月限额</td><td>${data.limit_per_month || '0.00'} ${data.card_currency || 'USD'}</td></tr>
+                                    <tr><td>有效期</td><td>${data.expire_month || '--'}月/${data.expire_year || '--'}年 (剩余${remainingMonths}个月)</td></tr>
+                                    <tr><td>卡片状态</td><td>${statusMap[data.cards_status] || data.cards_status || '--'}</td></tr>
+                                    <tr><td>申请时间</td><td>${formatTime(data.create_time)}</td></tr>
+                                    <tr><td>激活时间</td><td>${formatTime(data.active_time)}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>`
+            });
+        }
 
         // 初始化事件监听
         function initEventListeners() {
@@ -355,7 +407,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                 
                 switch(layEvent) {
                     case 'detail':
-                        layer.msg('查看详情功能待实现', {icon: 0});
+                        showCardDetail(data);
                         break;
                     case 'modify':
                         // 打开调额弹窗 - 使用iframe加载独立的HTML页面
@@ -387,7 +439,165 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         });
                         break;
                     case 'set_limit':
-                        layer.msg('设置限额功能待实现', {icon: 0});
+                        // 打开设置限额的弹窗
+                        layer.open({
+                            type: 1,
+                            title: '设置卡片限额',
+                            area: ['500px', '350px'],
+                            content: `
+                                <div class="layui-card">
+                                    <div class="layui-card-body">
+                                        <form class="layui-form" id="set-limit-form" lay-filter="set-limit-form" style="padding: 20px;">
+                                            <div class="layui-form-item">
+                                                <label class="layui-form-label">单笔限额</label>
+                                                <div class="layui-input-block">
+                                                    <input type="number" name="limit_per_transaction" placeholder="请输入单笔交易限额" value="${data.limit_per_transaction || ''}" class="layui-input" lay-verify="required|number">
+                                                </div>
+                                            </div>
+                                            <div class="layui-form-item">
+                                                <label class="layui-form-label">日限额</label>
+                                                <div class="layui-input-block">
+                                                    <input type="number" name="limit_per_day" placeholder="请输入每日限额" value="${data.limit_per_day || ''}" class="layui-input" lay-verify="required|number">
+                                                </div>
+                                            </div>
+                                            <div class="layui-form-item">
+                                                <label class="layui-form-label">月限额</label>
+                                                <div class="layui-input-block">
+                                                    <input type="number" name="limit_per_month" placeholder="请输入每月限额" value="${data.limit_per_month || ''}" class="layui-input" lay-verify="required|number">
+                                                </div>
+                                            </div>
+                                            <div class="layui-form-item">
+                                                <div class="layui-input-block">
+                                                    <button class="layui-btn" lay-submit lay-filter="submitLimitForm">提交修改</button>
+                                                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            `,
+                            success: function(layero, index) {
+                                form.render(); // 重新渲染表单
+                                
+                                // 验证和提交设置限额表单
+                                form.verify({
+                                    number: [
+                                        /^[0-9]+(\.[0-9]+)?$/,
+                                        '必须是数字'
+                                    ]
+                                });
+                                
+                                form.on('submit(submitLimitForm)', function(formData) {
+                                    var limitData = formData.field;
+                                    
+                                    // 转换为浮点数进行比较
+                                    var limitPerTransaction = parseFloat(limitData.limit_per_transaction);
+                                    var limitPerDay = parseFloat(limitData.limit_per_day);
+                                    var limitPerMonth = parseFloat(limitData.limit_per_month);
+                                    
+                                    // 验证限额条件: 单笔 <= 每日 <= 每月
+                                    if (limitPerTransaction >= limitPerDay) {
+                                        layer.msg('单笔交易限额不能大于等于每日限额', {icon: 2});
+                                        return false;
+                                    }
+                                    
+                                    if (limitPerDay >= limitPerMonth) {
+                                        layer.msg('每日限额不能大于等于每月限额', {icon: 2});
+                                        return false;
+                                    }
+                                    
+                                    // 准备提交的数据
+                                    var submitData = {
+                                        card_name: data.card_name || '',
+                                        limit_per_day: limitData.limit_per_day,
+                                        limit_per_month: limitData.limit_per_month,
+                                        limit_per_transaction: limitData.limit_per_transaction,
+                                        version: data.version,
+                                        card_id: data.card_id,
+                                        type: 'limit'
+                                    };
+                                    
+                                    // 显示加载中
+                                    var loadIndex = layer.load(2);
+                                    
+                                    // 发送请求到后端
+                                    $.ajax({
+                                        url: '/cards/modify_card_info',
+                                        type: 'PUT',
+                                        contentType: 'application/json',
+                                        data: JSON.stringify(submitData),
+                                        success: function(res) {
+                                            layer.close(loadIndex);
+                                            if (res.code === 0) {
+                                                layer.msg('限额设置成功', {icon: 1, time: 2000}, function() {
+                                                    layer.close(index); // 关闭设置窗口
+                                                    // 重新加载表格数据
+                                                    table.reload('cards-table');
+                                                });
+                                            } else {
+                                                layer.msg(res.msg || '限额设置失败', {icon: 2});
+                                            }
+                                        },
+                                        error: function(xhr, status, error) {
+                                            layer.close(loadIndex);
+                                            layer.msg('服务器错误，请稍后重试: ' + error, {icon: 2});
+                                        }
+                                    });
+                                    
+                                    return false; // 阻止表单默认提交
+                                });
+                            }
+                        });
+                        break;
+                    case 'edit_nickname':
+                        layer.prompt({
+                            formType: 0,
+                            title: '编辑卡昵称',
+                            value: data.card_name || ''
+                        }, function(value, index){
+                            if (!value || value.trim() === '') {
+                                layer.msg('昵称不能为空', {icon: 2});
+                                return;
+                            }
+                            
+                            // 准备提交的数据
+                            var submitData = {
+                                card_name: value,
+                                limit_per_day: data.limit_per_day,
+                                limit_per_month: data.limit_per_month,
+                                limit_per_transaction: data.limit_per_transaction,
+                                version: data.version,
+                                card_id: data.card_id,
+                                type: 'nickname'
+                            };
+                            
+                            // 显示加载中
+                            var loadIndex = layer.load(2);
+                            
+                            // 发送请求到后端
+                            $.ajax({
+                                url: '/cards/modify_card_info',
+                                type: 'PUT',
+                                contentType: 'application/json',
+                                data: JSON.stringify(submitData),
+                                success: function(res) {
+                                    layer.close(loadIndex);
+                                    if (res.code === 0) {
+                                        layer.msg('昵称修改成功', {icon: 1, time: 2000}, function() {
+                                            layer.close(index); // 关闭设置窗口
+                                            // 重新加载表格数据
+                                            table.reload('cards-table');
+                                        });
+                                    } else {
+                                        layer.msg(res.msg || '昵称修改失败', {icon: 2});
+                                    }
+                                },
+                                error: function(xhr, status, error) {
+                                    layer.close(loadIndex);
+                                    layer.msg('服务器错误，请稍后重试: ' + error, {icon: 2});
+                                }
+                            });
+                        });
                         break;
                     case 'cancel':
                         layer.confirm('确定要销卡吗？确定后销卡操作无法撤回', function(index){
@@ -586,16 +796,6 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 layer.msg('只能解冻冻结状态的卡', {icon: 2});
                                 layer.close(index);
                             }
-                        });
-                        break;
-                    case 'edit_nickname':
-                        layer.prompt({
-                            formType: 0,
-                            title: '编辑卡昵称',
-                            value: data.card_name || ''
-                        }, function(value, index){
-                            layer.msg('昵称修改功能待实现', {icon: 0});
-                            layer.close(index);
                         });
                         break;
                 }

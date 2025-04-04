@@ -519,7 +519,6 @@ def cancel_card():
         card_id = data.pop('card_id')
         version = data.pop('version')
         gsalary_api = GSalaryAPI()
-        # 调用API进行冻结或者解冻
         result = gsalary_api.cancel_card(system_id=version, card_id=card_id)
         
         if result['result']['result'] == 'S':
@@ -548,7 +547,7 @@ def cancel_card():
 def modify_card_balance():
     return render_template('main/modify_card_balance.html')
 
-# 冻结或者解冻卡片
+# 调额
 @main_bp.route('/cards/modify_card', methods=['POST'])
 @login_required
 def modify_card():
@@ -559,10 +558,9 @@ def modify_card():
         data['request_id'] = request_id
         version = data.pop('version')
         gsalary_api = GSalaryAPI()
-        # 调用API进行冻结或者解冻
         result = gsalary_api.modify_card_balance(system_id=version, data = data)
         if result['result']['result'] == 'S':
-            modify_response_data_insert(version, result)
+            modify_response_data_insert(version = version, result = result)
             if result['data']['status'] == 'SUCCESS':
                 return jsonify({
                     "code": 0,
@@ -692,3 +690,41 @@ def change_password():
             'msg': f'系统错误: {str(e)}'
         })
 
+    
+# 修改卡信息包括卡昵称和每日限额，每月限额，单笔交易限额
+@main_bp.route('/cards/modify_card_info', methods=['PUT'])
+@login_required
+def modify_card_info():
+    try:
+        # 获取表单数据
+        data = request.get_json()
+        version = data.pop('version')
+        card_id = data.pop('card_id')
+        type = data.pop('type')
+        if type == 'nickname':
+            msg = '卡昵称'
+        elif type == 'limit':
+            msg = '限额'
+            
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.modify_card(system_id=version, card_id=card_id, data = data)
+        if result['result']['result'] == 'S':
+            time.sleep(15)
+            realtime_card_info_update(version, card_id)
+            return jsonify({
+                "code": 0,
+                "msg": f"{msg}修改成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": f"{msg}修改失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
