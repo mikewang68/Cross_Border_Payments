@@ -61,7 +61,7 @@ layui.use(['form', 'laydate', 'table'], function(){
         elem: '#errorTransTable',
         data: [],
         cols: [[
-            {field: 'transaction_time', title: '交易时间', width: 180, templet: function(d){
+            {field: 'transaction_time', title: '交易时间', width: 180, sort: true, templet: function(d){
                 return d.transaction_time ? new Date(d.transaction_time).toLocaleString('zh-CN', {
                     year: 'numeric',
                     month: '2-digit',
@@ -91,6 +91,10 @@ layui.use(['form', 'laydate', 'table'], function(){
         limits: [10, 20, 50, 100],
         text: {
             none: '暂无异常交易数据'
+        },
+        initSort: {
+            field: 'transaction_time',
+            type: 'desc'
         }
     });
 
@@ -322,8 +326,17 @@ layui.use(['form', 'laydate', 'table'], function(){
             };
         });
 
+        // 根据交易时间进行倒序排序
+        tableData.sort(function(a, b) {
+            return new Date(b.transaction_time) - new Date(a.transaction_time);
+        });
+
         table.reload('errorTransTable', {
-            data: tableData
+            data: tableData,
+            initSort: {
+                field: 'transaction_time',
+                type: 'desc'
+            }
         });
 
         // 如果选择了具体日期，才计算环比
