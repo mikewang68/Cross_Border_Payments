@@ -2,24 +2,30 @@
 <div class="daily-page">
     <!-- 筛选区域 -->
     <div class="filter-container">
-        <form class="layui-form" lay-filter="dailyFilterForm" onsubmit="return false;">
-            <div class="layui-form-item">
-                <div class="layui-inline">
+        <form class="layui-form" lay-filter="dailyFilterForm">
+            <div class="filter-row">
+                <div class="filter-item">
                     <label class="layui-form-label">日期</label>
-                    <div class="layui-input-inline">
+                    <div class="layui-input-block">
                         <input type="text" class="layui-input" id="dateFilter" placeholder="选择日期">
                     </div>
                 </div>
-                <div class="layui-inline">
+                <div class="filter-item">
+                    <label class="layui-form-label">时间段</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" id="dateRangeFilter" placeholder="选择时间段">
+                    </div>
+                </div>
+                <div class="filter-item">
                     <label class="layui-form-label">平台</label>
-                    <div class="layui-input-inline">
+                    <div class="layui-input-block">
                         <select name="platform" lay-filter="platformSelect">
                             <option value="">全部平台</option>
                         </select>
                     </div>
                 </div>
-                <div class="layui-inline">
-                    <button type="button" class="layui-btn" lay-submit lay-filter="filterSubmit">查询</button>
+                <div class="filter-item">
+                    <button type="button" class="layui-btn" lay-filter="filterSubmit">查询</button>
                     <button type="reset" class="layui-btn layui-btn-primary">重置</button>
                 </div>
             </div>
@@ -88,6 +94,35 @@
                 <span>消费次数TOP3</span>
             </div>
             <div class="top3-content" id="countTop3">
+                <div class="top3-item">
+                    <div class="rank">1</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+                <div class="top3-item">
+                    <div class="rank">2</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+                <div class="top3-item">
+                    <div class="rank">3</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="top3-card warning">
+            <div class="top3-header">
+                <i class="layui-icon layui-icon-about"></i>
+                <span>异常交易TOP3</span>
+            </div>
+            <div class="top3-content" id="errorTop3">
                 <div class="top3-item">
                     <div class="rank">1</div>
                     <div class="info">
