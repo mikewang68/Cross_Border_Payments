@@ -14,7 +14,26 @@ layui.use(['form', 'laydate', 'table'], function(){
             console.log('日期选择完成：', value);
             // 选择日期后自动更新数据
             var platform = $('select[name="platform"]').val();
-            updateDailyStats(value, platform);
+            updateDailyStats(value, null, null, platform);
+        }
+    });
+
+    // 初始化时间段选择器
+    laydate.render({
+        elem: '#dateRangeFilter',
+        type: 'date',
+        range: true, // 开启范围选择
+        format: 'yyyy-MM-dd', // 指定显示格式
+        done: function(value, date, endDate){ // 日期选择完成后的回调
+            console.log('时间段选择完成：', value);
+            if (value) {
+                var dates = value.split(' - ');
+                var startDate = dates[0];
+                var endDate = dates[1];
+                // 选择时间段后自动更新数据
+                var platform = $('select[name="platform"]').val();
+                updateDailyStats(null, startDate, endDate, platform);
+            }
         }
     });
 
@@ -111,65 +130,101 @@ layui.use(['form', 'laydate', 'table'], function(){
     }
 
     // 处理数据并更新页面
-    function updateDailyStats(date, platform) {
-        console.log('开始更新数据:', date, platform); // 调试日志
+    function updateDailyStats(date, startDate, endDate, platform) {
+        console.log('开始更新数据:', date, startDate, endDate, platform); // 调试日志
 
         // 过滤卡片数据
         var filteredCards = cardsData.filter(function(card) {
+            var matchDate = true;
+            var matchPlatform = true;
+            
             if (date) {
                 var cardDate = formatDateToYYYYMMDD(card.create_time);
-                if (cardDate !== date) return false;
+                matchDate = cardDate === date;
+            } else if (startDate && endDate) {
+                var cardDate = formatDateToYYYYMMDD(card.create_time);
+                matchDate = cardDate >= startDate && cardDate <= endDate;
             }
-            if (platform && card.version !== platform) return false;
-            return true;
+            
+            if (platform) {
+                matchPlatform = card.version === platform;
+            }
+            
+            return matchDate && matchPlatform;
         });
 
         // 过滤交易数据
         var filteredCardTrans = cardTransactionsData.filter(function(trans) {
+            var matchDate = true;
+            var matchPlatform = true;
+            
             if (date) {
                 var transDate = formatDateToYYYYMMDD(trans.transaction_time);
-                if (transDate !== date) return false;
+                matchDate = transDate === date;
+            } else if (startDate && endDate) {
+                var transDate = formatDateToYYYYMMDD(trans.transaction_time);
+                matchDate = transDate >= startDate && transDate <= endDate;
             }
-            if (platform && trans.version !== platform) return false;
-            return true;
+            
+            if (platform) {
+                matchPlatform = trans.version === platform;
+            }
+            
+            return matchDate && matchPlatform;
         });
 
         // 计算每张卡的消费金额和次数
         var cardStats = {};
+        var errorCardStats = {}; // 新增：统计每张卡的异常交易次数
+        
         // 只对筛选后的交易数据进行统计
         filteredCardTrans.forEach(function(trans) {
             var cardNumber = trans.mask_card_number;
             if (!cardNumber) return; // 跳过没有卡号的交易
             
-            if (!cardStats[cardNumber]) {
-                cardStats[cardNumber] = {
-                    count: 0,
-                    totalAmount: 0,
-                    currencies: {'USD': 0} // 默认至少有一种币种，避免空数组
-                };
+            // 统计正常交易
+            if (trans.status !== 'FAILED' && trans.status !== 'VOID') {
+                if (!cardStats[cardNumber]) {
+                    cardStats[cardNumber] = {
+                        count: 0,
+                        totalAmount: 0,
+                        currencies: {'USD': 0} // 默认至少有一种币种，避免空数组
+                    };
+                }
+                
+                cardStats[cardNumber].count++; // 增加消费次数计数
+                
+                // 统计消费金额
+                if (trans.accounting_amount) {
+                    try {
+                        var amount = parseFloat(trans.accounting_amount);
+                        var currency = trans.accounting_amount_currency || 'USD';
+                        if (!isNaN(amount)) {
+                            if (!cardStats[cardNumber].currencies[currency]) {
+                                cardStats[cardNumber].currencies[currency] = 0;
+                            }
+                            cardStats[cardNumber].currencies[currency] += amount;
+                            cardStats[cardNumber].totalAmount += amount;
+                        }
+                    } catch (e) {
+                        console.warn("金额解析错误:", e, trans);
+                    }
+                }
             }
             
-            cardStats[cardNumber].count++; // 增加消费次数计数
-            
-            // 统计消费金额
-            if (trans.accounting_amount) {
-                try {
-                    var amount = parseFloat(trans.accounting_amount);
-                    var currency = trans.accounting_amount_currency || 'USD';
-                    if (!isNaN(amount)) {
-                        if (!cardStats[cardNumber].currencies[currency]) {
-                            cardStats[cardNumber].currencies[currency] = 0;
-                        }
-                        cardStats[cardNumber].currencies[currency] += amount;
-                        cardStats[cardNumber].totalAmount += amount;
-                    }
-                } catch (e) {
-                    console.warn("金额解析错误:", e, trans);
+            // 统计异常交易
+            if (trans.status === 'FAILED' || trans.status === 'VOID') {
+                if (!errorCardStats[cardNumber]) {
+                    errorCardStats[cardNumber] = {
+                        count: 0
+                    };
                 }
+                errorCardStats[cardNumber].count++;
             }
         });
         
         console.log(`根据筛选条件(日期:${date}, 平台:${platform})找到 ${Object.keys(cardStats).length} 张卡的消费数据`);
+        console.log(`找到 ${Object.keys(errorCardStats).length} 张卡有异常交易`);
         
         // 转换为数组以便排序
         var cardStatsArray = [];
@@ -240,6 +295,56 @@ layui.use(['form', 'laydate', 'table'], function(){
                                  maximumFractionDigits: 2
                              }) +
                              "\n币种明细: " + currenciesText;
+                             
+                // 设置点击事件
+                item.setAttribute('data-card-number', cardInfo.cardNumber);
+            } else {
+                cardNumberEl.textContent = '--';
+                countEl.textContent = '--';
+                item.title = "";
+                item.removeAttribute('data-card-number');
+            }
+        }
+        
+        // 按异常交易次数排序
+        var errorCardStatsArray = [];
+        for (var cardNumber in errorCardStats) {
+            errorCardStatsArray.push({
+                cardNumber: cardNumber,
+                count: errorCardStats[cardNumber].count
+            });
+        }
+        
+        var errorTop3 = errorCardStatsArray.sort(function(a, b) {
+            return b.count - a.count;
+        }).slice(0, 3);
+        
+        // 更新异常交易TOP3显示
+        var errorTop3Container = document.getElementById('errorTop3');
+        if (!errorTop3Container) {
+            console.error("未找到errorTop3容器元素");
+            return;
+        }
+        
+        var errorItems = errorTop3Container.getElementsByClassName('top3-item');
+        for (var i = 0; i < 3; i++) {
+            var cardInfo = errorTop3[i];
+            var item = errorItems[i];
+            if (!item) {
+                console.warn(`未找到第${i+1}个error-top3-item元素`);
+                continue;
+            }
+            
+            var cardNumberEl = item.querySelector('.card-number');
+            var countEl = item.querySelector('.count');
+            
+            if (cardInfo) {
+                cardNumberEl.textContent = cardInfo.cardNumber || '--';
+                countEl.textContent = cardInfo.count + ' 笔';
+                
+                // 添加标题提示
+                item.title = "卡号: " + cardInfo.cardNumber + 
+                             "\n异常交易次数: " + cardInfo.count + " 笔";
                              
                 // 设置点击事件
                 item.setAttribute('data-card-number', cardInfo.cardNumber);
@@ -454,16 +559,24 @@ layui.use(['form', 'laydate', 'table'], function(){
     // 监听筛选表单提交按钮点击
     $('.layui-btn[lay-filter="filterSubmit"]').on('click', function(){
         var date = $('#dateFilter').val();
+        var dateRange = $('#dateRangeFilter').val();
         var platform = $('select[name="platform"]').val();
-        console.log('点击查询按钮：', date, platform);
-        updateDailyStats(date, platform);
+        
+        if (dateRange) {
+            var dates = dateRange.split(' - ');
+            var startDate = dates[0];
+            var endDate = dates[1];
+            updateDailyStats(null, startDate, endDate, platform);
+        } else {
+            updateDailyStats(date, null, null, platform);
+        }
     });
 
     // 监听平台选择变化
     form.on('select(platformSelect)', function(data){
         var date = $('#dateFilter').val();
         console.log('平台选择变化：', date, data.value);
-        updateDailyStats(date, data.value);
+        updateDailyStats(date, null, null, data.value);
     });
 
     // 监听重置按钮
@@ -471,10 +584,11 @@ layui.use(['form', 'laydate', 'table'], function(){
         console.log('点击重置按钮');
         setTimeout(function(){
             $('#dateFilter').val('');
+            $('#dateRangeFilter').val('');
             form.val('dailyFilterForm', {
                 platform: ''
             });
-            updateDailyStats('', '');
+            updateDailyStats('', null, null, '');
         }, 0);
     });
 
@@ -492,6 +606,19 @@ layui.use(['form', 'laydate', 'table'], function(){
                 showCardTransactionDetails(cardNumber, date, platform);
             }
         });
+        
+        // 为异常交易TOP3项目添加点击事件处理
+        $('#errorTop3').on('click', '.top3-item', function() {
+            var cardNumber = $(this).attr('data-card-number');
+            if (cardNumber && cardNumber !== '--') {
+                // 使用当前筛选条件
+                var date = $('#dateFilter').val();
+                var platform = $('select[name="platform"]').val();
+                
+                // 弹出详细信息层
+                showCardErrorTransactionDetails(cardNumber, date, platform);
+            }
+        });
     });
     
     // 显示卡片交易详情 - 确保使用当前筛选条件
@@ -499,8 +626,13 @@ layui.use(['form', 'laydate', 'table'], function(){
         // 获取原始交易数据
         var allCardTrans = cardTransactionsData;
         
-        // 根据筛选条件过滤交易数据
+        // 根据筛选条件过滤交易数据，并排除交易失败的记录
         var filteredTrans = allCardTrans.filter(function(trans) {
+            // 排除交易失败的记录
+            if (trans.status === 'FAILED' || trans.status === 'VOID') {
+                return false;
+            }
+            
             var matchCard = trans.mask_card_number === cardNumber;
             var matchDate = true;
             var matchPlatform = true;
@@ -517,7 +649,7 @@ layui.use(['form', 'laydate', 'table'], function(){
             return matchCard && matchDate && matchPlatform;
         });
         
-        console.log(`找到卡号 ${cardNumber} 的 ${filteredTrans.length} 条交易记录`);
+        console.log(`找到卡号 ${cardNumber} 的 ${filteredTrans.length} 条成功交易记录`);
         
         // 计算总额
         var totalByCurrency = {}; // 交易本金(资金账户)汇总
@@ -650,6 +782,111 @@ layui.use(['form', 'laydate', 'table'], function(){
         });
     }
 
+    // 显示卡片异常交易详情
+    function showCardErrorTransactionDetails(cardNumber, date, platform) {
+        // 获取原始交易数据
+        var allCardTrans = cardTransactionsData;
+        
+        // 根据筛选条件过滤交易数据，只显示异常交易
+        var filteredTrans = allCardTrans.filter(function(trans) {
+            // 只显示异常交易
+            if (trans.status !== 'FAILED' && trans.status !== 'VOID') {
+                return false;
+            }
+            
+            var matchCard = trans.mask_card_number === cardNumber;
+            var matchDate = true;
+            var matchPlatform = true;
+            
+            if (date) {
+                var transDate = formatDateToYYYYMMDD(trans.transaction_time);
+                matchDate = transDate === date;
+            }
+            
+            if (platform) {
+                matchPlatform = trans.version === platform;
+            }
+            
+            return matchCard && matchDate && matchPlatform;
+        });
+        
+        console.log(`找到卡号 ${cardNumber} 的 ${filteredTrans.length} 条异常交易记录`);
+        
+        // 构建HTML内容
+        var content = '<div class="card-detail-popup">';
+        content += '<div class="card-info warning">';
+        content += '<div class="card-number">卡号: ' + cardNumber + '</div>';
+        content += '<div class="card-stats">异常交易笔数: ' + filteredTrans.length + ' 笔</div>';
+        content += '</div>';
+        
+        if (filteredTrans.length > 0) {
+            content += '<div class="transaction-list">';
+            content += '<table class="layui-table">';
+            content += '<thead><tr>';
+            content += '<th>交易时间</th>';
+            content += '<th>交易金额</th>';
+            content += '<th>交易类型</th>';
+            content += '<th>商户名称</th>';
+            content += '<th>商户所属</th>';
+            content += '<th>平台</th>';
+            content += '<th>状态</th>';
+            content += '</tr></thead>';
+            content += '<tbody>';
+            
+            filteredTrans.forEach(function(trans) {
+                var transTime = trans.transaction_time ? new Date(trans.transaction_time).toLocaleString('zh-CN') : '-';
+                var amount = trans.transaction_amount ? parseFloat(trans.transaction_amount).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + ' ' + (trans.transaction_amount_currency || 'USD') : '-';
+                var bizType = trans.biz_type || '-';
+                var merchantName = trans.merchant_name || '-';
+                var merchantRegion = trans.merchant_region || '-';
+                var version = trans.version || '-';
+                var status = trans.status || '-';
+                var statusClass = '';
+                
+                if (status === 'FAILED') {
+                    statusClass = 'status-failed';
+                    status = '<span class="status-failed">失败</span>';
+                } else if (status === 'VOID') {
+                    statusClass = 'status-void';
+                    status = '<span class="status-void">作废</span>';
+                }
+                
+                content += '<tr>';
+                content += '<td>' + transTime + '</td>';
+                content += '<td>' + amount + '</td>';
+                content += '<td>' + bizType + '</td>';
+                content += '<td>' + merchantName + '</td>';
+                content += '<td>' + merchantRegion + '</td>';
+                content += '<td>' + version + '</td>';
+                content += '<td>' + status + '</td>';
+                content += '</tr>';
+            });
+            
+            content += '</tbody></table>';
+            content += '</div>';
+        } else {
+            content += '<div class="no-data">暂无异常交易数据</div>';
+        }
+        
+        content += '</div>';
+        
+        // 使用layui的弹出层
+        layer.open({
+            type: 1,
+            title: '卡片异常交易详情',
+            area: ['90%', '80%'],
+            shadeClose: true,
+            content: content,
+            success: function(layero, index) {
+                // 弹出层显示成功后的回调
+                $(layero).find('.layui-layer-content').css('overflow', 'auto');
+            }
+        });
+    }
+
     // 页面加载时初始化数据
-    updateDailyStats('', '');
+    updateDailyStats('', null, null, '');
 });
