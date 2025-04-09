@@ -21,7 +21,8 @@ layui.use(['element', 'layer'], function(){
             'cards',
             'exchange_usdt',
             'daily',
-            'change_password'
+            'change_password',
+            'payees'
         ];
         
         // 检查功能是否已实现

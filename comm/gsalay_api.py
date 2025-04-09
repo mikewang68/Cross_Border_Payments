@@ -462,13 +462,36 @@ class GSalaryAPI:
         """
         return self.make_gsalary_request("GET", f"/payees/{payee_id}")
     
+    # 查询收款人列表
     def get_payees(self, system_id,params: Optional[Dict] = None) -> Dict[str, Any]:
         """获取收款人列表
         
         Args:
             params: 查询参数，可包含页码等
         """
-        return self.make_gsalary_request("GET", "/payees", system_id=system_id, params=params)
+        return self.make_gsalary_request("GET", "/v1/remittance/payees", system_id=system_id)
+
+    # 查询可用的付款方式
+    def get_available_payment_methods(self, system_id, ) -> Dict[str, Any]:
+        """获取可用付款方式列表"""
+        return self.make_gsalary_request("GET", "/v1/remittance/available_payment_methods", system_id=system_id)
+    
+    # 查看收款人的可用收款账户
+    def get_payee_accounts(self, system_id,payee_id: str) -> Dict[str, Any]:
+        """获取收款人可用账户列表
+        
+        Args:
+            payee_id: 收款人ID
+        """
+        return self.make_gsalary_request("GET", f"/v1/remittance/payees/{payee_id}/accounts", system_id=system_id)
+    
+    # 获取收款人账户表单
+    def get_payee_account_form(self, system_id, payee_id: str, data:Dict) -> Dict[str, Any]:
+        """获取收款人账户表单
+        Args:
+            payee_id: 收款人ID
+        """
+        return self.make_gsalary_request("GET", f"/v1/remittance/payees/{payee_id}/account_register_format", system_id=system_id, data=data)
     
     def update_payee(self, system_id,payee_id: str, data: Dict) -> Dict[str, Any]:
         """更新收款人信息

@@ -151,6 +151,7 @@ def batch_update_database(table_name, set_columns_values, condition1=None, condi
             sql = f"UPDATE {table_name} SET {set_str} WHERE {where_str}"
             cursor.execute(sql, values)
             conn.commit()
+            logger.info(f"成功更新 {cursor.rowcount} 条记录。")
         return True
     except pymysql.Error as err:
         logger.error(f"更新数据时出现错误: {err}")
@@ -247,6 +248,62 @@ def query_match_from_table(table_name, column_name,column_value,m):
         return results
     except pymysql.Error as err:
         logger.error(f"查询数据时出现错误: {err}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+def query_multiple_fields(table_name, field_names, condition=None, params=None):
+    """
+    查询指定表中多个字段的数据，支持条件筛选
+    
+    :param table_name: 表名
+    :param field_names: 需要查询的字段列表（列表或元组）
+    :param condition: 查询条件字符串（可选，包含%s占位符）
+    :param params: 条件参数（元组，与占位符对应）
+    :return: 包含查询结果的列表（字典形式）
+
+    例子：
+        data = query_multiple_fields(
+            'payees_account', 
+            ['account_id','payment_method'],
+            'version = %s', 
+            version,
+        )
+        complex_condition = query_multiple_fields(
+            "orders",
+            ["order_id", "total_price"],
+            "customer_id = %s AND price > %s ORDER BY created_at DESC LIMIT 5",
+            (12345, 100.0)
+        )
+    """
+    conn = create_db_connection()
+    if conn is None:
+        logger.error("无法建立数据库连接，程序退出。")
+        return []
+
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # 构建字段列表
+        fields = ", ".join(field_names)
+        
+        # 构建基础SQL
+        sql = f"SELECT {fields} FROM {table_name}"
+        
+        # 添加条件
+        if condition:
+            sql += f" WHERE {condition}"
+        
+        # 执行查询（带参数化）
+        cursor.execute(sql, params or ())
+        
+        return cursor.fetchall()
+    
+    except pymysql.Error as err:
+        logger.error(f"查询数据时出现错误: {err}")
+        return []
+    except Exception as e:
+        logger.error(f"未预期的错误: {str(e)}")
         return []
     finally:
         cursor.close()

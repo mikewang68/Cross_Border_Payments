@@ -1,0 +1,82 @@
+<div class="layui-fluid payees-page">
+    <div class="layui-card">
+        <div class="layui-card-header">收款人管理</div>
+        <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="payeeSearchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">收款人姓名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">国家/地区</label>
+                        <div class="layui-input-inline">
+                            <select name="country">
+                                <option value="">全部</option>
+                                <!-- 国家列表将通过JS动态加载 -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">币种</label>
+                        <div class="layui-input-inline">
+                            <select name="currency">
+                                <option value="">全部</option>
+                                <!-- 币种列表将通过JS动态加载 -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">联系电话</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="phone" placeholder="请输入电话" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- 表格工具栏 -->
+            <script type="text/html" id="toolbar_payees">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add">
+                        <i class="layui-icon">&#xe654;</i> 添加收款人
+                    </button>
+                </div>
+            </script>
+            
+            <!-- 表格容器 -->
+            <div class="table-container">
+                <table id="payees-table" lay-filter="payees-table"></table>
+            </div>
+            
+            <!-- 行工具栏 -->
+            <script type="text/html" id="payees_barTool">
+                <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+                <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>
+            </script>
+        </div>
+    </div>
+</div>
+
+<!-- 引入收款人CSS和JS -->
+<link rel="stylesheet" href="/static/css/payees.css">
+<script src="/static/js/payees.js"></script>
+
+<!-- 后端数据 -->
+<script id="payees-info-data" type="text/html">
+    {{ payees_info_data|tojson|safe }}
+</script>
+<script id="methods-data" type="application/json">
+    {{ available_payment_methods|tojson|safe }}
+</script>

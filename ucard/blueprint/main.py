@@ -416,6 +416,7 @@ def cards():
     
 # 开卡页面路由
 @main_bp.route('/cards/cards_apply')
+@login_required
 def cards_apply():
     card_holders = query_all_from_table('card_holder')
     cards_product = query_all_from_table('cards_product')
@@ -728,3 +729,20 @@ def modify_card_info():
             "msg": f"发生错误: {str(e)}",
             "data": None
         })
+
+# 收款人页面路由
+@main_bp.route('/payees')
+@login_required
+def payees():
+    try: 
+        # 查询所有卡数据
+        payees_info_data = query_all_from_table('payees_info')
+        available_payment_methods = query_all_from_table('payees_availpay_methods')      
+        # 打印调试信息
+        print(f"查询到 {len(payees_info_data) if payees_info_data else 0} 条收款人数据")
+        print(f"查询到 {len(available_payment_methods) if available_payment_methods else 0} 条可用付款方式数据")
+        return render_template('main/payees.html', payees_info_data=payees_info_data, available_payment_methods=available_payment_methods)
+    except Exception as e:
+        print(f"查询收款人或付款方式数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/payees.html', payees_info_data=[], available_payment_methods=[])
