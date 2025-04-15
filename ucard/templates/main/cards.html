@@ -101,8 +101,8 @@
                         <!-- <div class="operation-row">
                             <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="cancel">销卡</a>
                         </div> -->
-                        {{# } else { }}
-                        <!-- 其他状态显示所有按钮 -->
+                        {{# } else if(d.cards_status === 'ACTIVE'){ }}
+                        <!-- 冻结状态显示详情、解冻、销卡按钮 -->
                         <div class="operation-row">
                             <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
                             <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit_nickname">编辑昵称</a>
@@ -114,6 +114,11 @@
                         <div class="operation-row-key">
                             <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="cancel">销卡</a>
                             <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="freeze">冻结</a>
+                        </div>
+                        {{# } else { }}
+                        <!-- 其他状态显示所有按钮 -->
+                        <div class="operation-row">
+                            <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
                         </div>
                         {{# } }}
                     </div>

@@ -220,7 +220,20 @@ layui.use(['table', 'form', 'layer'], function(){
             table.on('toolbar(payer-table)', function(obj){  
                 switch(obj.event){
                     case 'add':
-                        layer.msg('添加付款人功能暂未实现', {icon: 0});
+                        // 弹出添加付款人弹窗（使用iframe加载）
+                        layer.open({
+                            type: 2,
+                            title: '添加付款人',
+                            area: ['800px', '600px'],
+                            content: '/payers/add_page',
+                            end: function(){
+                                table.reload('payer-table', {
+                                    page: {
+                                        curr: 1 // 重新从第一页开始
+                                    }
+                                });
+                            }
+                        });
                         break;
                 }
             });

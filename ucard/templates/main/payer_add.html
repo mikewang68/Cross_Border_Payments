@@ -1,0 +1,250 @@
+<!-- 引入layui的CSS和JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+<script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
+<!-- 引入自定义CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/payer_add.css') }}" media="all">
+<!-- 引入自定义JS -->
+<script src="{{ url_for('static', filename='js/payer_add.js') }}"></script>
+
+<!-- 移除完整HTML文档结构，只保留弹窗内容部分 -->
+<div class="layui-card payer-add-container">
+    <div class="layui-card-header">添加付款人</div>
+    <div class="layui-card-body">
+        <form class="layui-form" id="payer-form" lay-filter="payer-form">
+            <!-- 选择付款人类型 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">付款人类型</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="subject_type" value="INDIVIDUAL" title="个人" checked lay-filter="subject_type">
+                    <input type="radio" name="subject_type" value="ENTERPRISE" title="企业" lay-filter="subject_type">
+                </div>
+            </div>
+            
+            <!-- 个人信息部分 -->
+            <div id="individual-section">
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>名字</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="first_name" lay-verify="required" placeholder="请输入名字的英文或拼音" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>姓氏</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="last_name" lay-verify="required" placeholder="请输入姓氏的英文或拼音" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>证件类型</label>
+                    <div class="layui-input-block">
+                        <select name="cert_type" lay-verify="required">
+                            <option value="">请选择证件类型</option>
+                            <option value="ID_CARD">身份证</option>
+                            <option value="PASSPORT">护照</option>
+                            <option value="DRIVING_LICENSE">驾照</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>证件号码</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="cert_number" lay-verify="required" placeholder="请输入证件号码" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>出生年月</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="birthday" id="birthday" lay-verify="required" placeholder="请选择日期" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>国籍</label>
+                    <div class="layui-input-block">
+                        <select name="region" lay-verify="required" id="region-select">
+                            <option value="">请选择国籍</option>
+                            <option value="CN">中国</option>
+                            <option value="US">美国</option>
+                            <option value="JP">日本</option>
+                            <option value="KR">韩国</option>
+                            <option value="GB">英国</option>
+                            <option value="FR">法国</option>
+                            <option value="DE">德国</option>
+                            <option value="IT">意大利</option>
+                            <option value="CA">加拿大</option>
+                            <option value="AU">澳大利亚</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>证件</label>
+                    <div class="layui-input-block">
+                        <div class="upload-area">
+                            <div class="upload-box" id="cert-upload">
+                                <div class="upload-icon">
+                                    <i class="layui-icon layui-icon-add-1"></i>
+                                </div>
+                                <div class="upload-text">点击上传</div>
+                            </div>
+                            <div id="cert-preview" class="cert-preview"></div>
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">请确保证件图片完整清晰，证件类型为身份证时，需上传身份证正反面图片</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 企业信息部分 -->
+            <div id="enterprise-section" style="display:none;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>公司名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="company_name" placeholder="请输入公司名称" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>注册号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="register_number" placeholder="请输入注册号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>业务范围</label>
+                    <div class="layui-input-block">
+                        <select name="business_scopes" lay-verify="required" id="business-scope-select">
+                            <option value="">请选择业务范围</option>
+                            <option value="MISCELLANEOUS_SERVICES">杂项事务</option>
+                            <option value="AUTOMOBILE_RENTAL_SERVICES">汽车租赁服务</option>
+                            <option value="RESTAURANTS_LEISURE">餐厅休闲</option>
+                            <option value="PROFESSIONAL_CONSULTING">专业咨询</option>
+                            <option value="EDUCATION">教育</option>
+                            <option value="DATA_PROCESSING_SERVICES">数据处理服务</option>
+                            <option value="HUMAN_RESOURCE_EMPLOYMENT_SERVICES">人力资源就业服务</option>
+                            <option value="ENVIRONMENTAL_FACILITIES_SERVICES">环境设施服务</option>
+                            <option value="OTHER_SERVICES">其他服务</option>
+                            <option value="AGRICULTURAL">农业</option>
+                            <option value="FORESTRY">林业</option>
+                            <option value="FISHING_HUNTING_AND_TRAPPING">渔猎和诱捕</option>
+                            <option value="TRANSPORTATION">运输</option>
+                            <option value="LOGISTICS_WAREHOUSING">物流仓储</option>
+                            <option value="OTHERS">其他</option>
+                        </select>
+                        <div id="selected-scopes" class="selected-scopes"></div>
+                    </div>
+                </div>
+                
+                <div class="layui-form-item">
+                    <label class="layui-form-label"><span class="required">*</span>证件</label>
+                    <div class="layui-input-block">
+                        <div class="upload-area">
+                            <div class="upload-box" id="business-upload">
+                                <div class="upload-icon">
+                                    <i class="layui-icon layui-icon-add-1"></i>
+                                </div>
+                                <div class="upload-text">点击上传</div>
+                            </div>
+                            <div id="business-preview" class="cert-preview"></div>
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">请确保证件图片完整清晰</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 地址信息部分（个人和企业通用） -->
+            <div class="layui-form-item section-title">
+                <label class="layui-form-label-title">地址信息</label>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span>国家/地区</label>
+                <div class="layui-input-block">
+                    <select name="address_country" lay-verify="required" id="country-select">
+                        <option value="">请选择国家/地区</option>
+                        <option value="US" selected>美国</option>
+                        <option value="CN">中国</option>
+                        <option value="TW">台湾（中国）</option>
+                        <option value="JP">日本</option>
+                        <option value="SG">新加坡</option>
+                        <option value="KR">韩国</option>
+                        <option value="VN">越南</option>
+                        <option value="TH">泰国</option>
+                        <option value="PK">巴基斯坦</option>
+                        <option value="PH">菲律宾</option>
+                        <option value="NZ">新西兰</option>
+                        <option value="MY">马来西亚</option>
+                        <option value="MO">澳门</option>
+                        <option value="KZ">哈萨克斯坦</option>
+                        <option value="KH">柬埔寨</option>
+                        <option value="HK">香港</option>
+                        <option value="AU">澳大利亚</option>
+                        <option value="CA">加拿大</option>
+                        <option value="ID">印度尼西亚</option>
+                        <option value="IN">印度</option>
+                        <option value="GB">英国</option>
+                        <option value="IQ">伊拉克</option>
+                        <option value="AW">阿鲁巴</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span>州/省</label>
+                <div class="layui-input-block">
+                    <input type="text" name="address_state" lay-verify="required" placeholder="请输入州/省" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span>城市</label>
+                <div class="layui-input-block">
+                    <input type="text" name="address_city" lay-verify="required" placeholder="请输入城市" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span>详细地址</label>
+                <div class="layui-input-block">
+                    <input type="text" name="address_detail" lay-verify="required" placeholder="请输入详细地址" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span>邮编</label>
+                <div class="layui-input-block">
+                    <input type="text" name="address_postcode" lay-verify="required" placeholder="请输入邮编" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            
+            <!-- 版本选择 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label"><span class="required">*</span>平台</label>
+                <div class="layui-input-block">
+                    <select name="version" lay-verify="required">
+                        <option value="J1">J1</option>
+                        <option value="J2" selected>J2</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 提交按钮 -->
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button type="button" class="layui-btn" lay-submit lay-filter="payer-submit" id="submit-btn">提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    <button type="button" class="layui-btn layui-btn-primary" id="cancel-btn">取消</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!-- 安全警告 -->
+    <div class="security-warning">
+        <i class="layui-icon layui-icon-about"></i>
+        为确保资金交易顺利完成，请务必提供真实有效的汇款人和收款人信息，错误或不真实的信息可能会导致的资金损失，请务必反复确认。
+    </div>
+</div> 

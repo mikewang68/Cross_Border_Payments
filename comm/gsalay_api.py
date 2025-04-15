@@ -517,15 +517,15 @@ class GSalaryAPI:
         Args:
             data: 付款人信息
         """
-        return self.make_gsalary_request("POST", "/payers", data)
+        return self.make_gsalary_request("POST", "/v1/remittance/payers",system_id, data)
     
-    def create_batch_payers(self, system_id,data: Dict) -> Dict[str, Any]:
-        """批量创建付款人
+    def upload_payer_file(self, system_id,data: Dict) -> Dict[str, Any]:
+        """上传付款人文件
         
         Args:
-            data: 包含多个付款人信息的列表
+            data: 包含文件信息
         """
-        return self.make_gsalary_request("POST", "/payers/batch", data)
+        return self.make_gsalary_request("POST", "/v1/attachments", system_id, data)
     
     def get_payers_info(self, system_id,payer_id: str) -> Dict[str, Any]:
         """获取付款人详情
@@ -558,7 +558,7 @@ class GSalaryAPI:
         Args:
             payer_id: 付款人ID
         """
-        return self.make_gsalary_request("DELETE", f"/payers/{payer_id}")
+        return self.make_gsalary_request("DELETE", f"/v1/remittance/payers/{payer_id}",system_id=system_id)
 
     # 付款操作 - 汇款
     def create_remittance(self, system_id,data: Dict) -> Dict[str, Any]:
