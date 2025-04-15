@@ -526,22 +526,22 @@ class GSalaryAPI:
             data: 包含多个付款人信息的列表
         """
         return self.make_gsalary_request("POST", "/payers/batch", data)
-
-    def get_payer(self, system_id,payer_id: str) -> Dict[str, Any]:
-        """获取付款人信息
+    
+    def get_payers_info(self, system_id,payer_id: str) -> Dict[str, Any]:
+        """获取付款人详情
         
         Args:
             payer_id: 付款人ID
         """
-        return self.make_gsalary_request("GET", f"/payers/{payer_id}")
-    
-    def get_payers(self, system_id,params: Optional[Dict] = None) -> Dict[str, Any]:
+        return self.make_gsalary_request("GET", f"/v1/remittance/payers/{payer_id}", system_id=system_id)
+
+    def get_payers(self, system_id) -> Dict[str, Any]:
         """获取付款人列表
         
         Args:
             params: 查询参数
         """
-        return self.make_gsalary_request("GET", "/payers", system_id=system_id, params=params)
+        return self.make_gsalary_request("GET", "/v1/remittance/payers", system_id=system_id)
     
     def update_payer(self, system_id,payer_id: str, data: Dict) -> Dict[str, Any]:
         """更新付款人信息

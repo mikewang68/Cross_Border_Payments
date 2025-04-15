@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for
+from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for, send_file, make_response
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import query_all_from_table
 from sync.realtime import realtime_card_info_update, modify_response_data_insert
 from comm.db_api import batch_update_database
-
+import json
 import time
 import uuid
 
@@ -746,3 +746,27 @@ def payees():
         print(f"查询收款人或付款方式数据时出错: {str(e)}")
         # 返回空列表，避免模板渲染错误
         return render_template('main/payees.html', payees_info_data=[], available_payment_methods=[])
+    
+# 付款人页面路由
+@main_bp.route('/payers')
+@login_required
+def payers():
+    try: 
+        payers_info_data = query_all_from_table('payers_info')
+        # 打印调试信息
+        print(f"查询到 {len(payers_info_data) if payers_info_data else 0} 条付款人数据")
+        # for payer in payers_info_data:
+        #     payer['business_scopes'] = json.loads(payer['business_scopes'])
+        print(payers_info_data)
+        # payers_info_data = json.dumps(payers_info_data, ensure_ascii=False, indent=4)
+        return render_template('main/payers.html', payers_info_data=payers_info_data)
+    except Exception as e:
+        print(f"查询付款人数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/payers.html', payers_info_data=[])
+    
+@main_bp.route('/payers/add', methods=['POST'])
+@login_required
+def payers_add():
+    return render_template('main/payers_add.html')
+

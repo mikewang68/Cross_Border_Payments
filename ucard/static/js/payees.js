@@ -126,19 +126,20 @@ layui.use(['table', 'form', 'layer'], function(){
                     {field: 'payee_id', title: '收款人ID', width: 250, templet: function(d){
                         return d.payee_id || '--';
                     }},
-                    {field: 'account_type', title: '收款账户类型', width: 150, templet: function(d){
+                    {field: 'account_type', title: '收款账户类型', width: 110, templet: function(d){
                         return d.account_type === 'E_WALLET' ? '个人钱包' : 
                                d.account_type === 'BANK_ACCOUNT' ? '银行账户' : 
                                d.account_type || '--';
                     }},
                     {field: 'full_name', title: '收款人姓名', width: 120},
-                    {field: 'country', title: '国家/地区', width: 120},
-                    {field: 'currencies', title: '币种', width: 120, templet: function(d){
+                    {field: 'country', title: '国家/地区', width: 90},
+                    {field: 'currencies', title: '币种', width: 80, templet: function(d){
                         return d.currencies || '--';
                     }},
                     {field: 'phone_number', title: '联系电话', width: 150},
-                    {field: 'address', title: '收款人地址', width: 200},
+                    {field: 'address', title: '收款人地址', width: 150},
                     {field: 'payment_method', title: '收款方式', width: 120},
+                    {field: 'version', title: '平台', width: 80},
                     {fixed: 'right', title: '操作', toolbar: '#payees_barTool', width: 120}
                 ]],
                 done: function(res){
@@ -244,6 +245,11 @@ layui.use(['table', 'form', 'layer'], function(){
                     
                     // 按电话搜索
                     if (formData.phone && item.phone_number && item.phone_number !== '--' && !item.phone_number.includes(formData.phone)) {
+                        return false;
+                    }
+
+                    // 按平台号搜索
+                    if (formData.version && item.version && item.version !== '--' && item.version !== formData.version) {
                         return false;
                     }
                     
