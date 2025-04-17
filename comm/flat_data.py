@@ -1,7 +1,20 @@
 # 用于格式化入库数据
 
 from datetime import datetime
-from comm.utils import flatten_dict
+
+def flatten_dict(d, parent_key='', sep='_'):
+
+    items = []
+    for k, v in d.items():
+        # 检查新键名是否会造成重复
+        new_key = f"{parent_key}{sep}{k}" if parent_key else k
+        if parent_key and k == parent_key.split(sep)[-1]:
+            new_key = parent_key
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
 
 def flat_data(version,json_data, p1=None, p2=None):
 
@@ -218,3 +231,9 @@ def flat_daily_report(data,region,date):
             formatted_info += f"{key}: {value}\n"
 
     return formatted_info
+
+def flat_date (date):
+
+    date_time = date.strftime('%Y-%m-%dT%H:%M:%S.%f')
+
+    return date_time

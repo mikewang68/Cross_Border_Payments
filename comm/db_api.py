@@ -308,3 +308,30 @@ def query_multiple_fields(table_name, field_names, condition=None, params=None):
     finally:
         cursor.close()
         conn.close()
+
+
+def query_date_from_table(table_name, column_name, start_date, end_date):
+    conn = create_db_connection()
+    if conn is None:
+        logger.error("无法建立数据库连接，程序退出。")
+        return []
+
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # 修正 SQL 语句
+        sql = f"""
+        SELECT *
+        FROM {table_name}
+        WHERE 
+            REPLACE({column_name}, 'Z', '') BETWEEN '{start_date}' AND '{end_date}';
+        """
+        # 执行 SQL 语句
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        return results
+    except pymysql.Error as err:
+        logger.error(f"查询数据时出现错误: {err}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
