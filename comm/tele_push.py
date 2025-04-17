@@ -186,7 +186,7 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
 
     # 获取前一天的日期
     current_date = datetime.now()
-    previous_date = current_date - timedelta(days=14)
+    previous_date = current_date - timedelta(days=2)
     previous_date_str = previous_date.strftime('%Y-%m-%d')
 
     # 获取前一天交易数据
@@ -248,6 +248,7 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
 
             amount = wallet_transaction_data.get('amount')
 
+
             if amount > 0:
                 current_income = Decimal(str(wallet_income_dict.get(currency, 0)))
                 wallet_income_dict[currency] = current_income + amount
@@ -258,7 +259,7 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
 
         # 处理卡交易明细
         # 卡交易笔数
-        card_count =len(card_transactions_list)
+        card_count = 0
         # 异常交易数
         failed_status_count = 0
 
@@ -276,14 +277,13 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
 
             else:
 
-                if biz_type != "SERVICE_FEE" :
+                if biz_type != "SERVICE_FEE" and biz_type != "AUTH":
 
-                    if mask_card_number in mask_card_dict :
-                        mask_card_dict[mask_card_number] += 1
-                    else:
-                        mask_card_dict[mask_card_number] = 1
+                    card_count += 1
 
-            if status == "SUCCEED":
+                    mask_card_dict[mask_card_number] = mask_card_dict.get(mask_card_number, 0) + 1
+
+            if status == "SUCCEED" and biz_type != "AUTH":
                 if amount > 0:
                     current_income = Decimal(str(card_income_dict.get(currency, 0)))
                     card_income_dict[currency] = current_income + amount
@@ -322,7 +322,7 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
         failed_status_count = 0
         card_count = 0
 
-        # 构建 card_id 到 card_transactions 的映射，避免多层嵌套循环
+        # 构建 card_id 到 card_transactions 的映射
         card_transaction_map = {card_transaction.get('card_id'): [] for card_transaction in card_transactions_list}
         for card_transaction in card_transactions_list:
             card_id = card_transaction.get('card_id')
@@ -343,7 +343,7 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
 
                 # 处理当前卡片的交易明细
                 for card_transactions_data in current_card_transactions:
-                    card_count += 1
+
                     mask_card_number = card_transactions_data.get('mask_card_number')
                     currency = card_transactions_data.get('transaction_amount_currency')
                     amount = card_transactions_data.get('transaction_amount')
@@ -353,14 +353,21 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
                     if status in ("FAILED", "VOID", "REJECTED"):
                         failed_status_count += 1
                     else:
-                        if biz_type != "SERVICE_FEE":
+                        if biz_type != "SERVICE_FEE" and biz_type != "AUTH":
+
+                            card_count += 1
+
                             mask_card_dict[mask_card_number] = mask_card_dict.get(mask_card_number, 0) + 1
 
-                    if status == "SUCCEED":
+                    if status == "SUCCEED" and biz_type != "AUTH":
+
+
+
                         if amount > 0:
 
                             current_income = Decimal(str(card_income_dict.get(currency, 0)))
                             card_income_dict[currency] = current_income + amount
+
                         else:
 
                             current_expense = Decimal(str(card_expense_dict.get(currency, 0)))

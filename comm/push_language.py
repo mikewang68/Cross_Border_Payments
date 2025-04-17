@@ -25,17 +25,52 @@ class PushLanguage:
     }
 
 
-    # 交易列表表头
+    # 表头
     HEADERS = {
-        'CN': [
-            '交易時間', '交易金額', '入賬金額', '手續費', '業務類型'
-        ],
-        'JP': [
-            '取引時間', '取引金額', '入金額', 'サーチャージ金額', '業務タイプ'
-        ],
-        'US': [
-            'Transaction Time', 'Transaction Amount', 'Accounting Amount', 'Surcharge Amount', 'Biz Type'
-        ]
+        'transaction_headers': {
+            'CN': [
+                '交易時間', '交易金額', '入賬金額', '手續費', '業務類型'
+            ],
+            'JP': [
+                '取引時間', '取引金額', '入金額', 'サーチャージ金額', '業務タイプ'
+            ],
+            'US': [
+                'Transaction Time', 'Transaction Amount', 'Accounting Amount', 'Surcharge Amount', 'Biz Type'
+            ]
+        },
+        'card_info_headers': {
+            'CN': [
+                '卡号', '賬单周期'
+            ],
+            'JP': [
+                'カード番号', '請求期間'
+            ],
+            'US': [
+                'Card Number', 'Billing Cycle'
+            ]
+        },
+        'accounting_info_headers': {
+            'CN': [
+                '賬戶收入', '賬戶支出'
+            ],
+            'JP': [
+                '口座収入', '口座支出'
+            ],
+            'US': [
+                'Account Income', 'Account Expenses'
+            ]
+        },
+         'customer_transaction_headers': {
+            'CN': [
+                '客戶收入', '客戶支出'
+            ],
+            'JP': [
+                '顧客収入', '顧客支出'
+            ],
+            'US': [
+                'Customer Income', 'Customer Expenses'
+            ]
+        }
     }
 
     # 业务类型

@@ -1,3 +1,5 @@
+from sqlalchemy.event import remove
+
 from comm.utils import get_email
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -70,9 +72,9 @@ def get_monthly_date():
     return last_month_2nd, this_month_1st
 
 
-def generate_table_header(region):
+def get_table_header(table_name,region):
 
-    return push_language.HEADERS.get(region, push_language.HEADERS['US'])
+    return push_language.HEADERS[table_name][region]
 
 
 def get_table_name(table_name,region):
@@ -85,40 +87,135 @@ def get_biz_type_text(biz_type, region):
     return push_language.BIZ_TYPE_MAPPING.get(biz_type, {}).get(region, biz_type)
 
 
-def generate_email_body(data, region):
+def make_head (header_data):
 
-    header = generate_table_header(region)
-    table_header = "<tr>" + "".join(f"<th>{h}</th>" for h in header) + "</tr>"
-    table_rows = ""
+    head = "<tr>" + "".join(f"<th>{h}</th>" for h in header_data) + "</tr>"
 
-    for row in data:
+    return head
+
+
+def make_email_body(transaction_data,region,qd_level,card_info=None,accounting_info=None,customer_transaction=None):
+
+    style = """
+            <head>      
+            <style>
+                table {
+                    border-collapse: collapse;
+                }
+                table, th, td {
+                    border: 1px solid black;
+                }
+                th {
+                    background-color: lightgray;
+                }
+            </style>
+            </head>
+        """
+
+    # 交易明细列表
+    transaction_text = get_table_name('TRANSACTION_DATA', region)
+    transaction_header_data = get_table_header('transaction_headers',region)
+    transaction_table_header = make_head(transaction_header_data)
+    transaction_table_rows = ""
+
+    # 卡信息列表
+    card_info_text = get_table_name('CARD_INFO', region)
+    card_info_header_data = get_table_header('card_info_headers',region)
+    card_info_table_header = make_head(card_info_header_data)
+    card_info_table_rows = ""
+
+    # 账务明细列表
+    accounting_info_text = get_table_name('ACCOUNTING_INFO', region)
+    accounting_info_header_data = get_table_header('accounting_info_headers',region)
+    accounting_info_table_header = make_head(accounting_info_header_data)
+    accounting_info_table_rows = ""
+
+    # 客户交易统计列表
+    customer_transaction_text = get_table_name('CUSTOMER_TRANSACTION_STATISTICS', region)
+    customer_transaction_header_data = get_table_header('customer_transaction_headers',region)
+    customer_transaction_table_header = make_head(customer_transaction_header_data)
+    customer_transaction_table_rows = ""
+
+
+    for row in transaction_data:
         transaction_info = f"{row['transaction_amount']} {row['transaction_amount_currency']}"
         accounting_info = f"{row['accounting_amount']} {row['accounting_amount_currency']}"
         surcharge_info = f"{row['surcharge_amount']} {row['surcharge_currency']}"
         biz_type = get_biz_type_text(row['biz_type'], region)
-        table_rows += "<tr>"
-        table_rows += f"<td>{row['transaction_time']}</td>"
-        table_rows += f"<td>{transaction_info}</td>"
-        table_rows += f"<td>{accounting_info}</td>"
-        table_rows += f"<td>{surcharge_info}</td>"
-        table_rows += f"<td>{biz_type}</td>"
-        table_rows += "</tr>"
-    table = f"<table border='1'>{table_header}{table_rows}</table>"
-    transaction_text = get_table_name('TRANSACTION_DATA', region)
-    return f"<html><body><h3>{transaction_text}</h3>{table}</body></html>"
+        transaction_table_rows += "<tr>"
+        transaction_table_rows += f"<td>{row['transaction_time']}</td>"
+        transaction_table_rows += f"<td>{transaction_info}</td>"
+        transaction_table_rows += f"<td>{accounting_info}</td>"
+        transaction_table_rows += f"<td>{surcharge_info}</td>"
+        transaction_table_rows += f"<td>{biz_type}</td>"
+        transaction_table_rows += "</tr>"
+
+    transaction_table = f"<table border='1'>{transaction_table_header}{transaction_table_rows}</table>"
+    card_info_table = f"<table border='1'>{card_info_table_header}{card_info_table_rows}</table>"
+    accounting_info_table = f"<table border='1'>{accounting_info_table_header}{accounting_info_table_rows}</table>"
+    customer_transaction_table = f"<table border='1'>{customer_transaction_table_header}{customer_transaction_table_rows}</table>"
 
 
-if __name__ == "__main__":
+
+    body_str_1 = f"""
+                    <html>
+                        {style}
+                        <body>
+                            <h3>{card_info_text}</h3>
+                            {card_info_table}
+                            <h3>{accounting_info_text}</h3>
+                            {accounting_info_table}
+                            <h3>{transaction_text}</h3>
+                            {transaction_table}
+                """
+    body_str_2 = f"""
+                    <h3>{customer_transaction_text}</h3>
+                    {customer_transaction_table}
+                """
+
+
+    body_str_3 = """
+                        </body>
+                    </html>
+                """
+
+    if qd_level in (0,1):
+
+        body_str = body_str_1 + body_str_2 + body_str_3
+
+    else:
+
+        body_str = body_str_1 + body_str_3
+
+
+    return body_str
+
+
+def push_monthly_report():
     try:
         start_date, end_date = get_monthly_date()
         start_date_str = flat_date(start_date)
         end_date_str = flat_date(end_date)
-        data = query_date_from_table('card_transactions', 'transaction_time', start_date_str, end_date_str)
+        transaction_data = query_date_from_table('card_transactions', 'transaction_time', start_date_str, end_date_str)
+
+        billing_cycle = start_date_str + '-' + end_date_str
+        card_id = '123'
+
+        remove_value = ["T","Z"]
+
+
+        for data in transaction_data :
+
+            for value in remove_value :
+
+                data['transaction_time'] = data['transaction_time'].replace(value," ")
+
+
 
         email_pusher = EmailPusher()
         to_email = "842457745@qq.com"
         subject = "测试邮件"
-        body = generate_email_body(data, 'CN')
+        body = make_email_body(transaction_data=transaction_data, region='CN',qd_level=0)
 
         email_pusher.send_email(to_email, subject, body)
 
