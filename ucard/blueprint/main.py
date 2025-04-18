@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, session, jsonify, request, redirec
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
-from comm.db_api import query_all_from_table
+from comm.db_api import query_all_from_table, delete_single_data
 from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info
 from comm.db_api import batch_update_database
 import json
@@ -844,18 +844,32 @@ def payers_delete():
         data = request.get_json()
         version = data.pop('version')
         payer_id = data.pop('payer_id')
+        conditions = {
+            'payer_id': payer_id,
+            'version': version
+        }
         gsalary_api = GSalaryAPI()
         result = gsalary_api.delete_payer(system_id=version, payer_id=payer_id)
         if result['result']['result'] == 'S':
-            return jsonify({
-                "code": 0,
-                "msg": "删除成功",
-                "data": result
-            })
+            delete_payers_info_result = delete_single_data('payers_info', conditions)
+            delete_payers_result = delete_single_data('payers', conditions)
+            if delete_payers_info_result and delete_payers_result:
+                print('-------------------------------------------------this is delete payer success end-------------------------------------------------')
+                return jsonify({
+                    "code": 0,
+                    "msg": "官方和本地数据删除成功",
+                    "data": result
+                })
+            else:
+                return jsonify({
+                    "code": 1,
+                    "msg": "官方和本地数据删除失败",
+                    "data": None
+                })
         else:
             return jsonify({
                 "code": 1,
-                "msg": "删除失败",
+                "msg": "官方删除失败",
                 "data": None
             })
     except Exception as e:

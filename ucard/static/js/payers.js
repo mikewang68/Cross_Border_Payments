@@ -250,8 +250,48 @@ layui.use(['table', 'form', 'layer'], function(){
                     layer.msg('编辑功能暂未实现', {icon: 0});
                 } else if(obj.event === 'delete'){
                     layer.confirm('确定要删除该付款人吗？', function(index){
-                        layer.msg('删除功能暂未实现', {icon: 0});
-                        layer.close(index);
+                        // 获取version和payer_id
+                        var version = data.version;
+                        var payer_id = data.payer_id;
+                        
+                        // 检查必要参数是否存在
+                        if (!version || !payer_id) {
+                            layer.msg('缺少必要的参数(version或payer_id)', {icon: 2});
+                            layer.close(index);
+                            return;
+                        }
+                        
+                        // 显示加载中
+                        var loadIndex = layer.load(2);
+                        
+                        // 发送删除请求
+                        $.ajax({
+                            url: '/payers/delete',
+                            type: 'DELETE',
+                            contentType: 'application/json',
+                            data: JSON.stringify({
+                                version: version,
+                                payer_id: payer_id
+                            }),
+                            success: function(res) {
+                                layer.close(loadIndex);
+                                if (res.code === 0) {
+                                    layer.msg(res.msg || '删除成功', {icon: 1});
+                                    // 删除成功后重新加载表格
+                                    table.reload('payer-table');
+                                } else {
+                                    layer.msg(res.msg || '删除失败', {icon: 2});
+                                }
+                            },
+                            error: function(xhr) {
+                                layer.close(loadIndex);
+                                console.error('删除付款人请求失败:', xhr);
+                                layer.msg('网络错误，请稍后重试', {icon: 2});
+                            },
+                            complete: function() {
+                                layer.close(index); // 关闭确认框
+                            }
+                        });
                     });
                 }
             });
@@ -267,7 +307,10 @@ layui.use(['table', 'form', 'layer'], function(){
                     if (formData.name && item.full_name && !item.full_name.toLowerCase().includes(formData.name.toLowerCase())) {
                         return false;
                     }
-                    
+                    // 按平台号搜索
+                    if (formData.version && item.version && item.version !== '--' && item.version !== formData.version) {
+                        return false;
+                    }
                     return true;
                 });
                 
