@@ -50,6 +50,11 @@ def insert_database(table_name, records):
     for record in records:
         # 过滤掉表中不存在的字段
         valid_record = {key: value for key, value in record.items() if key in columns_in_table}
+        
+        # 处理key字段，使用反引号转义
+        if 'key' in valid_record:
+            valid_record['`key`'] = valid_record.pop('key')
+            
         columns = ', '.join(valid_record.keys())
         values = ', '.join(['%s'] * len(valid_record))
         sql = f"INSERT INTO {table_name} ({columns}) VALUES ({values})"

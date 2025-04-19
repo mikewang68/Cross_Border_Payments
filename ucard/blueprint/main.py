@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, session, jsonify, request, redirec
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
-from comm.db_api import query_all_from_table
+from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection
 from sync.realtime import realtime_card_info_update, modify_response_data_insert
 from comm.db_api import batch_update_database
 
@@ -240,10 +240,6 @@ def all_cards():
 def statistics():
     return render_template('main/statistics.html')
 
-@main_bp.route('/system')
-@login_required
-def system():
-    return render_template('main/system.html')
 
 @main_bp.route('/exchange_rate')
 @login_required
@@ -690,6 +686,83 @@ def change_password():
             'msg': f'系统错误: {str(e)}'
         })
 
+
+@main_bp.route('/add_system')
+@login_required
+def add_system():
+    """添加平台页面"""
+    return render_template('main/add_system.html')
+
+@main_bp.route('/api/add_system', methods=['POST'])
+@login_required
+def api_add_system():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'code': 1,
+                'msg': '请求数据为空'
+            })
+            
+        appid = data.get('appid')
+        key = data.get('key')
+        system = data.get('system')
+        
+        if not appid or not key or not system:
+            return jsonify({
+                'code': 1,
+                'msg': '平台信息不完整，请填写所有必填项'
+            })
+        
+        # 查询所有平台数据
+        existing_systems = query_all_from_table('system_key')
+        
+        # 检查是否已存在相同的平台名称或AppID
+        if existing_systems:
+            for existing_system in existing_systems:
+                if existing_system.get('system') == system:
+                    return jsonify({
+                        'code': 1,
+                        'msg': '该平台名称已存在'
+                    })
+                if existing_system.get('appid') == appid:
+                    return jsonify({
+                        'code': 1,
+                        'msg': '该平台ID已存在'
+                    })
+        
+        # 插入新平台数据
+        insert_data = {
+            'appid': appid,
+            'key': key,
+            'system': system
+        }
+        
+        print(f"准备插入平台数据: {insert_data}")  # 调试日志
+        
+        result = insert_database('system_key', [insert_data])  # 将insert_data包装在列表中
+        if result:
+            print(f"平台数据插入成功: {system}")  # 调试日志
+            return jsonify({
+                'code': 0,
+                'msg': '添加平台成功'
+            })
+        else:
+            print(f"平台数据插入失败: {system}")  # 调试日志
+            return jsonify({
+                'code': 1,
+                'msg': '添加平台失败'
+            })
+            
+    except Exception as e:
+        print(f"添加平台时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
+
+
     
 # 修改卡信息包括卡昵称和每日限额，每月限额，单笔交易限额
 @main_bp.route('/cards/modify_card_info', methods=['PUT'])
@@ -727,4 +800,132 @@ def modify_card_info():
             "code": 1,
             "msg": f"发生错误: {str(e)}",
             "data": None
+        })
+
+@main_bp.route('/api/get_all_systems', methods=['GET'])
+@login_required
+def api_get_all_systems():
+    try:
+        # 查询所有平台数据
+        systems = query_all_from_table('system_key')
+        
+        # 确保返回的数据是列表格式
+        if systems is None:
+            systems = []
+        
+        # 直接返回系统列表，不做额外处理
+        print(f"查询到 {len(systems)} 条平台数据: {systems}")
+        
+        return jsonify({
+            'code': 0,  # 成功码为0
+            'msg': '获取平台列表成功',
+            'count': len(systems),
+            'data': systems
+        })
+    except Exception as e:
+        print(f"获取平台列表时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}',
+            'count': 0,
+            'data': []
+        })
+
+
+
+
+@main_bp.route('/api/update_system', methods=['POST'])
+@login_required
+def api_update_system():
+    try:
+        data = request.get_json()
+        system_id = data.get('id')
+        
+        if not system_id:
+            return jsonify({
+                'code': 1,
+                'msg': '平台ID不能为空'
+            })
+        
+        # 更新数据，使用反引号转义key字段
+        update_data = {
+            'appid': data.get('appid'),
+            '`key`': data.get('key'),  # 使用反引号转义key字段
+            'system': data.get('system')
+        }
+        
+        # 更新平台数据
+        result = update_database('system_key', {'id': system_id}, update_data)
+        
+        if result:
+            return jsonify({
+                'code': 0,
+                'msg': '更新平台成功'
+            })
+        else:
+            return jsonify({
+                'code': 1,
+                'msg': '更新平台失败'
+            })
+    except Exception as e:
+        print(f"更新平台时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
+@main_bp.route('/api/delete_system', methods=['POST'])
+@login_required
+def api_delete_system():
+    try:
+        data = request.get_json()
+        system_id = data.get('id')
+        
+        if not system_id:
+            return jsonify({
+                'code': 1,
+                'msg': '平台ID不能为空'
+            })
+        
+        # 直接删除平台数据
+        conn = create_db_connection()
+        if conn is None:
+            return jsonify({
+                'code': 1,
+                'msg': '数据库连接失败'
+            })
+            
+        cursor = conn.cursor()
+        try:
+            # 构建删除SQL语句
+            sql = "DELETE FROM system_key WHERE id = %s"
+            cursor.execute(sql, (system_id,))
+            conn.commit()
+            
+            if cursor.rowcount > 0:
+                return jsonify({
+                    'code': 0,
+                    'msg': '删除平台成功'
+                })
+            else:
+                return jsonify({
+                    'code': 1,
+                    'msg': '未找到要删除的平台'
+                })
+        except Exception as e:
+            conn.rollback()
+            print(f"删除平台时出错: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'系统错误: {str(e)}'
+            })
+        finally:
+            cursor.close()
+            conn.close()
+            
+    except Exception as e:
+        print(f"删除平台时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
         })
