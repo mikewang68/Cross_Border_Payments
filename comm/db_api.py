@@ -156,6 +156,7 @@ def batch_update_database(table_name, set_columns_values, condition1=None, condi
             sql = f"UPDATE {table_name} SET {set_str} WHERE {where_str}"
             cursor.execute(sql, values)
             conn.commit()
+            logger.info(f"成功更新 {cursor.rowcount} 条记录。")
         return True
     except pymysql.Error as err:
         logger.error(f"更新数据时出现错误: {err}")
@@ -253,6 +254,131 @@ def query_match_from_table(table_name, column_name,column_value,m):
     except pymysql.Error as err:
         logger.error(f"查询数据时出现错误: {err}")
         return []
+    finally:
+        cursor.close()
+        conn.close()
+
+def query_multiple_fields(table_name, field_names, condition=None, params=None):
+    """
+    查询指定表中多个字段的数据，支持条件筛选
+    
+    :param table_name: 表名
+    :param field_names: 需要查询的字段列表（列表或元组）
+    :param condition: 查询条件字符串（可选，包含%s占位符）
+    :param params: 条件参数（元组，与占位符对应）
+    :return: 包含查询结果的列表（字典形式）
+
+    例子：
+        data = query_multiple_fields(
+            'payees_account', 
+            ['account_id','payment_method'],
+            'version = %s', 
+            version,
+        )
+        complex_condition = query_multiple_fields(
+            "orders",
+            ["order_id", "total_price"],
+            "customer_id = %s AND price > %s ORDER BY created_at DESC LIMIT 5",
+            (12345, 100.0)
+        )
+    """
+    conn = create_db_connection()
+    if conn is None:
+        logger.error("无法建立数据库连接，程序退出。")
+        return []
+
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # 构建字段列表
+        fields = ", ".join(field_names)
+        
+        # 构建基础SQL
+        sql = f"SELECT {fields} FROM {table_name}"
+        
+        # 添加条件
+        if condition:
+            sql += f" WHERE {condition}"
+        
+        # 执行查询（带参数化）
+        cursor.execute(sql, params or ())
+        
+        return cursor.fetchall()
+    
+    except pymysql.Error as err:
+        logger.error(f"查询数据时出现错误: {err}")
+        return []
+    except Exception as e:
+        logger.error(f"未预期的错误: {str(e)}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+def query_date_from_table(table_name, column_name, start_date, end_date):
+    conn = create_db_connection()
+    if conn is None:
+        logger.error("无法建立数据库连接，程序退出。")
+        return []
+
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    try:
+        # 修正 SQL 语句
+        sql = f"""
+        SELECT *
+        FROM {table_name}
+        WHERE 
+            DATE(REPLACE({column_name}, 'Z', '')) BETWEEN '{start_date}' AND '{end_date}';
+        """
+        # 执行 SQL 语句
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        return results
+    except pymysql.Error as err:
+        logger.error(f"查询数据时出现错误: {err}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()
+
+#----------------------------------delete------------------------------------------------------------------------
+
+def delete_single_data(table_name, conditions):
+    """
+    删除指定表中符合多个条件的数据
+
+    :param table_name: 表名
+    :param conditions: 条件字典，键为列名，值为查询值，例如 {'column1': value1, 'column2': value2}
+    :return: 返回删除操作的结果，成功返回 True，失败返回 False
+    """
+    conn = create_db_connection()
+    if conn is None:
+        logger.error("无法建立数据库连接，程序退出。")
+        return False
+
+    cursor = conn.cursor()
+    try:
+        # 构建条件字符串
+        condition_str = " AND ".join([f"{key} = %s" for key in conditions.keys()])
+
+        # 构建删除 SQL 语句
+        sql = f"DELETE FROM {table_name} WHERE {condition_str} LIMIT 1"
+
+        # 执行删除操作，传递条件参数
+        cursor.execute(sql, tuple(conditions.values()))
+
+        # 提交删除操作
+        conn.commit()
+
+        # 检查是否删除了数据
+        if cursor.rowcount > 0:
+            logger.info(f"成功删除表 {table_name} 中符合条件的记录。")
+            return True
+        else:
+            logger.warning(f"未找到符合条件的记录，删除失败。")
+            return False
+    except pymysql.Error as err:
+        logger.error(f"删除数据时出现错误: {err}")
+        return False
     finally:
         cursor.close()
         conn.close()

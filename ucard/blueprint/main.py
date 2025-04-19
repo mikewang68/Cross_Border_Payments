@@ -1,11 +1,13 @@
-from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for
+from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for, send_file, make_response
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection
 from sync.realtime import realtime_card_info_update, modify_response_data_insert
+from comm.db_api import query_all_from_table, delete_single_data
+from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info
 from comm.db_api import batch_update_database
-
+import json
 import time
 import uuid
 
@@ -412,6 +414,7 @@ def cards():
     
 # 开卡页面路由
 @main_bp.route('/cards/cards_apply')
+@login_required
 def cards_apply():
     card_holders = query_all_from_table('card_holder')
     cards_product = query_all_from_table('cards_product')
@@ -927,5 +930,152 @@ def api_delete_system():
         print(f"删除平台时出错: {str(e)}")
         return jsonify({
             'code': 1,
-            'msg': f'系统错误: {str(e)}'
+            'msg': f'系统错误: {str(e)}'})
+# 收款人页面路由
+@main_bp.route('/payees')
+@login_required
+def payees():
+    try: 
+        # 查询所有卡数据
+        payees_info_data = query_all_from_table('payees_info')
+        available_payment_methods = query_all_from_table('payees_availpay_methods')      
+        # 打印调试信息
+        print(f"查询到 {len(payees_info_data) if payees_info_data else 0} 条收款人数据")
+        print(f"查询到 {len(available_payment_methods) if available_payment_methods else 0} 条可用付款方式数据")
+        return render_template('main/payees.html', payees_info_data=payees_info_data, available_payment_methods=available_payment_methods)
+    except Exception as e:
+        print(f"查询收款人或付款方式数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/payees.html', payees_info_data=[], available_payment_methods=[])
+    
+# 付款人页面路由
+@main_bp.route('/payers',)
+@login_required
+def payers():
+    try: 
+        payers_info_data = query_all_from_table('payers_info')
+        # 打印调试信息
+        print(f"查询到 {len(payers_info_data) if payers_info_data else 0} 条付款人数据")
+        return render_template('main/payers.html', payers_info_data=payers_info_data)
+    except Exception as e:
+        print(f"查询付款人数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/payers.html', payers_info_data=[])
+
+# 添加付款人页面路由
+@main_bp.route('/payers/add_page')
+@login_required
+def payer_add_page():
+    """渲染添加付款人页面"""
+    # 返回完整的HTML页面，适用于iframe加载
+    return render_template('main/payer_add.html')
+    
+@main_bp.route('/payers/upload_file', methods=['POST'])
+@login_required
+def payers_upload_file():
+    try:
+        # 获取表单数据
+        print('-------------------------------------------------this is upload file-------------------------------------------------')
+        data = request.get_json()
+        version = data.pop('version')
+        print(data) 
+        print(version)
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.upload_payer_file(system_id=version, data=data)
+        print(result)
+        if result['result']['result'] == 'S':
+            print('-------------------------------------------------this is upload file success end-------------------------------------------------')
+            return jsonify({
+                "code": 0,
+                "msg": "上传成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "上传失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+    
+@main_bp.route('/payers/add', methods=['POST'])
+@login_required
+def payers_add():
+    try:
+        print('-------------------------------------------------this is add payer-------------------------------------------------')
+        data = request.get_json()
+        print(data)
+        version = data.pop('version')
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.create_payer(system_id=version, data=data)
+        if result['result']['result'] == 'S':
+            print('-------------------------------------------------this is add payer insert database-------------------------------------------------')
+            print(result)
+            realtime_insert_payers(version)
+            realtime_insert_payers_info(version, result)
+            print('数据更新成功')
+            print('-------------------------------------------------this is add payer success end-------------------------------------------------')
+            return jsonify({
+                "code": 0,
+                "msg": "创建成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,  
+                "msg": "创建失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,  
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+
+@main_bp.route('/payers/delete', methods=['DELETE'])
+@login_required
+def payers_delete():
+    try:
+        data = request.get_json()
+        version = data.pop('version')
+        payer_id = data.pop('payer_id')
+        conditions = {
+            'payer_id': payer_id,
+            'version': version
+        }
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.delete_payer(system_id=version, payer_id=payer_id)
+        if result['result']['result'] == 'S':
+            delete_payers_info_result = delete_single_data('payers_info', conditions)
+            delete_payers_result = delete_single_data('payers', conditions)
+            if delete_payers_info_result and delete_payers_result:
+                print('-------------------------------------------------this is delete payer success end-------------------------------------------------')
+                return jsonify({
+                    "code": 0,
+                    "msg": "官方和本地数据删除成功",
+                    "data": result
+                })
+            else:
+                return jsonify({
+                    "code": 1,
+                    "msg": "官方和本地数据删除失败",
+                    "data": None
+                })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "官方删除失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
         })

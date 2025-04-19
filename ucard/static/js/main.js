@@ -22,7 +22,9 @@ layui.use(['element', 'layer'], function(){
             'exchange_usdt',
             'daily',
             'change_password',
-            'add_system'
+            'add_system',
+            'payees',
+            'payers',
         ];
         
         // 检查功能是否已实现
