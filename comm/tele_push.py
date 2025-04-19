@@ -2,7 +2,7 @@ import logging
 import requests
 from comm.utils import get_tele_token
 from comm.push_data import get_last_insert_time,upd_last_insert_time,match_last_insert_time,get_new_ins_data,get_db_last_insert_time
-from db_api import query_database
+from db_api import query_database, query_date_from_table
 from flat_data import flat_messages
 from comm.db_api import query_all_from_table
 from datetime import datetime, timedelta
@@ -122,7 +122,12 @@ def push_daily_report ():
 
     cards = query_all_from_table('cards')
 
-    card_transactions = query_all_from_table('card_transactions')
+    current_date = datetime.now()
+    previous_date = current_date - timedelta(days=4)
+    previous_date_str = previous_date.strftime('%Y-%m-%d')
+
+    card_transactions = query_date_from_table("card_transactions", "transaction_time", previous_date_str, previous_date_str)
+    wallet_transactions = query_date_from_table("wallet_transactions", "transaction_time", previous_date_str,previous_date_str)
 
     # 获取所有用户列表
     card_holders = query_all_from_table('card_holder')
@@ -151,7 +156,7 @@ def push_daily_report ():
             # 获取全部用户数据
             card_holder_list = card_holders
 
-            push_message = make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
+            push_message = make_daily_report (card_holder_list,qd_level,region,cards,card_transactions,previous_date_str=previous_date_str,wallet_transactions=wallet_transactions)
 
             response = tele_pusher.push_message(push_message, chat_id)
 
@@ -173,7 +178,7 @@ def push_daily_report ():
 
                     card_holder_list.append(card_holder)
 
-            push_message = make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
+            push_message = make_daily_report (card_holder_list,qd_level,region,cards,card_transactions,previous_date_str=previous_date_str)
 
             response = tele_pusher.push_message(push_message, chat_id)
 
@@ -182,48 +187,7 @@ def push_daily_report ():
 
 # 制作日报
 
-def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions):
-
-    # 获取前一天的日期
-    current_date = datetime.now()
-    previous_date = current_date - timedelta(days=2)
-    previous_date_str = previous_date.strftime('%Y-%m-%d')
-
-    # 获取前一天交易数据
-
-    # 初始化钱包交易明细列表
-    wallet_transactions_list = []
-
-    # 处理钱包交易明细
-    wallet_transactions = query_all_from_table('wallet_transactions')
-
-    # 遍历钱包交易明细
-    for wallet_transaction in wallet_transactions:
-
-        # 获取对应日期的交易明细
-        transaction_time = wallet_transaction.get('transaction_time')
-
-        # 提取数据库日期中的年月日部分
-        transaction_date = datetime.fromisoformat(transaction_time.replace("Z", "+00:00")).strftime('%Y-%m-%d')
-
-        if previous_date_str == transaction_date:
-            wallet_transactions_list.append(wallet_transaction)
-
-    # 初始化卡交易明细列表
-    card_transactions_list = []
-
-    # 遍历卡交易明细
-    for card_transaction in card_transactions:
-
-        # 获取对应日期的交易明细
-        transaction_time = card_transaction.get('transaction_time')
-
-        # 提取数据库日期中的年月日部分
-        transaction_date = datetime.fromisoformat(transaction_time.replace("Z", "+00:00")).strftime('%Y-%m-%d')
-
-        if previous_date_str == transaction_date:
-            card_transactions_list.append(card_transaction)
-
+def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions,previous_date_str,wallet_transactions=None):
 
     if qd_level == '0':
 
@@ -239,10 +203,10 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
         mask_card_dict = {}
 
         # 钱包交易笔数
-        wallet_count = len(wallet_transactions_list)
+        wallet_count = len(wallet_transactions)
 
 
-        for wallet_transaction_data in wallet_transactions_list:
+        for wallet_transaction_data in wallet_transactions:
 
             currency = wallet_transaction_data.get('amount_currency')
 
@@ -263,7 +227,7 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
         # 异常交易数
         failed_status_count = 0
 
-        for card_transactions_data in card_transactions_list:
+        for card_transactions_data in card_transactions:
 
             mask_card_number = card_transactions_data.get('mask_card_number')
             currency = card_transactions_data.get('transaction_amount_currency')
@@ -323,8 +287,8 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions)
         card_count = 0
 
         # 构建 card_id 到 card_transactions 的映射
-        card_transaction_map = {card_transaction.get('card_id'): [] for card_transaction in card_transactions_list}
-        for card_transaction in card_transactions_list:
+        card_transaction_map = {card_transaction.get('card_id'): [] for card_transaction in card_transactions}
+        for card_transaction in card_transactions:
             card_id = card_transaction.get('card_id')
             if card_id in card_transaction_map:
                 card_transaction_map[card_id].append(card_transaction)

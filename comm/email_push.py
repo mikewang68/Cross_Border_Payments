@@ -94,7 +94,7 @@ def make_head (header_data):
     return head
 
 
-def make_email_body(transaction_data,region,qd_level,card_info=None,accounting_info=None,customer_transaction=None):
+def make_email_body(transaction_data,region,qd_level,card_id,accounting_info,customer_transaction,billing_cycle):
 
     style = """
             <head>      
@@ -128,15 +128,19 @@ def make_email_body(transaction_data,region,qd_level,card_info=None,accounting_i
     accounting_info_text = get_table_name('ACCOUNTING_INFO', region)
     accounting_info_header_data = get_table_header('accounting_info_headers',region)
     accounting_info_table_header = make_head(accounting_info_header_data)
+    accounting_income = accounting_info.get('income')
+    accounting_expense = accounting_info.get('expense')
     accounting_info_table_rows = ""
 
     # 客户交易统计列表
     customer_transaction_text = get_table_name('CUSTOMER_TRANSACTION_STATISTICS', region)
     customer_transaction_header_data = get_table_header('customer_transaction_headers',region)
     customer_transaction_table_header = make_head(customer_transaction_header_data)
+    customer_income = customer_transaction.get('income')
+    customer_expense = customer_transaction.get('expense')
     customer_transaction_table_rows = ""
 
-
+    # 交易明细
     for row in transaction_data:
         transaction_info = f"{row['transaction_amount']} {row['transaction_amount_currency']}"
         accounting_info = f"{row['accounting_amount']} {row['accounting_amount_currency']}"
@@ -149,6 +153,24 @@ def make_email_body(transaction_data,region,qd_level,card_info=None,accounting_i
         transaction_table_rows += f"<td>{surcharge_info}</td>"
         transaction_table_rows += f"<td>{biz_type}</td>"
         transaction_table_rows += "</tr>"
+
+    card_info_table_rows += "<tr>"
+    card_info_table_rows += f"<td>{card_id}</td>"
+    card_info_table_rows += f"<td>{billing_cycle}</td>"
+    card_info_table_rows += "</tr>"
+
+    # 账务明细
+    for row in accounting_info:
+        accounting_info_table_rows += "<tr>"
+        accounting_info_table_rows += f"<td>{accounting_income}</td>"
+        accounting_info_table_rows += f"<td>{accounting_expense}</td>"
+        accounting_info_table_rows += "</tr>"
+
+    customer_transaction_table_rows += "<tr>"
+    customer_transaction_table_rows += f"<td>{customer_income}</td>"
+    customer_transaction_table_rows += f"<td>{customer_expense}</td>"
+    customer_transaction_table_rows += "</tr>"
+
 
     transaction_table = f"<table border='1'>{transaction_table_header}{transaction_table_rows}</table>"
     card_info_table = f"<table border='1'>{card_info_table_header}{card_info_table_rows}</table>"
@@ -197,12 +219,9 @@ def push_monthly_report():
         start_date_str = flat_date(start_date)
         end_date_str = flat_date(end_date)
         transaction_data = query_date_from_table('card_transactions', 'transaction_time', start_date_str, end_date_str)
-
         billing_cycle = start_date_str + '-' + end_date_str
         card_id = '123'
-
         remove_value = ["T","Z"]
-
 
         for data in transaction_data :
 
@@ -210,12 +229,24 @@ def push_monthly_report():
 
                 data['transaction_time'] = data['transaction_time'].replace(value," ")
 
+        accounting_info = {
+            'income': {'USD':'0','MYR':'121'},
+            'expense':{'USD':'120','MYR':'155'}
+
+        }
+
+        customer_transaction = {
+            'income': {'USD':'0','MYR':'121'},
+            'expense':{'USD':'120','MYR':'155'}
+
+        }
+
 
 
         email_pusher = EmailPusher()
         to_email = "842457745@qq.com"
         subject = "测试邮件"
-        body = make_email_body(transaction_data=transaction_data, region='CN',qd_level=0)
+        body = make_email_body(transaction_data=transaction_data, region='CN',qd_level=0,card_id=card_id,billing_cycle=billing_cycle,accounting_info = accounting_info,customer_transaction = customer_transaction)
 
         email_pusher.send_email(to_email, subject, body)
 
