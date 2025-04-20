@@ -70,6 +70,9 @@ layui.use(['table', 'form', 'layer'], function(){
     
     // 添加平台按钮点击事件
     $('#addSystemBtn').on('click', function(){
+        // 重置表单中的隐藏ID字段
+        $('input[name="id"]').remove();
+        
         // 弹出添加平台表单
         layer.open({
             type: 1,
@@ -87,38 +90,76 @@ layui.use(['table', 'form', 'layer'], function(){
         });
     });
     
+    // 表单提交事件 - 使用off先移除所有已绑定的事件
+    $(document).off('submit', '#addSystemForm form').on('submit', '#addSystemForm form', function(e) {
+        e.preventDefault(); // 阻止默认提交
+        return false;
+    });
+    
     // 表单提交事件
     form.on('submit(submitSystem)', function(data){
+        // 检查是否有提交锁，防止重复提交
+        if($(this).data('submitting')) {
+            console.log('表单正在提交中，请勿重复点击');
+            return false;
+        }
+        
+        // 设置提交锁
+        $(this).data('submitting', true);
+        
         // 验证表单数据
         if(!data.field.system || !data.field.appid || !data.field.key) {
             layer.msg('请填写完整的平台信息', {icon: 2, time: 2000});
+            $(this).data('submitting', false); // 解锁
             return false;
         }
         
         console.log("准备提交的数据:", data.field); // 调试日志
         
+        var url = data.field.id ? '/api/update_system' : '/api/add_system';
+        var successMsg = data.field.id ? '更新成功' : '添加成功';
+        var failMsg = data.field.id ? '更新失败' : '添加失败';
+        
         // 提交数据
         $.ajax({
-            url: '/api/add_system',
+            url: url,
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(data.field),
             success: function(res){
                 console.log("提交结果:", res); // 调试日志
                 if(res.code === 0){
-                    layer.msg(res.msg || '添加成功', {icon: 1, time: 2000}, function(){
+                    layer.msg(res.msg || successMsg, {icon: 1, time: 2000}, function(){
                         // 关闭所有弹层
                         layer.closeAll();
-                        // 刷新表格
-                        systemTable.reload();
+                        // 强制刷新表格，不使用缓存
+                        table.reload('systemTable', {
+                            page: {
+                                curr: 1 // 重新从第 1 页开始
+                            },
+                            where: {
+                                _t: new Date().getTime() // 添加时间戳防止缓存
+                            }
+                        }, 'data');
+                        console.log("表格已重新加载");
+                        
+                        // 额外检查：2秒后再次刷新表格
+                        setTimeout(function() {
+                            table.reload('systemTable');
+                            console.log("表格延迟刷新完成");
+                        }, 2000);
                     });
                 } else {
-                    layer.msg(res.msg || '添加失败', {icon: 2, time: 2000});
+                    layer.msg(res.msg || failMsg, {icon: 2, time: 2000});
                 }
+                // 解锁提交按钮
+                $('button[lay-filter="submitSystem"]').data('submitting', false);
             },
             error: function(xhr, status, error){
                 console.error("请求错误:", xhr, status, error); // 调试日志
                 layer.msg('服务器错误，请稍后重试: ' + error, {icon: 2, time: 2000});
+                // 解锁提交按钮
+                $('button[lay-filter="submitSystem"]').data('submitting', false);
             }
         });
         
@@ -133,7 +174,6 @@ layui.use(['table', 'form', 'layer'], function(){
         if(event === 'edit'){
             // 编辑平台
             form.val('systemForm', {
-                id: data.id,
                 system: data.system,
                 appid: data.appid,
                 key: data.key
@@ -155,32 +195,6 @@ layui.use(['table', 'form', 'layer'], function(){
                     } else {
                         $('input[name="id"]').val(data.id);
                     }
-                    
-                    // 修改提交监听器为编辑处理
-                    form.on('submit(submitSystem)', function(formData){
-                        $.ajax({
-                            url: '/api/update_system',
-                            type: 'POST',
-                            contentType: 'application/json',
-                            data: JSON.stringify(formData.field),
-                            success: function(res){
-                                if(res.code === 0){
-                                    layer.msg(res.msg || '更新成功', {icon: 1, time: 2000}, function(){
-                                        layer.closeAll();
-                                        systemTable.reload();
-                                    });
-                                } else {
-                                    layer.msg(res.msg || '更新失败', {icon: 2, time: 2000});
-                                }
-                            },
-                            error: function(xhr){
-                                layer.msg('服务器错误，请稍后重试', {icon: 2, time: 2000});
-                                console.error(xhr);
-                            }
-                        });
-                        
-                        return false;
-                    });
                 }
             });
         } else if (event === 'del') {

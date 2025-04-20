@@ -1,13 +1,11 @@
-from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for, send_file, make_response
+from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
-from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection
+from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database,delete_single_data
 from sync.realtime import realtime_card_info_update, modify_response_data_insert
-from comm.db_api import query_all_from_table, delete_single_data
-from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info
 from comm.db_api import batch_update_database
-import json
+
 import time
 import uuid
 
@@ -414,7 +412,6 @@ def cards():
     
 # 开卡页面路由
 @main_bp.route('/cards/cards_apply')
-@login_required
 def cards_apply():
     card_holders = query_all_from_table('card_holder')
     cards_product = query_all_from_table('cards_product')
@@ -711,50 +708,78 @@ def api_add_system():
         key = data.get('key')
         system = data.get('system')
         
+        print(f"收到平台添加请求: appid={appid}, system={system}")
+        
         if not appid or not key or not system:
+            print("平台信息不完整")
             return jsonify({
                 'code': 1,
                 'msg': '平台信息不完整，请填写所有必填项'
             })
         
-        # 查询所有平台数据
-        existing_systems = query_all_from_table('system_key')
+        # 检查是否已存在相同的平台
+        existing_system = query_database('system_key', 'system', system)
+        print(f"查询现有平台结果: {existing_system}")
         
-        # 检查是否已存在相同的平台名称或AppID
-        if existing_systems:
-            for existing_system in existing_systems:
-                if existing_system.get('system') == system:
-                    return jsonify({
-                        'code': 1,
-                        'msg': '该平台名称已存在'
-                    })
-                if existing_system.get('appid') == appid:
-                    return jsonify({
-                        'code': 1,
-                        'msg': '该平台ID已存在'
-                    })
-        
-        # 插入新平台数据
-        insert_data = {
-            'appid': appid,
-            'key': key,
-            'system': system
-        }
-        
-        print(f"准备插入平台数据: {insert_data}")  # 调试日志
-        
-        result = insert_database('system_key', [insert_data])  # 将insert_data包装在列表中
-        if result:
-            print(f"平台数据插入成功: {system}")  # 调试日志
-            return jsonify({
-                'code': 0,
-                'msg': '添加平台成功'
-            })
-        else:
-            print(f"平台数据插入失败: {system}")  # 调试日志
+        if existing_system:
+            print(f"平台 {system} 已存在")
             return jsonify({
                 'code': 1,
-                'msg': '添加平台失败'
+                'msg': '该平台已存在'
+            })
+        
+        try:
+            conn = create_db_connection()
+            if conn is None:
+                print("数据库连接失败")
+                return jsonify({
+                    'code': 1,
+                    'msg': '数据库连接失败'
+                })
+                
+            cursor = conn.cursor()
+            
+            # 先获取最大的ID值
+            try:
+                cursor.execute("SELECT MAX(id) FROM system_key")
+                max_id = cursor.fetchone()[0]
+                if max_id is None:
+                    new_id = 1
+                else:
+                    new_id = max_id + 1
+            except Exception as e:
+                print(f"获取最大ID时出错: {str(e)}")
+                new_id = 1  # 如果查询失败，默认使用1作为ID
+                
+            print(f"使用新ID: {new_id}")
+            
+            # 手动构建插入SQL，包含id字段
+            sql = "INSERT INTO system_key (id, appid, `key`, system) VALUES (%s, %s, %s, %s)"
+            val = (new_id, appid, key, system)
+            
+            print(f"执行SQL: {sql}, 参数: {val}")
+            
+            cursor.execute(sql, val)
+            conn.commit()
+            
+            if cursor.rowcount > 0:
+                print(f"成功插入平台 {system}")
+                return jsonify({
+                    'code': 0,
+                    'msg': '添加平台成功'
+                })
+            else:
+                print("插入失败，没有行受影响")
+                return jsonify({
+                    'code': 1,
+                    'msg': '添加平台失败，没有数据被插入'
+                })
+                
+        except Exception as e:
+            print(f"插入数据时出错: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'添加平台失败: {str(e)}'
             })
             
     except Exception as e:
@@ -930,8 +955,8 @@ def api_delete_system():
         print(f"删除平台时出错: {str(e)}")
         return jsonify({
             'code': 1,
-            'msg': f'系统错误: {str(e)}'})
-# 收款人页面路由
+            'msg': f'系统错误: {str(e)}'
+        })
 @main_bp.route('/payees')
 @login_required
 def payees():

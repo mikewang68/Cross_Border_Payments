@@ -20,19 +20,29 @@ def login():
     if request.method == 'POST':
         account = request.form.get('account')
         password = request.form.get('password')
-        # 获取数据，判断数据是否存在
-        data = query_database('admins','admin_account',str(account))
         
-        # 直接比较密码（假设数据库中存储的是明文密码）
-        if account == data[0]['admin_account'] and data[0]['admin_password'] == password:
-            # 登录成功，保存用户信息到会话
-            session['user_id'] = data[0]['admin_id']
-            session['user_account'] = data[0]['admin_account']
-            
-            # 重定向到首页
-            return redirect(url_for('main.index'))
-        else:
+        # 获取数据，判断数据是否存在
+        data = query_database('admins', 'admin_account', str(account))
+        
+        # 检查是否有查询结果
+        if not data:
             error = '账号或密码不正确'
+            return render_template('auth/login.html', error=error)
+            
+        # 验证密码
+        try:
+            if account == data[0]['admin_account'] and data[0]['admin_password'] == password:
+                # 登录成功，保存用户信息到会话
+                session['user_id'] = data[0]['admin_id']
+                session['user_account'] = data[0]['admin_account']
+                
+                # 重定向到首页
+                return redirect(url_for('main.index'))
+            else:
+                error = '账号或密码不正确'
+        except (IndexError, KeyError) as e:
+            print(f"登录验证出错: {str(e)}")
+            error = '系统错误，请联系管理员'
     
     return render_template('auth/login.html', error=error)
 
