@@ -25,6 +25,7 @@ layui.use(['element', 'layer'], function(){
             'add_system',
             'payees',
             'payers',
+            'wallet_manage',
         ];
         
         // 检查功能是否已实现
@@ -60,7 +61,7 @@ layui.use(['element', 'layer'], function(){
                     tempDiv.innerHTML = response;
                     
                     // 提取content块内容，如果找不到则使用整个响应
-                    var contentBlock = tempDiv.querySelector('.add-system-container, .daily-container, .wallet-container, .cards-container, .transactions-container, .balance-history-container');
+                    var contentBlock = tempDiv.querySelector('.add-system-container, .daily-container, .wallet-container, .cards-container, .transactions-container, .balance-history-container, .wallet-manage-container');
                     var htmlContent = contentBlock ? contentBlock.outerHTML : response;
                     
                     // 添加新标签页
