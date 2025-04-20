@@ -2,6 +2,7 @@ from comm.db_api import insert_database, update_database, batch_update_database,
 from comm.flat_data import flat_data
 from comm.gsalay_api import GSalaryAPI
 import json
+import time
 
 gsalary = GSalaryAPI()
 
@@ -52,6 +53,26 @@ def realtime_insert_payers_info(version, result):
         insert_database('payers_info', data)
     except Exception as e:
         print(f"付款人信息插入数据库出错: {e}")
+
+def realtime_update_payers(version, payer_id, data):
+    gsalary = GSalaryAPI()
+    time.sleep(5)
+    try:
+        payers_data = gsalary.get_payers(system_id=version)
+        if payers_data['result']['result'] == 'S':
+            payers_flatten_data = flat_data(version, payers_data, 'data', 'payers')
+            batch_update_database('payers', payers_flatten_data, condition1='payer_id')
+            data_dict = []
+            if data:
+                payers_info_flatten_data = flat_data(version, data, 'data')
+                data_dict.append(payers_info_flatten_data)
+                batch_update_database('payers_info', data_dict, condition1='payer_id')
+            else:
+                print(f"更新payers_info表中{payer_id}时出错: 数据为空")
+        else:
+            print(f"更新payers表时出错: {payers_data['result']['message']}")
+    except Exception as e:
+        print(f"更新付款人信息时出错: {e}")
 
 if __name__ == '__main__':
     realtime_card_info_update(version='J1', card_id='2025011911400101632500617552')
