@@ -550,7 +550,7 @@ class GSalaryAPI:
             payer_id: 付款人ID
             data: 需要更新的信息
         """
-        return self.make_gsalary_request("PUT", f"/payers/{payer_id}", data)
+        return self.make_gsalary_request("PUT", f"/v1/remittance/payers/{payer_id}", system_id, data)
     
     def delete_payer(self, system_id,payer_id: str) -> Dict[str, Any]:
         """删除付款人

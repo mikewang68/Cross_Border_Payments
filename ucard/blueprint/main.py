@@ -3,7 +3,7 @@ from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import query_all_from_table, delete_single_data
-from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info
+from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info,realtime_update_payers
 from comm.db_api import batch_update_database
 import json
 import time
@@ -737,7 +737,9 @@ def payees():
     try: 
         # 查询所有卡数据
         payees_info_data = query_all_from_table('payees_info')
-        available_payment_methods = query_all_from_table('payees_availpay_methods')      
+        available_payment_methods = query_all_from_table('payees_availpay_methods')     
+        print(available_payment_methods)
+        print(payees_info_data)
         # 打印调试信息
         print(f"查询到 {len(payees_info_data) if payees_info_data else 0} 条收款人数据")
         print(f"查询到 {len(available_payment_methods) if available_payment_methods else 0} 条可用付款方式数据")
@@ -870,6 +872,35 @@ def payers_delete():
             return jsonify({
                 "code": 1,
                 "msg": "官方删除失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+
+@main_bp.route('/payers/update', methods=['PUT'])
+@login_required
+def payers_update():
+    try:
+        data = request.get_json()
+        version = data.pop('version')
+        payer_id = data.pop('payer_id')
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.update_payer(system_id=version, payer_id=payer_id, data=data)
+        if result['result']['result'] == 'S':
+            realtime_update_payers(version, payer_id, result)
+            return jsonify({
+                "code": 0,
+                "msg": "更新成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "更新失败",
                 "data": None
             })
     except Exception as e:

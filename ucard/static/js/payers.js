@@ -184,26 +184,52 @@ layui.use(['table', 'form', 'layer'], function(){
             const businessScopes = Array.isArray(payerData.business_scopes) ? payerData.business_scopes : [];
             let businessScopesHtml = formatBusinessScopes(businessScopes);
             
+            // 判断付款人类型
+            const isIndividual = payerData.subject_type === 'INDIVIDUAL';
+            
             // 构建详情内容HTML
             var content = '<div class="layui-card">' +
-                '<div class="layui-card-header">付款人详情</div>' +
-                '<div class="layui-card-body">' +
-                '<table class="layui-table">' +
+                '<div class="layui-card-body">';
+                
+            // 付款人基本信息部分
+            content += '<div class="layui-card-header" style="font-size: 14px; margin-bottom: 15px; border-left: 2px solid #1E9FFF; padding-left: 10px;">付款人信息</div>';
+            content += '<table class="layui-table">' +
                 '<colgroup><col width="30%"><col width="70%"></colgroup>' +
                 '<tbody>' +
                 '<tr><td>付款人类型</td><td>' + (payerData.subject_type_text || '--') + '</td></tr>' +
-                '<tr><td>付款人名称</td><td>' + (payerData.full_name || '--') + '</td></tr>' +
-                '<tr><td>证件</td><td>' + (payerData.cert_info || '--') + '</td></tr>' +
-                '<tr><td>出生年月</td><td>' + (payerData.birthday || '--') + '</td></tr>' +
-                '<tr><td>业务范围</td><td>' + (payerData.business_scopes_text || '--') + '</td></tr>' +
-                '<tr><td>地址</td><td>' + (payerData.address || '--') + '</td></tr>';
+                '<tr><td>付款人ID</td><td>' + (payerData.payer_id || '--') + '</td></tr>';
                 
-            // 如果有证件图片，则添加图片显示
-            if(payerData.cert_file) {
-                content += '<tr><td>证件图片</td><td><img src="' + payerData.cert_file + '" class="cert-image" /></td></tr>';
+            // 根据付款人类型显示不同字段
+            if (isIndividual) {
+                // 个人类型
+                content += '<tr><td>名字</td><td>' + (payerData.first_name || '--') + '</td></tr>' +
+                    '<tr><td>姓氏</td><td>' + (payerData.last_name || '--') + '</td></tr>' +
+                    '<tr><td>证件类型</td><td>' + (certTypeMap[payerData.cert_type] || payerData.cert_type || '--') + '</td></tr>' +
+                    '<tr><td>证件号码</td><td>' + (payerData.cert_number || '--') + '</td></tr>' +
+                    '<tr><td>出生年月</td><td>' + (payerData.birthday || '--') + '</td></tr>' +
+                    '<tr><td>国籍</td><td>' + (payerData.region || '--') + '</td></tr>';
+            } else {
+                // 企业类型
+                content += '<tr><td>公司名称</td><td>' + (payerData.company_name || '--') + '</td></tr>' +
+                    '<tr><td>注册号</td><td>' + (payerData.register_number || '--') + '</td></tr>' +
+                    '<tr><td>业务范围</td><td>' + businessScopesHtml + '</td></tr>';
             }
+            
+            content += '</tbody></table>';
+            
+            // 地址信息部分
+            content += '<div class="layui-card-header" style="font-size: 14px; margin: 15px 0; border-left: 2px solid #1E9FFF; padding-left: 10px;">地址信息</div>';
+            content += '<table class="layui-table">' +
+                '<colgroup><col width="30%"><col width="70%"></colgroup>' +
+                '<tbody>' +
+                '<tr><td>国家/地区</td><td>' + (payerData.address_country || '--') + '</td></tr>' +
+                '<tr><td>州/省</td><td>' + (payerData.address_state || '--') + '</td></tr>' +
+                '<tr><td>城市</td><td>' + (payerData.address_city || '--') + '</td></tr>' +
+                '<tr><td>详细地址</td><td>' + (payerData.address || '--') + '</td></tr>' +
+                '<tr><td>邮编</td><td>' + (payerData.address_postcode || '--') + '</td></tr>' +
+                '</tbody></table>';
                 
-            content += '</tbody></table></div></div>';
+            content += '</div></div>';
                   
             // 显示弹窗
             layer.open({
