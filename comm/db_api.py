@@ -50,6 +50,11 @@ def insert_database(table_name, records):
     for record in records:
         # 过滤掉表中不存在的字段
         valid_record = {key: value for key, value in record.items() if key in columns_in_table}
+        
+        # 处理key字段，使用反引号转义
+        if 'key' in valid_record:
+            valid_record['`key`'] = valid_record.pop('key')
+            
         columns = ', '.join(valid_record.keys())
         values = ', '.join(['%s'] * len(valid_record))
         sql = f"INSERT INTO {table_name} ({columns}) VALUES ({values})"
@@ -309,48 +314,6 @@ def query_multiple_fields(table_name, field_names, condition=None, params=None):
         cursor.close()
         conn.close()
 
-def delete_single_data(table_name, conditions):
-    """
-    删除指定表中符合多个条件的数据
-    
-    :param table_name: 表名
-    :param conditions: 条件字典，键为列名，值为查询值，例如 {'column1': value1, 'column2': value2}
-    :return: 返回删除操作的结果，成功返回 True，失败返回 False
-    """
-    conn = create_db_connection()
-    if conn is None:
-        logger.error("无法建立数据库连接，程序退出。")
-        return False
-
-    cursor = conn.cursor()
-    try:
-        # 构建条件字符串
-        condition_str = " AND ".join([f"{key} = %s" for key in conditions.keys()])
-        
-        # 构建删除 SQL 语句
-        sql = f"DELETE FROM {table_name} WHERE {condition_str} LIMIT 1"
-        
-        # 执行删除操作，传递条件参数
-        cursor.execute(sql, tuple(conditions.values()))
-        
-        # 提交删除操作
-        conn.commit()
-        
-        # 检查是否删除了数据
-        if cursor.rowcount > 0:
-            logger.info(f"成功删除表 {table_name} 中符合条件的记录。")
-            return True
-        else:
-            logger.warning(f"未找到符合条件的记录，删除失败。")
-            return False
-    except pymysql.Error as err:
-        logger.error(f"删除数据时出现错误: {err}")
-        return False
-    finally:
-        cursor.close()
-        conn.close()
-
-
 def query_date_from_table(table_name, column_name, start_date, end_date):
     conn = create_db_connection()
     if conn is None:
@@ -364,7 +327,7 @@ def query_date_from_table(table_name, column_name, start_date, end_date):
         SELECT *
         FROM {table_name}
         WHERE 
-            REPLACE({column_name}, 'Z', '') BETWEEN '{start_date}' AND '{end_date}';
+            DATE(REPLACE({column_name}, 'Z', '')) BETWEEN '{start_date}' AND '{end_date}';
         """
         # 执行 SQL 语句
         cursor.execute(sql)
@@ -373,6 +336,49 @@ def query_date_from_table(table_name, column_name, start_date, end_date):
     except pymysql.Error as err:
         logger.error(f"查询数据时出现错误: {err}")
         return []
+    finally:
+        cursor.close()
+        conn.close()
+
+#----------------------------------delete------------------------------------------------------------------------
+
+def delete_single_data(table_name, conditions):
+    """
+    删除指定表中符合多个条件的数据
+
+    :param table_name: 表名
+    :param conditions: 条件字典，键为列名，值为查询值，例如 {'column1': value1, 'column2': value2}
+    :return: 返回删除操作的结果，成功返回 True，失败返回 False
+    """
+    conn = create_db_connection()
+    if conn is None:
+        logger.error("无法建立数据库连接，程序退出。")
+        return False
+
+    cursor = conn.cursor()
+    try:
+        # 构建条件字符串
+        condition_str = " AND ".join([f"{key} = %s" for key in conditions.keys()])
+
+        # 构建删除 SQL 语句
+        sql = f"DELETE FROM {table_name} WHERE {condition_str} LIMIT 1"
+
+        # 执行删除操作，传递条件参数
+        cursor.execute(sql, tuple(conditions.values()))
+
+        # 提交删除操作
+        conn.commit()
+
+        # 检查是否删除了数据
+        if cursor.rowcount > 0:
+            logger.info(f"成功删除表 {table_name} 中符合条件的记录。")
+            return True
+        else:
+            logger.warning(f"未找到符合条件的记录，删除失败。")
+            return False
+    except pymysql.Error as err:
+        logger.error(f"删除数据时出现错误: {err}")
+        return False
     finally:
         cursor.close()
         conn.close()
