@@ -1168,6 +1168,183 @@ def payers_delete():
             "data": None
         })
 
+@main_bp.route('/wallet_manage')
+@login_required
+def wallet_manage():
+    try:
+        # 查询钱包管理数据
+        percent_data = query_all_from_table('percent')
+        
+        # 打印调试信息
+        print(f"查询到 {len(percent_data) if percent_data else 0} 条钱包管理记录")
+        
+        # 将数据转换为JSON并返回给前端
+        return render_template('main/wallet_manage.html', percent_data=percent_data)
+    except Exception as e:
+        print(f"查询钱包管理数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/wallet_manage.html', percent_data=[])
+
+@main_bp.route('/api/wallet_manage/list', methods=['GET'])
+@login_required
+def api_wallet_manage_list():
+    try:
+        # 查询钱包管理数据
+        percent_data = query_all_from_table('percent')
+        
+        # 打印调试信息
+        print(f"API查询到 {len(percent_data) if percent_data else 0} 条钱包管理记录")
+        
+        return jsonify({
+            'code': 0,
+            'msg': '获取钱包管理数据成功',
+            'count': len(percent_data),
+            'data': percent_data
+        })
+    except Exception as e:
+        print(f"获取钱包管理数据时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'获取钱包管理数据失败: {str(e)}',
+            'count': 0,
+            'data': []
+        })
+
+@main_bp.route('/api/wallet_manage/add', methods=['POST'])
+@login_required
+def api_wallet_manage_add():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'code': 1,
+                'msg': '请求数据为空'
+            })
+        
+        # 构建插入数据
+        insert_data = [data]  # 封装成列表，适配insert_database方法
+        
+        print(f"准备插入钱包管理数据: {insert_data}")
+        
+        try:
+            # 执行插入操作
+            insert_database('percent', insert_data)
+            
+            # 如果没有抛出异常，则视为插入成功
+            print("钱包管理数据插入成功")
+            return jsonify({
+                'code': 0,
+                'msg': '添加钱包管理数据成功'
+            })
+        except Exception as e:
+            print(f"钱包管理数据插入过程中出错: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'添加钱包管理数据失败: {str(e)}'
+            })
+            
+    except Exception as e:
+        print(f"添加钱包管理数据时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
+@main_bp.route('/api/wallet_manage/update', methods=['POST'])
+@login_required
+def api_wallet_manage_update():
+    try:
+        data = request.get_json()
+        if not data or 'id' not in data:
+            return jsonify({
+                'code': 1,
+                'msg': '请求数据无效或缺少ID'
+            })
+        
+        # 提取ID作为条件
+        record_id = data.pop('id')
+        condition = {'id': record_id}
+        
+        print(f"准备更新钱包管理数据: ID={record_id}, 数据={data}")
+        
+        try:
+            # 执行更新操作
+            update_database('percent', condition, data)
+            
+            # 如果没有抛出异常，则视为更新成功
+            print(f"钱包管理数据 ID={record_id} 更新成功")
+            return jsonify({
+                'code': 0,
+                'msg': '更新钱包管理数据成功'
+            })
+        except Exception as e:
+            print(f"钱包管理数据更新过程中出错: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'更新钱包管理数据失败: {str(e)}'
+            })
+            
+    except Exception as e:
+        print(f"更新钱包管理数据时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
+@main_bp.route('/api/wallet_manage/delete', methods=['POST'])
+@login_required
+def api_wallet_manage_delete():
+    try:
+        data = request.get_json()
+        if not data or 'id' not in data:
+            return jsonify({
+                'code': 1,
+                'msg': '请求数据无效或缺少ID'
+            })
+        
+        record_id = data['id']
+        
+        # 通过数据库连接直接删除数据
+        conn = create_db_connection()
+        if conn is None:
+            return jsonify({
+                'code': 1,
+                'msg': '数据库连接失败'
+            })
+            
+        cursor = conn.cursor()
+        try:
+            # 构建删除SQL语句
+            sql = "DELETE FROM percent WHERE id = %s"
+            cursor.execute(sql, (record_id,))
+            conn.commit()
+            
+            if cursor.rowcount > 0:
+                return jsonify({
+                    'code': 0,
+                    'msg': '删除钱包管理数据成功'
+                })
+            else:
+                return jsonify({
+                    'code': 1,
+                    'msg': '未找到要删除的数据'
+                })
+        except Exception as e:
+            conn.rollback()
+            print(f"删除钱包管理数据时出错: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'系统错误: {str(e)}'
+            })
+        finally:
+            cursor.close()
+            conn.close()
+    except Exception as e:
+        print(f"删除钱包管理数据时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
 @main_bp.route('/payers/update', methods=['PUT'])
 @login_required
 def payers_update():
