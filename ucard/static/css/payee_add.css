@@ -1,0 +1,87 @@
+/**
+ * 添加收款人页面专用样式
+ * 仅作用于payee_add.html
+ */
+
+.payee-add-page .layui-card-header {
+    position: relative;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.payee-add-page .return-button {
+    margin-right: 12px;
+}
+
+.payee-add-page .page-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.payee-add-page .layui-card-body {
+    padding: 20px;
+}
+
+/* 表单样式 */
+.payee-add-form {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.payee-add-form .layui-form-label {
+    width: 120px;
+}
+
+.payee-add-form .layui-input-block {
+    margin-left: 150px;
+}
+
+/* 必填字段标记 */
+.payee-add-form .layui-form-label.required:after {
+    content: '*';
+    color: red;
+    margin-left: 4px;
+}
+
+/* 特定字段组样式 */
+.bank-account-fields,
+.e-wallet-fields {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #e6e6e6;
+}
+
+/* 表单按钮样式 */
+.payee-add-form .layui-btn {
+    min-width: 100px;
+}
+
+/* 表单项间距 */
+.payee-add-form .layui-form-item {
+    margin-bottom: 20px;
+}
+
+/* 响应式样式调整 */
+@media screen and (max-width: 768px) {
+    .payee-add-form .layui-form-label {
+        width: 100px;
+    }
+    
+    .payee-add-form .layui-input-block {
+        margin-left: 130px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .payee-add-form .layui-form-label {
+        width: 90px;
+    }
+    
+    .payee-add-form .layui-input-block {
+        margin-left: 120px;
+    }
+}

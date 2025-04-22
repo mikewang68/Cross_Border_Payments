@@ -3,7 +3,7 @@ from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database,delete_single_data
-from sync.realtime import realtime_card_info_update, modify_response_data_insert
+from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info, realtime_update_payers
 from comm.db_api import batch_update_database
 
 import time
@@ -957,24 +957,85 @@ def api_delete_system():
             'code': 1,
             'msg': f'系统错误: {str(e)}'
         })
+    
 @main_bp.route('/payees')
 @login_required
 def payees():
-    try: 
-        # 查询所有卡数据
+    try:
+        # 查询所有收款人信息
         payees_info_data = query_all_from_table('payees_info')
-        available_payment_methods = query_all_from_table('payees_availpay_methods')     
-        print(available_payment_methods)
-        print(payees_info_data)
-        # 打印调试信息
+        available_payment_methods = query_all_from_table('payees_availpay_methods')
+        
+        # print(payees_info_data)
+        
         print(f"查询到 {len(payees_info_data) if payees_info_data else 0} 条收款人数据")
-        print(f"查询到 {len(available_payment_methods) if available_payment_methods else 0} 条可用付款方式数据")
+        
         return render_template('main/payees.html', payees_info_data=payees_info_data, available_payment_methods=available_payment_methods)
     except Exception as e:
-        print(f"查询收款人或付款方式数据时出错: {str(e)}")
-        # 返回空列表，避免模板渲染错误
+        print(f'获取收款人数据失败: {str(e)}', 'error')
         return render_template('main/payees.html', payees_info_data=[], available_payment_methods=[])
-    
+
+@main_bp.route('/payee/add')
+@login_required 
+def payee_add():
+    """加载添加收款人页面"""
+    try:
+        # 获取可用的支付方式数据
+        available_payment_methods = query_all_from_table('payees_availpay_methods')
+        return render_template('main/payee_add.html', available_payment_methods=available_payment_methods)
+    except Exception as e:
+        print(f'加载添加收款人页面失败: {str(e)}')
+        return jsonify({'code': 1, 'msg': f'加载添加收款人页面失败: {str(e)}'})
+
+# @main_bp.route('/api/payee/add', methods=['POST'])
+# @login_required
+# def api_payee_add():
+#     """处理添加收款人的API请求"""
+#     try:
+#         # 获取请求数据
+#         data = request.get_json()
+#         if not data:
+#             return jsonify({'code': 1, 'msg': '未接收到有效数据'})
+        
+#         print(f"接收到添加收款人请求数据: {data}")
+        
+#         # 验证必填字段
+#         required_fields = ['account_type', 'last_name', 'country', 'currencies']
+#         for field in required_fields:
+#             if field not in data or not data[field]:
+#                 return jsonify({'code': 1, 'msg': f'缺少必填字段: {field}'})
+        
+#         # 根据账户类型验证特定必填字段
+#         if data['account_type'] == 'BANK_ACCOUNT':
+#             bank_required = ['bank_name', 'bank_account_number']
+#             for field in bank_required:
+#                 if field not in data or not data[field]:
+#                     return jsonify({'code': 1, 'msg': f'银行账户缺少必填字段: {field}'})
+#         elif data['account_type'] == 'E_WALLET':
+#             wallet_required = ['wallet_type', 'wallet_account']
+#             for field in wallet_required:
+#                 if field not in data or not data[field]:
+#                     return jsonify({'code': 1, 'msg': f'个人钱包缺少必填字段: {field}'})
+        
+#         # 调用API创建收款人
+#         # TODO: 调用实际的API创建收款人，这里仅模拟成功响应
+        
+#         # 生成模拟的收款人ID
+#         import uuid
+#         payee_id = str(uuid.uuid4())
+        
+#         # 构建并返回响应
+#         return jsonify({
+#             'code': 0,
+#             'msg': '添加收款人成功',
+#             'data': {
+#                 'payee_id': payee_id
+#             }
+#         })
+#     except Exception as e:
+#         print(f"添加收款人失败: {str(e)}")
+#         return jsonify({'code': 1, 'msg': f'添加收款人失败: {str(e)}'})
+
 # 付款人页面路由
 @main_bp.route('/payers',)
 @login_required
