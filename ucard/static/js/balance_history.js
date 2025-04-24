@@ -3,6 +3,28 @@
  * 用于处理交易记录表格的渲染、搜索、分页等功能
  */
 
+// 添加对Passive事件监听器的支持，优化移动设备上的滚动性能
+$.event.special.touchstart = {
+    setup: function(_, ns, handle) {
+        this.addEventListener("touchstart", handle, { passive: !ns.includes("noPreventDefault") });
+    }
+};
+$.event.special.touchmove = {
+    setup: function(_, ns, handle) {
+        this.addEventListener("touchmove", handle, { passive: !ns.includes("noPreventDefault") });
+    }
+};
+$.event.special.wheel = {
+    setup: function(_, ns, handle) {
+        this.addEventListener("wheel", handle, { passive: true });
+    }
+};
+$.event.special.mousewheel = {
+    setup: function(_, ns, handle) {
+        this.addEventListener("mousewheel", handle, { passive: true });
+    }
+};
+
 layui.use(['table', 'form', 'layer', 'laydate'], function(){
     var table = layui.table;
     var form = layui.form;
@@ -10,7 +32,22 @@ layui.use(['table', 'form', 'layer', 'laydate'], function(){
     var laydate = layui.laydate;
     
     // 获取后端传递的数据
-    var allBalanceHistory = JSON.parse(document.getElementById('balance-history-data').textContent);
+    var allBalanceHistory = [];
+    try {
+        // 尝试找到正确的元素ID
+        var dataElement = document.getElementById('balance-history-data');
+        
+        if (dataElement && dataElement.textContent) {
+            allBalanceHistory = JSON.parse(dataElement.textContent);
+            console.log("成功加载数据，记录数:", allBalanceHistory.length);
+        } else {
+            console.error("找不到数据元素 #sorted-balance-history-data 或 #balance-history-data");
+            layer.msg('数据加载失败：找不到数据元素', {icon: 2});
+        }
+    } catch (e) {
+        console.error('数据解析错误:', e);
+        layer.msg('数据加载失败，请刷新页面重试', {icon: 2});
+    }
     
     // 初始化表单组件
     function initForm() {

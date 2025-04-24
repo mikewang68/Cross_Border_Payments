@@ -76,13 +76,13 @@
             {% endraw %}
             </script>
         </div>
+        <script id="balance-history-data" type="application/json">
+            {{ balance_history|tojson|safe }}
+        </script>
+
     </div>
-    
-    <!-- 保存后端传递的数据 -->
-    <script id="balance-history-data" type="application/json">
-        {{ balance_history|tojson|safe }}
-    </script>
 </div>
+
 
 <!-- 引入额度明细CSS和JS -->
 <link rel="stylesheet" href="/static/css/balance_history.css">
