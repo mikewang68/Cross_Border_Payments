@@ -3,27 +3,106 @@
  * 仅作用于payee_add.html
  */
 
-.payee-add-page .layui-card-header {
-    position: relative;
-    font-size: 16px;
-    font-weight: 600;
-    color: #333;
+/* 收款人添加页面样式 */
+.payee-add-page {
     padding: 15px;
-    display: flex;
-    align-items: center;
 }
 
-.payee-add-page .return-button {
-    margin-right: 12px;
+.payee-add-page .layui-card {
+    box-shadow: none;
+}
+
+.payee-add-page .layui-card-header {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    border-bottom: 1px solid #f0f0f0;
 }
 
 .payee-add-page .page-title {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: bold;
+    margin-left: 10px;
 }
 
-.payee-add-page .layui-card-body {
-    padding: 20px;
+.payee-add-page .layui-form-label.required:before {
+    content: "*";
+    color: #ff5722;
+    margin-right: 5px;
+}
+
+.payee-add-page .form-buttons {
+    margin-top: 30px;
+    text-align: right;
+}
+
+.payee-add-page .return-button,
+.payee-add-page .cancel-button {
+    margin-right: 10px;
+}
+
+/* 自定义下拉菜单样式 */
+.custom-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-select {
+    position: relative;
+    cursor: pointer;
+}
+
+.custom-select .layui-icon-down {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: transform 0.3s;
+}
+
+.custom-select-active .layui-icon-down {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.custom-select-options {
+    position: absolute;
+    top: 42px;
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    display: none;
+}
+
+.custom-select-options .option-item {
+    padding: 10px;
+    cursor: pointer;
+}
+
+.custom-select-options .option-item:hover {
+    background-color: #f2f2f2;
+}
+
+.custom-select-options .option-group-title {
+    font-weight: bold;
+    padding: 5px 10px;
+    background-color: #f9f9f9;
+}
+
+.bank-country .custom-select-container {
+    width: 100%;
+}
+
+/* 适配右侧标签页显示 */
+@media (min-width: 992px) {
+    .payee-add-page .layui-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
 }
 
 /* 表单样式 */
@@ -84,4 +163,115 @@
     .payee-add-form .layui-input-block {
         margin-left: 120px;
     }
+}
+
+/* 右侧信息盒子样式 */
+.payment-info-box {
+    background-color: #f9f9f9;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 20px;
+    margin-left: 15px;
+    height: 100%;
+    max-height: 300px;
+}
+
+.payment-info-box h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.payment-info-box p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.payment-info-box .layui-btn {
+    width: 100%;
+    margin-top: 15px;
+}
+
+/* 付款方式弹窗样式 */
+.payment-method-dialog {
+    padding: 20px;
+}
+
+.payment-method-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.payment-method-item {
+    display: flex;
+    align-items: center;
+    width: calc(50% - 20px);
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.payment-method-item img {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+.payment-method-info {
+    flex: 1;
+}
+
+.payment-method-name {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.payment-method-detail {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+}
+
+@media screen and (max-width: 768px) {
+    .payment-method-item {
+        width: 100%;
+    }
+    
+    .layui-col-md8, .layui-col-md4 {
+        width: 100%;
+    }
+    
+    .payment-info-box {
+        margin-left: 0;
+        margin-top: 20px;
+        max-height: none;
+    }
+}
+
+/* 下一步提示样式 */
+.next-step-tips {
+    margin-top: 30px;
+    border-top: 1px dashed #e6e6e6;
+    padding-top: 20px;
+}
+
+.next-step-box {
+    background-color: #f9fafb;
+    border-radius: 4px;
+    padding: 15px;
+    border-left: 4px solid #1E9FFF;
+}
+
+.next-step-title {
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
 }

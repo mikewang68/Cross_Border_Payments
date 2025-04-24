@@ -1037,9 +1037,11 @@ def payee_add():
 def payee_add_post():
     try:        
         data = request.get_json()
+        print(data)
         version = data.pop('version')
         gsalary_api = GSalaryAPI()
         result = gsalary_api.create_payee(system_id=version, data=data)
+        # result = 1
         if result['result']['result'] == 'S':
             return jsonify({
                 "code": 0,

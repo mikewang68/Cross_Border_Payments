@@ -196,30 +196,109 @@ layui.use(['table', 'form', 'layer'], function(){
             });
         }
         
-        // 打开添加收款人页面
-        function openAddPayeePage() {
-            // 保存原始内容，用于返回时恢复
+        // 打开平台选择弹窗
+        function openPlatformSelectDialog() {
+            layer.open({
+                type: 1,
+                title: '选择平台',
+                area: ['400px', '250px'],
+                content: `
+                <div style="padding: 20px;">
+                    <form class="layui-form" lay-filter="platformSelectForm">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">平台</label>
+                            <div class="layui-input-block">
+                                <select name="platform" lay-verify="required" lay-filter="platformSelect">
+                                    <option value="">请选择平台</option>
+                                    <option value="J1">J1</option>
+                                    <option value="J2">J2</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="button" class="layui-btn" id="confirmPlatformBtn">确定</button>
+                                <button type="button" class="layui-btn layui-btn-primary" id="cancelPlatformBtn">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>`,
+                success: function(layero, index) {
+                    form.render('select', 'platformSelectForm');
+                    
+                    // 确定按钮点击事件
+                    $('#confirmPlatformBtn').on('click', function() {
+                        var selectedPlatform = $('select[name="platform"]').val();
+                        if (!selectedPlatform) {
+                            layer.msg('请选择平台', {icon: 2});
+                            return;
+                        }
+                        
+                        // 关闭弹窗
+                        layer.close(index);
+                        
+                        // 加载添加收款人页面
+                        loadPayeeAddPage(selectedPlatform);
+                    });
+                    
+                    // 取消按钮点击事件
+                    $('#cancelPlatformBtn').on('click', function() {
+                        layer.close(index);
+                    });
+                }
+            });
+        }
+        
+        // 加载添加收款人页面
+        function loadPayeeAddPage(platform) {
             var cardBody = $('.payees-page .layui-card-body');
             window.originalPayeesContent = cardBody.html();
             
-            // 使用AJAX加载添加收款人页面
+            layer.load(2);
             $.ajax({
-                url: '/payee/add',
+                url: '/payee/add?version=' + platform,
                 type: 'GET',
                 success: function(html) {
+                    layer.closeAll('loading');
+                    
                     // 将加载的HTML内容放入card-body
                     cardBody.html(html);
                     
-                    // 如果页面上有表单，确保它被正确渲染
+                    // 设置选择的平台显示
+                    $('.selected-platform').text(platform);
+                    $('#platformInput').val(platform);
+                    $('#platformName').text(platform);
+                    
+                    // 确保表单被正确渲染
                     if (window.layui && window.layui.form) {
                         window.layui.form.render();
                     }
+                    
+                    // 绑定返回按钮和取消按钮事件
+                    $('.return-button, .cancel-button').on('click', function() {
+                        cardBody.html(window.originalPayeesContent);
+                        
+                        // 重新初始化事件监听
+                        initEventListeners();
+                        
+                        // 重新渲染表单
+                        if (window.layui && window.layui.form) {
+                            window.layui.form.render();
+                        }
+                    });
                 },
                 error: function(xhr) {
+                    layer.closeAll('loading');
                     console.error("加载添加收款人页面失败:", xhr);
                     layer.msg('加载添加收款人页面失败，请稍后重试', {icon: 2});
                 }
             });
+        }
+        
+        // 打开添加收款人页面
+        function openAddPayeePage() {
+            // 打开平台选择弹窗
+            openPlatformSelectDialog();
         }
         
         // 初始化事件监听
