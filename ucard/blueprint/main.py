@@ -1384,3 +1384,190 @@ def payers_update():
             "msg": f"发生错误: {str(e)}",
             "data": None
         })
+
+@main_bp.route('/update_time')
+@login_required
+def update_time():
+    try:
+        # 查询async_ctrl表数据
+        async_ctrl_data = query_all_from_table('async_ctrl')
+        
+        # 打印调试信息
+        print(f"查询到 {len(async_ctrl_data) if async_ctrl_data else 0} 条更新时间记录")
+        
+        # 将数据返回给前端
+        return render_template('main/set_time.html', async_ctrl_data=async_ctrl_data)
+    except Exception as e:
+        print(f"查询更新时间数据时出错: {str(e)}")
+        # 返回空列表，避免模板渲染错误
+        return render_template('main/set_time.html', async_ctrl_data=[])
+
+@main_bp.route('/api/set_time/list', methods=['GET'])
+@login_required
+def api_set_time_list():
+    try:
+        # 查询async_ctrl表数据
+        async_ctrl_data = query_all_from_table('async_ctrl')
+        
+        # 打印调试信息
+        print(f"API查询到 {len(async_ctrl_data) if async_ctrl_data else 0} 条更新时间记录")
+        
+        return jsonify({
+            'code': 0,
+            'msg': '获取更新时间数据成功',
+            'count': len(async_ctrl_data),
+            'data': async_ctrl_data
+        })
+    except Exception as e:
+        print(f"获取更新时间数据时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'获取更新时间数据失败: {str(e)}',
+            'count': 0,
+            'data': []
+        })
+
+@main_bp.route('/api/set_time/update', methods=['POST'])
+@login_required
+def api_set_time_update():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'code': 1,
+                'msg': '请求数据无效'
+            })
+        
+        # 提取version作为条件，如果存在id字段先移除它
+        if 'id' in data:
+            data.pop('id')
+            
+        # 确保version字段存在且不为空
+        if 'version' not in data or not data['version']:
+            return jsonify({
+                'code': 1,
+                'msg': '版本号(version)不能为空'
+            })
+            
+        version = data['version']
+        
+        # 确保async_time字段是整数
+        if 'async_time' in data and data['async_time']:
+            try:
+                data['async_time'] = str(int(data['async_time']))
+            except (ValueError, TypeError):
+                return jsonify({
+                    'code': 1,
+                    'msg': '同步时间间隔必须是整数'
+                })
+        
+        print(f"准备更新时间数据: version={version}, 数据={data}")
+        
+        try:
+            # 直接使用数据库连接
+            conn = create_db_connection()
+            if conn is None:
+                return jsonify({
+                    'code': 1,
+                    'msg': '数据库连接失败'
+                })
+                
+            cursor = conn.cursor()
+            
+            # 构建更新SQL
+            sql_parts = []
+            values = []
+            
+            for key, value in data.items():
+                if key != 'version' and key in ['async_time', 'daily_report', 'daily_start', 'daily_end', 
+                          'weekly_start', 'weekly_end', 'monthly_start', 'monthly_end', 
+                          'annual_start', 'annual_end']:
+                    # 使用反引号转义字段名
+                    sql_parts.append(f"`{key}` = %s")
+                    values.append(value)
+            
+            if not sql_parts:
+                return jsonify({
+                    'code': 1,
+                    'msg': '没有有效的更新字段'
+                })
+            
+            # 构建完整的SQL更新语句，使用version作为WHERE条件
+            sql = f"UPDATE async_ctrl SET {', '.join(sql_parts)} WHERE version = %s"
+            values.append(version)
+            
+            print(f"执行SQL: {sql}, 参数: {values}")
+            
+            # 执行SQL
+            cursor.execute(sql, values)
+            conn.commit()
+            
+            if cursor.rowcount > 0:
+                print(f"更新时间数据 version={version} 更新成功")
+                return jsonify({
+                    'code': 0,
+                    'msg': '更新时间设置成功'
+                })
+            else:
+                print(f"没有数据被更新, version={version}")
+                
+                # 检查记录是否存在
+                check_sql = "SELECT COUNT(*) FROM async_ctrl WHERE version = %s"
+                cursor.execute(check_sql, (version,))
+                count = cursor.fetchone()[0]
+                
+                if count == 0:
+                    # 如果记录不存在，执行插入
+                    insert_fields = ['version']
+                    insert_values = [version]
+                    
+                    for key, value in data.items():
+                        if key != 'version' and key in ['async_time', 'daily_report', 'daily_start', 'daily_end', 
+                                  'weekly_start', 'weekly_end', 'monthly_start', 'monthly_end', 
+                                  'annual_start', 'annual_end']:
+                            insert_fields.append(f"`{key}`")
+                            insert_values.append(value)
+                    
+                    insert_sql = f"INSERT INTO async_ctrl ({', '.join(insert_fields)}) VALUES ({', '.join(['%s'] * len(insert_fields))})"
+                    
+                    print(f"执行插入SQL: {insert_sql}, 参数: {insert_values}")
+                    cursor.execute(insert_sql, insert_values)
+                    conn.commit()
+                    
+                    if cursor.rowcount > 0:
+                        print(f"插入时间数据 version={version} 成功")
+                        return jsonify({
+                            'code': 0,
+                            'msg': '新增时间设置成功'
+                        })
+                    else:
+                        return jsonify({
+                            'code': 1,
+                            'msg': '新增时间设置失败'
+                        })
+                
+                return jsonify({
+                    'code': 0,  # 仍然返回成功，因为可能是值没有变化
+                    'msg': '设置未变更'
+                })
+                
+        except Exception as e:
+            if 'conn' in locals() and conn:
+                conn.rollback()
+            print(f"更新时间数据过程中出错: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'更新时间设置失败: {str(e)}'
+            })
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if 'conn' in locals() and conn:
+                conn.close()
+            
+    except Exception as e:
+        print(f"更新时间数据时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
