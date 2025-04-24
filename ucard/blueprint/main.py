@@ -3,9 +3,9 @@ from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database,delete_single_data
-from sync.realtime import realtime_card_info_update, modify_response_data_insert,realtime_insert_payers_info,realtime_insert_payers,realtime_update_payers
+from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info, realtime_update_payers
 from comm.db_api import batch_update_database
-
+import json
 import time
 import uuid
 
@@ -225,6 +225,12 @@ def balance_history():
     balance_history = query_all_from_table('balance_history')
 
     print(f"查询到 {len(balance_history) if balance_history else 0} 条额度明细记录")
+    for entry in balance_history:
+        # 格式化 bill_date 为字符串格式
+        entry['bill_date'] = entry['bill_date'].strftime('%Y-%m-%d')
+        # 格式化 amount 和 balance_after_transaction_amount 为两位小数
+        entry['amount'] = f"{entry['amount']:.2f}"
+        entry['balance_after_transaction_amount'] = f"{entry['balance_after_transaction_amount']:.2f}"
     # 对列表进行排序，按 transaction_time 倒序排列
     sorted_balance_history = sorted(balance_history, key=lambda x: convert_time(x["transaction_time"]), reverse=True)
     return render_template('main/balance_history.html', balance_history=sorted_balance_history)
@@ -957,37 +963,101 @@ def api_delete_system():
             'code': 1,
             'msg': f'系统错误: {str(e)}'
         })
+    
 @main_bp.route('/payees')
 @login_required
 def payees():
-    try: 
-        # 查询所有卡数据
+    try:
+        # 查询所有收款人信息
         payees_info_data = query_all_from_table('payees_info')
-        available_payment_methods = query_all_from_table('payees_availpay_methods')     
-        print(available_payment_methods)
-        print(payees_info_data)
-        # 打印调试信息
+        available_payment_methods = query_all_from_table('payees_availpay_methods')
+        
+        # print(payees_info_data)
+        
         print(f"查询到 {len(payees_info_data) if payees_info_data else 0} 条收款人数据")
-        print(f"查询到 {len(available_payment_methods) if available_payment_methods else 0} 条可用付款方式数据")
+        
         return render_template('main/payees.html', payees_info_data=payees_info_data, available_payment_methods=available_payment_methods)
     except Exception as e:
-        print(f"查询收款人或付款方式数据时出错: {str(e)}")
-        # 返回空列表，避免模板渲染错误
+        print(f'获取收款人数据失败: {str(e)}', 'error')
         return render_template('main/payees.html', payees_info_data=[], available_payment_methods=[])
-    
-# 付款人页面路由
-@main_bp.route('/payers',)
+
+@main_bp.route('/payers')
 @login_required
 def payers():
-    try: 
+    try:
+        # 查询所有付款人信息
         payers_info_data = query_all_from_table('payers_info')
-        # 打印调试信息
+        
         print(f"查询到 {len(payers_info_data) if payers_info_data else 0} 条付款人数据")
+        
         return render_template('main/payers.html', payers_info_data=payers_info_data)
     except Exception as e:
-        print(f"查询付款人数据时出错: {str(e)}")
-        # 返回空列表，避免模板渲染错误
+        print(f'获取付款人数据失败: {str(e)}', 'error')
         return render_template('main/payers.html', payers_info_data=[])
+
+@main_bp.route('/payee/add')
+@login_required 
+def payee_add():
+    """加载添加收款人页面"""
+    try:
+        # 从URL参数获取版本信息
+        version = request.args.get('version')
+        
+        if not version:
+            print(f'未提供版本参数!')
+            return jsonify({'code': 1, 'msg': '未提供版本参数!'})
+        
+        print(f'加载添加收款人页面，版本: {version}')
+            
+        # 获取平台的支付方式数据
+        available_payment_methods = query_database('payees_availpay_methods', 'version', version)
+        if not available_payment_methods:
+            print(f'未找到版本 {version} 的支付方式数据!')
+            return jsonify({'code': 1, 'msg': f'未找到版本 {version} 的支付方式数据!'})
+        
+        # 获取支持的区域和货币数据
+        supported_regions_currencies = query_database('payees_sup_reg_cur', 'version', version)
+        if not supported_regions_currencies:
+            print(f'未找到版本 {version} 的区域货币数据!')
+            return jsonify({'code': 1, 'msg': f'未找到版本 {version} 的区域货币数据!'})
+        for item in supported_regions_currencies:
+            item["currencies"] = json.loads(item["currencies"])
+        print(f'成功加载版本 {version} 的数据，找到 {len(available_payment_methods)} 条支付方式数据和 {len(supported_regions_currencies)} 条区域货币数据')
+        
+        return render_template('main/payee_add.html', available_payment_methods=available_payment_methods, supported_regions_currencies=supported_regions_currencies)
+    except Exception as e:
+        print(f'加载添加收款人页面失败, 详细错误: {str(e)}')
+        import traceback
+        traceback.print_exc()  # 打印完整的错误堆栈
+        return jsonify({'code': 1, 'msg': f'加载添加收款人页面失败: {str(e)}'})
+    
+
+@main_bp.route('/payee/add_post', methods=['POST'])
+@login_required 
+def payee_add_post():
+    try:        
+        data = request.get_json()
+        version = data.pop('version')
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.create_payee(system_id=version, data=data)
+        if result['result']['result'] == 'S':
+            return jsonify({
+                "code": 0,
+                "msg": "创建成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "创建失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
 
 # 添加付款人页面路由
 @main_bp.route('/payers/add_page')

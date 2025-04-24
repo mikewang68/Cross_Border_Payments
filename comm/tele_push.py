@@ -123,7 +123,7 @@ def push_daily_report ():
     cards = query_all_from_table('cards')
 
     current_date = datetime.now()
-    previous_date = current_date - timedelta(days=4)
+    previous_date = current_date - timedelta(days=1)
     previous_date_str = previous_date.strftime('%Y-%m-%d')
 
     card_transactions = query_date_from_table("card_transactions", "transaction_time", previous_date_str, previous_date_str)
@@ -204,7 +204,6 @@ def make_daily_report (card_holder_list,qd_level,region,cards,card_transactions,
 
         # 钱包交易笔数
         wallet_count = len(wallet_transactions)
-
 
         for wallet_transaction_data in wallet_transactions:
 

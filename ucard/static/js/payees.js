@@ -196,14 +196,40 @@ layui.use(['table', 'form', 'layer'], function(){
             });
         }
         
+        // 打开添加收款人页面
+        function openAddPayeePage() {
+            // 保存原始内容，用于返回时恢复
+            var cardBody = $('.payees-page .layui-card-body');
+            window.originalPayeesContent = cardBody.html();
+            
+            // 使用AJAX加载添加收款人页面
+            $.ajax({
+                url: '/payee/add',
+                type: 'GET',
+                success: function(html) {
+                    // 将加载的HTML内容放入card-body
+                    cardBody.html(html);
+                    
+                    // 如果页面上有表单，确保它被正确渲染
+                    if (window.layui && window.layui.form) {
+                        window.layui.form.render();
+                    }
+                },
+                error: function(xhr) {
+                    console.error("加载添加收款人页面失败:", xhr);
+                    layer.msg('加载添加收款人页面失败，请稍后重试', {icon: 2});
+                }
+            });
+        }
+        
         // 初始化事件监听
         function initEventListeners() {
             // 监听表格头工具栏事件
             table.on('toolbar(payees-table)', function(obj){  
                 switch(obj.event){
                     case 'add':
-                        // 目前只显示提示信息，实际功能待实现
-                        layer.msg('添加收款人功能待实现', {icon: 6});
+                        // 打开添加收款人页面
+                        openAddPayeePage();
                         break;
                 }
             });
@@ -247,32 +273,27 @@ layui.use(['table', 'form', 'layer'], function(){
                     if (formData.phone && item.phone_number && item.phone_number !== '--' && !item.phone_number.includes(formData.phone)) {
                         return false;
                     }
-
-                    // 按平台号搜索
-                    if (formData.version && item.version && item.version !== '--' && item.version !== formData.version) {
+                    
+                    // 按平台搜索
+                    if (formData.version && item.version && item.version !== formData.version) {
                         return false;
                     }
                     
                     return true;
                 });
                 
-                console.log("筛选后数据条数：", filteredData.length);
-                
-                // 重新加载表格数据
+                // 使用筛选后的数据重新渲染表格
                 table.reload('payees-table', {
-                    data: filteredData,
-                    url: null,  // 不使用URL加载数据
-                    page: {
-                        curr: 1  // 重新从第1页开始
-                    }
+                    data: filteredData
                 });
                 
-                return false; // 阻止表单跳转
+                return false; // 阻止表单默认提交
             });
         }
         
-        // 页面初始化
+        // 总初始化函数
         function init() {
+            console.log("初始化收款人管理页面");
             initSearchForm();
             initPayeesTable();
             initEventListeners();
@@ -282,7 +303,7 @@ layui.use(['table', 'form', 'layer'], function(){
         init();
         
     } catch (error) {
-        console.error("收款人页面初始化失败:", error);
-        layer.msg('页面初始化失败: ' + error.message, {icon: 2});
+        console.error("收款人管理页面初始化出错:", error);
+        layer.msg('页面初始化失败:' + error.message, {icon: 2});
     }
 });

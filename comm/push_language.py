@@ -12,14 +12,14 @@ class PushLanguage:
             'US': 'Card Information'
         },
         'ACCOUNTING_INFO': {
-            'CN': '賬務明細',
-            'JP': '會計明細',
-            'US': 'Accounting Details'
+            'CN': '賬務明細(未包含手續費)',
+            'JP': '會計明細(手数料は含まれていません)',
+            'US': 'Accounting Details(Service fees are not included)'
         },
-        'CUSTOMER_TRANSACTION_STATISTICS': {
-            'CN': '客戶交易統計',
-            'JP': '顧客取引統計',
-            'US': 'Customer Transaction Statistics'
+        'ALL_TRANSACTION_STATISTICS': {
+            'CN': '总交易統計(未包含手續費)',
+            'JP': '全取引統計(手数料は含まれていません)',
+            'US': 'ALL Transaction Statistics(Service fees are not included)'
         }
 
     }
@@ -51,25 +51,25 @@ class PushLanguage:
         },
         'accounting_info_headers': {
             'CN': [
-                '賬戶收入', '賬戶支出'
+                '货币','賬戶收入', '賬戶支出'
             ],
             'JP': [
-                '口座収入', '口座支出'
+                '通貨','口座収入', '口座支出'
             ],
             'US': [
-                'Account Income', 'Account Expenses'
+                'Currency','Account Income', 'Account Expenses'
             ]
         },
          'customer_transaction_headers': {
-            'CN': [
-                '客戶收入', '客戶支出'
-            ],
-            'JP': [
-                '顧客収入', '顧客支出'
-            ],
-            'US': [
-                'Customer Income', 'Customer Expenses'
-            ]
+             'CN': [
+                 '货币', '收入', '支出'
+             ],
+             'JP': [
+                 '通貨', '収入', '支出'
+             ],
+             'US': [
+                 'Currency', 'Income', 'Expenses'
+             ]
         }
     }
 

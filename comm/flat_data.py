@@ -233,7 +233,12 @@ def flat_daily_report(data,region,date):
     return formatted_info
 
 def flat_date (date):
+    try:
 
-    date_time = date.strftime('%Y-%m-%dT%H:%M:%S.%f')
+        dt = datetime.fromisoformat(date.replace('Z', '+00:00'))
 
-    return date_time
+        formatted_str = dt.strftime('%Y-%m-%d %H:%M:%S')
+        return formatted_str
+    except ValueError:
+        print(f"输入的时间字符串 {date} 格式不正确，无法解析。")
+        return None
