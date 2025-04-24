@@ -444,15 +444,7 @@ class GSalaryAPI:
         Args:
             data: 收款人信息，包含姓名、银行账户等
         """
-        return self.make_gsalary_request("POST", "/payees", data)
-    
-    def create_batch_payees(self, system_id,data: Dict) -> Dict[str, Any]:
-        """批量创建收款人
-        
-        Args:
-            data: 包含多个收款人信息的列表
-        """
-        return self.make_gsalary_request("POST", "/payees/batch", data)
+        return self.make_gsalary_request("POST", "/v1/remittance/payees", system_id, data)
 
     def get_payee(self, system_id,payee_id: str) -> Dict[str, Any]:
         """获取收款人信息
@@ -509,6 +501,11 @@ class GSalaryAPI:
             payee_id: 收款人ID
         """
         return self.make_gsalary_request("DELETE", f"/payees/{payee_id}")
+    
+    def supported_regions_currencies(self, system_id, data: Any) -> Dict[str, Any]:
+        """获取支持的地区和货币
+        """
+        return self.make_gsalary_request("GET", f"/v1/remittance/payout_currencies?payment_method={data}", system_id=system_id)
 
     # 付款操作 - 付款人
     def create_payer(self, system_id,data: Dict) -> Dict[str, Any]:
