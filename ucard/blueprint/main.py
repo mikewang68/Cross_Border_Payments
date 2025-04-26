@@ -2,13 +2,13 @@ from flask import Blueprint, render_template, session, jsonify, request, redirec
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
+from comm.flat_data import flat_data
 from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database,delete_single_data
 from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info, realtime_update_payers
 from comm.db_api import batch_update_database
 import json
 import time
 import uuid
-
 
 main_bp = Blueprint('main', __name__)
 
@@ -1038,15 +1038,19 @@ def payee_add_post():
     try:        
         data = request.get_json()
         print(data)
+        add_payee_data = []
         version = data.pop('version')
         gsalary_api = GSalaryAPI()
         result = gsalary_api.create_payee(system_id=version, data=data)
-        # result = 1
+        print(result)
         if result['result']['result'] == 'S':
+            flatten_data = flat_data(version, result, 'data')
+            add_payee_data.append(flatten_data)
+            insert_database('payees', add_payee_data)
             return jsonify({
                 "code": 0,
                 "msg": "创建成功",
-                "data": result
+                "data": flatten_data
             })
         else:
             return jsonify({
