@@ -1,12 +1,12 @@
 import asyncio
 import logging
 
-from comm.tele_push import push_card_transactions
-from db_api import insert_database, update_database, batch_update_database
+from tele_push import push_card_transactions
+from db_api import insert_database, update_database, batch_update_database, query_multiple_fields
 from flat_data import flat_data
 from db_api import query_database
 from db_api import query_field_from_table
-from comm.gsalay_api import GSalaryAPI
+from gsalay_api import GSalaryAPI
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +104,7 @@ async def cards_update(version):
     try:
         logger.info(f'更新{version}平台cards信息')
         data = gsalary.query_cards(version)
-        flatten_data = flat_data(version, data, 'data', 'card_holders')
+        flatten_data = flat_data(version, data, 'data', 'cards')
         batch_update_database('cards', flatten_data, condition1='card_id') 
     except Exception as e:
         logger.error(f"插入卡基础信息时出错: {e}")
@@ -113,7 +113,12 @@ async def cards_update(version):
 async def cards_info_insert(version):
     try:
         logger.info(f'插入{version}平台cards_info信息')
-        card_id_data = query_database('cards', 'version', version)
+        card_id_data = query_multiple_fields(
+            'cards', 
+            '*', 
+            'version = %s AND status = %s',
+            (version, 'ACTIVE') 
+        )
         data = []
         for i in card_id_data:
             card_id = i.get('card_id')
@@ -128,7 +133,12 @@ async def cards_info_insert(version):
 async def cards_info_update(version):
     try:
         logger.info(f'更新{version}平台cards_info信息')
-        card_id_data = query_database('cards', 'version', version)
+        card_id_data = query_multiple_fields(
+            'cards', 
+            '*', 
+            'version = %s AND status = %s',
+            (version, 'ACTIVE') 
+        )
         data = []
         for i in card_id_data:
             card_id = i.get('card_id')
@@ -143,7 +153,12 @@ async def cards_info_update(version):
 async def cards_secure_info_insert(version):
     try:
         logger.info(f'插入{version}平台cards_secure_info信息')
-        card_id_data = query_database('cards', 'version', version)
+        card_id_data = query_multiple_fields(
+            'cards', 
+            '*', 
+            'version = %s AND status = %s',
+            (version, 'ACTIVE') 
+        )
         data = []
         for i in card_id_data:
             card_id = i.get('card_id')
@@ -159,7 +174,12 @@ async def cards_secure_info_insert(version):
 async def cards_secure_info_update(version):
     try:
         logger.info(f'更新{version}平台cards_secure_info信息')
-        card_id_data = query_database('cards', 'version', version)
+        card_id_data = query_multiple_fields(
+            'cards', 
+            '*', 
+            'version = %s AND status = %s',
+            (version, 'ACTIVE') 
+        )
         data = []
         for i in card_id_data:
             card_id = i.get('card_id')
@@ -235,14 +255,14 @@ async def fetch_info():
             balance_history(version),
             wallet_balance(version),
             wallet_transactions(version),
-            card_holder_insert(version),
             card_holder_update(version),
-            cards_secure_info_insert(version),
-            cards_secure_info_update(version),
-            cards_info_insert(version),
-            cards_info_update(version),
-            cards_insert(version),
+            card_holder_insert(version),
             cards_update(version),
+            cards_insert(version),
+            cards_secure_info_update(version),
+            cards_secure_info_insert(version),
+            cards_info_update(version),
+            cards_info_insert(version),
             push_tele_messages()
 
         ]
