@@ -27,10 +27,11 @@ class EmailPusher:
         message["From"] = self.MAIL_DEFAULT_SENDER
         message["To"] = to_email
         message["Subject"] = subject
-        message.attach(MIMEText(body, 'html'))
+
 
         # 添加邮件正文
         message.attach(MIMEText(body, "plain"))
+        message.attach(MIMEText(body, 'html'))
 
         try:
             # 连接到邮件服务器
