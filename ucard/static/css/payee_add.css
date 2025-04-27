@@ -45,37 +45,76 @@
 .custom-select-container {
     position: relative;
     width: 100%;
+    margin-bottom: 0; /* 去除额外的间距 */
 }
 
+/* 通用下拉框样式 - 简化为单层显示效果 */
 .custom-select {
     position: relative;
+    width: 100%;
+    /* 完全移除自身边框和背景 */
+    border: none;
+    background: none;
+    padding: 0;
+    display: block;
+}
+
+/* 确保输入框样式正确且统一 */
+.custom-select .layui-input {
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    appearance: none;
     cursor: pointer;
 }
 
+/* 下拉按钮箭头图标 */
 .custom-select .layui-icon-down {
     position: absolute;
     right: 10px;
     top: 50%;
     transform: translateY(-50%);
     transition: transform 0.3s;
+    z-index: 2;
+    pointer-events: none;
 }
 
-.custom-select-active .layui-icon-down {
-    transform: translateY(-50%) rotate(180deg);
+/* 禁用状态的样式 */
+.custom-select.disabled .layui-input,
+.step1-confirmed .custom-select .layui-input {
+    background-color: #f9f9f9;
+    border-color: #e0e0e0;
+    color: #777;
+    cursor: not-allowed;
+    pointer-events: none; /* 防止点击 */
 }
 
+/* 禁用的下拉箭头样式 */
+.custom-select.disabled .layui-icon-down,
+.step1-confirmed .custom-select .layui-icon-down {
+    opacity: 0.5;
+}
+
+/* 确保下拉选项容器样式正确 */
 .custom-select-options {
     position: absolute;
-    top: 42px;
+    top: 100%;
     left: 0;
     right: 0;
     max-height: 200px;
     overflow-y: auto;
     background-color: #fff;
-    border: 1px solid #e6e6e6;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     z-index: 1000;
     display: none;
+    margin-top: 2px;
 }
 
 .custom-select-options .option-item {
@@ -274,4 +313,181 @@
     color: #333;
     font-size: 16px;
     font-weight: 500;
+}
+
+/* 步骤标题样式 */
+.step-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 20px 0;
+    color: #333;
+    border-bottom: 1px dashed #e6e6e6;
+    padding-bottom: 10px;
+}
+
+/* 收款方式选择样式 */
+.payment-methods-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.payment-method-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 80px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    background-color: #fff;
+    margin: 5px;
+}
+
+.payment-method-btn:hover {
+    border-color: #1E9FFF;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-btn.active {
+    border-color: #1E9FFF;
+    background-color: #f0f9ff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-btn img {
+    width: 32px;
+    height: 32px;
+    margin-bottom: 5px;
+}
+
+.payment-method-btn span {
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 收款方式详细表单样式 */
+.payment-method-details {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #e6e6e6;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.payment-method-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #e6e6e6;
+}
+
+.payment-method-header img {
+    width: 32px;
+    height: 32px;
+    margin-right: 15px;
+}
+
+.payment-method-currency {
+    font-size: 14px;
+    color: #666;
+}
+
+.payment-method-form {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.payment-tip {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+}
+
+.payoneer-link {
+    display: inline-block;
+    color: #1E9FFF;
+    margin-bottom: 10px;
+}
+
+.no-methods {
+    padding: 20px;
+    text-align: center;
+    color: #999;
+}
+
+/* 按钮样式 */
+#registerPayoneerBtn {
+    margin-bottom: 15px;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+    .payment-method-btn {
+        width: 80px;
+        height: 70px;
+    }
+}
+
+/* 确保第二步表单在显示时可见 */
+#step2Form {
+    width: 100%;
+    position: relative;
+    z-index: 1;
+}
+
+#step2Form.show {
+    display: block !important;
+}
+
+/* 银行信息显示样式 */
+.bank-info-display {
+    background-color: #f5f7fa;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border-left: 3px solid #1E9FFF;
+    line-height: 1.8;
+    font-size: 14px;
+}
+
+/* 确保第一步与第二步叠加时的样式 */
+#step1Form {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 自定义下拉框样式重置 */
+.custom-select-reset .layui-input {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+/* 下拉按钮激活状态 */
+.custom-select-active .layui-icon-down {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* 表单确认状态下的提示文本 */
+.step1-confirmed .form-text {
+    color: #28a745;
+    font-style: italic;
+}
+
+/* 已确认状态的输入框样式 */
+.step1-confirmed input[readonly],
+.step1-confirmed input[disabled] {
+    background-color: #f9f9f9;
+    border-color: #d1d1d1;
+    color: #666;
+    cursor: default;
 }
