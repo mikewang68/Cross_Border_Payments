@@ -491,6 +491,23 @@ layui.use(['form', 'layer'], function(){
         }
     }
     
+    // 初始化国家区号选择
+    function initNationCodeSelect() {
+        // 国家区号选择点击
+        $('#nationCodeInput').on('click', function() {
+            toggleDropdown($(this).closest('.custom-select-container'));
+        });
+        
+        // 国家区号选项点击
+        $('#nationCodeOptions').on('click', '.option-item', function() {
+            var value = $(this).data('value');
+            var text = $(this).text().split(' ')[0]; // 只取前面的+86部分
+            $('#nationCodeInput').val(text);
+            $('#nationCodeValue').val(value);
+            toggleDropdown($(this).closest('.custom-select-container'));
+        });
+    }
+    
     // 表单验证
     function validateForm() {
         var isValid = true;
@@ -606,6 +623,12 @@ layui.use(['form', 'layer'], function(){
             data.city = $('input[name="city"]').val();
             data.address = $('input[name="address"]').val();
             data.postcode = $('input[name="postcode"]').val();
+            
+            // 手机号码信息
+            data.mobile = {
+                "nation_code": $('#nationCodeValue').val(),
+                "mobile": $('input[name="mobile"]').val()
+            };
         }
         
         // 根据收款人类型收集不同字段
@@ -719,6 +742,9 @@ layui.use(['form', 'layer'], function(){
         
         // 初始化国家和币种选择
         initCountryCurrencySelect();
+        
+        // 初始化国家区号选择
+        initNationCodeSelect();
         
         // 监听下一步按钮点击
         $('#nextStepBtn').on('click', function() {
