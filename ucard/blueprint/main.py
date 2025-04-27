@@ -1065,6 +1065,34 @@ def payee_add_post():
             "data": None
         })
 
+@main_bp.route('/payee/create_account_ewallet', methods=['POST'])
+@login_required 
+def create_account_ewallet():
+    try:
+        data = request.get_json()
+        payee_id = data.pop('payee_id')
+        version = data.pop('version')
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.create_account_ewallet(system_id=version, payee_id=payee_id, data=data)
+        print(result)
+        if result['result']['result'] == 'S':
+            return jsonify({
+                "code": 0,
+                "msg": "添加成功",
+                "data": result
+            })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "添加失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
 # 添加付款人页面路由
 @main_bp.route('/payers/add_page')
 @login_required

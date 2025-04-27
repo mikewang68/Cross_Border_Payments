@@ -375,32 +375,85 @@ layui.use(['form', 'layer'], function(){
         var walletCountryOptions = $('#walletCountryOptions');
         walletCountryOptions.empty();
         
+        // 添加搜索框
+        walletCountryOptions.append('<div class="search-container"><input type="text" class="country-search-input" placeholder="输入关键字搜索..."></div>');
+        
+        // 创建选项容器
+        walletCountryOptions.append('<div class="option-items-container"></div>');
+        var walletOptionItems = walletCountryOptions.find('.option-items-container');
+        
         countries.forEach(function(country) {
             var countryName = country_names[country] || country;
-            walletCountryOptions.append(`<div class="option-item" data-value="${country}">${countryName}</div>`);
+            walletOptionItems.append(`<div class="option-item" data-value="${country}" data-name="${countryName}">${countryName}</div>`);
         });
         
         // 填充银行国家选项
         var bankCountryOptions = $('#bankCountryOptions');
         bankCountryOptions.empty();
         
+        // 添加搜索框
+        bankCountryOptions.append('<div class="search-container"><input type="text" class="country-search-input" placeholder="输入关键字搜索..."></div>');
+        
+        // 创建选项容器
+        bankCountryOptions.append('<div class="option-items-container"></div>');
+        var bankOptionItems = bankCountryOptions.find('.option-items-container');
+        
         countries.forEach(function(country) {
             var countryName = country_names[country] || country;
-            bankCountryOptions.append(`<div class="option-item" data-value="${country}">${countryName}</div>`);
+            bankOptionItems.append(`<div class="option-item" data-value="${country}" data-name="${countryName}">${countryName}</div>`);
         });
         
         // 处理钱包国家选择点击
         $('#walletCountryInput').on('click', function() {
-            toggleDropdown($(this).closest('.custom-select-container'));
+            var container = $(this).closest('.custom-select-container');
+            toggleDropdown(container);
+            
+            // 当下拉框打开时，聚焦到搜索框
+            if(container.hasClass('custom-select-active')) {
+                setTimeout(function() {
+                    container.find('.country-search-input').focus();
+                }, 100);
+            }
         });
         
         // 处理银行国家选择点击
         $('#bankCountryInput').on('click', function() {
-            toggleDropdown($(this).closest('.custom-select-container'));
+            var container = $(this).closest('.custom-select-container');
+            toggleDropdown(container);
             
             // 关闭币种下拉框
             $('#currencyOptions').closest('.custom-select-container').removeClass('custom-select-active');
             $('#currencyOptions').hide();
+            
+            // 当下拉框打开时，聚焦到搜索框
+            if(container.hasClass('custom-select-active')) {
+                setTimeout(function() {
+                    container.find('.country-search-input').focus();
+                }, 100);
+            }
+        });
+        
+        // 处理搜索框输入事件
+        $('.country-search-input').on('input', function(e) {
+            e.stopPropagation(); // 阻止事件冒泡
+            var searchText = $(this).val().toLowerCase();
+            var optionItems = $(this).closest('.custom-select-options').find('.option-item');
+            
+            optionItems.each(function() {
+                var countryName = $(this).data('name').toLowerCase();
+                var countryCode = $(this).data('value').toLowerCase();
+                
+                if(countryName.indexOf(searchText) !== -1 || countryCode.indexOf(searchText) !== -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+        
+        // 阻止搜索框的点击事件传播
+        $('.country-search-input').on('click', function(e) {
+            e.stopPropagation();
         });
         
         // 处理钱包国家选项点击

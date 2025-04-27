@@ -468,6 +468,14 @@ class GSalaryAPI:
         """获取可用付款方式列表"""
         return self.make_gsalary_request("GET", "/v1/remittance/available_payment_methods", system_id=system_id)
     
+    def create_account_ewallet(self, system_id, payee_id: str,data: Dict) -> Dict[str, Any]:
+        """创建电子钱包账户
+        
+        Args:
+            data: 包含账户信息https://api.gsalary.com/v1/remittance/payees/{payee_id}/accounts
+        """
+        return self.make_gsalary_request("POST", f"/v1/remittance/payees/{payee_id}/accounts", system_id, data)
+
     # 查看收款人的可用收款账户
     def get_payee_accounts(self, system_id,payee_id: str) -> Dict[str, Any]:
         """获取收款人可用账户列表

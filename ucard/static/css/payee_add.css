@@ -106,8 +106,8 @@
     top: 100%;
     left: 0;
     right: 0;
-    max-height: 200px;
-    overflow-y: auto;
+    max-height: 250px; /* 增加高度以容纳搜索框 */
+    overflow-y: hidden; /* 改为hidden，内部滚动由option-items-container处理 */
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 0 0 4px 4px;
@@ -490,4 +490,36 @@
     border-color: #d1d1d1;
     color: #666;
     cursor: default;
+}
+
+/* 搜索框容器样式 */
+.search-container {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 2;
+}
+
+/* 搜索输入框样式 */
+.country-search-input {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    box-sizing: border-box;
+}
+
+.country-search-input:focus {
+    border-color: #1E9FFF;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.2);
+}
+
+/* 选项容器样式 */
+.option-items-container {
+    max-height: 180px;
+    overflow-y: auto;
 }
