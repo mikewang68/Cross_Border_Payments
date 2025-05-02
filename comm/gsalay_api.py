@@ -506,9 +506,9 @@ class GSalaryAPI:
         """删除收款人
         
         Args:
-            payee_id: 收款人ID
+            payee_id: 收款人IDhttps://api.gsalary.com/v1/remittance/payees/{payee_id}
         """
-        return self.make_gsalary_request("DELETE", f"/payees/{payee_id}")
+        return self.make_gsalary_request("DELETE", f"/v1/remittance/payees/{payee_id}", system_id = system_id)
     
     def supported_regions_currencies(self, system_id, data: Any) -> Dict[str, Any]:
         """获取支持的地区和货币

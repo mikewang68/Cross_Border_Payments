@@ -1080,9 +1080,21 @@ layui.use(['form', 'layer'], function(){
             // 添加当前按钮的选中状态
             $(this).addClass('active');
             
+            // 如果当前方式已保存，检查是否需要恢复保存和取消按钮
+            if ($(this).hasClass('saved-method')) {
+                $('#savePaymentMethodBtn').hide();
+                $('.cancel-button-step2').hide();
+            } else {
+                $('#savePaymentMethodBtn').show();
+                $('.cancel-button-step2').show();
+            }
+            
             // 渲染对应的表单
             renderPaymentMethodForm(code, methods.find(method => method.code === code));
         });
+        
+        // 保存已设置过的收款方式状态
+        savePaymentMethodsStatus = {};
     }
     
     // 渲染收款方式表单
@@ -1328,14 +1340,23 @@ layui.use(['form', 'layer'], function(){
     
     // 保存收款方式
     function savePaymentMethod() {
+        // 防止重复点击
+        if ($('#savePaymentMethodBtn').hasClass('disabled')) {
+            return;
+        }
+        
+        // 禁用保存按钮
+        $('#savePaymentMethodBtn').addClass('disabled').text('保存中...');
+        
         // 显示加载层
         var loadingIndex = layer.load(2);
         
         // 获取当前选中的收款方式代码
         var paymentMethodCode = $('.payment-method-btn.active').data('code');
         
-        // 收集表单数据
+        // 收集表单数据 - 根据不同收款方式构建不同格式
         var formData = {
+            version: $('#platformInput').val() || 'J1',
             payee_id: window.flattenData.payee_id,
             payment_method: paymentMethodCode,
             is_default: $('input[name="is_default"]').prop('checked') ? 1 : 0
@@ -1343,99 +1364,138 @@ layui.use(['form', 'layer'], function(){
         
         // 根据收款方式不同，收集不同字段
         switch(paymentMethodCode) {
-            case 'BANK_TRANSFER':
-                formData.account_holder = $('input[name="account_holder"]').val();
-                formData.bank_name = $('input[name="bank_name"]').val();
-                formData.account_number = $('input[name="account_number"]').val();
-                formData.branch_name = $('input[name="branch_name"]').val();
-                formData.swift_code = $('input[name="swift_code"]').val();
+            case 'ALIPAY':
+                formData.account_no = $('input[name="wallet_account"]').val();
                 break;
-            
+                
+            case 'PAYPAL_USD':
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'PAYONEER':
+                formData.have_account = true;
+                break;
+                
+            case 'BKASH':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.middle_name = $('input[name="middle_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
             case 'PIX':
-                formData.account_type = $('select[name="account_type"]').val();
-                formData.wallet_account = $('input[name="wallet_account"]').val();
-                formData.id_number = $('input[name="id_number"]').val();
+                formData.wallet_account_type = $('select[name="account_type"]').val();
+                formData.account_no = $('input[name="wallet_account"]').val();
+                formData.document_id = $('input[name="id_number"]').val();
                 break;
-            
+                
+            case 'PAGBANK':
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'DANA':
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'DOKU':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'LINKAJA':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'OVO':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'GOPAY':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'SHOPEE':
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'TOUCH_NGO':
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'COINS':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.middle_name = $('input[name="middle_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'GCASH':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.phone = $('input[name="msisdn"]').val() || '';
+                formData.address = $('input[name="address"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'GRABPAY':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.middle_name = $('input[name="middle_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'PAYMAYA':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.middle_name = $('input[name="middle_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
+            case 'EASYPAISA':
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
+                
             case 'JAZZCASH':
-                formData.first_name = $('input[name="first_name"]').val();
-                formData.last_name = $('input[name="last_name"]').val();
-                formData.wallet_account = $('input[name="wallet_account"]').val();
-                formData.id_number = $('input[name="id_number"]').val();
+                formData.first_name = $('input[name="first_name"]').val() || '';
+                formData.last_name = $('input[name="last_name"]').val() || '';
+                formData.account_no = $('input[name="wallet_account"]').val();
+                formData.document_id = $('input[name="id_number"]').val();
                 break;
-            
-            default:
-                // 对于大多数钱包收款方式
-                if($('input[name="first_name"]').length > 0) {
-                    formData.first_name = $('input[name="first_name"]').val();
-                }
                 
-                if($('input[name="middle_name"]').length > 0) {
-                    formData.middle_name = $('input[name="middle_name"]').val();
-                }
-                
-                if($('input[name="last_name"]').length > 0) {
-                    formData.last_name = $('input[name="last_name"]').val();
-                }
-                
-                if($('input[name="wallet_account"]').length > 0) {
-                    formData.wallet_account = $('input[name="wallet_account"]').val();
-                }
-                
-                if($('input[name="msisdn"]').length > 0) {
-                    formData.msisdn = $('input[name="msisdn"]').val();
-                }
-                
-                if($('input[name="address"]').length > 0) {
-                    formData.address = $('input[name="address"]').val();
-                }
+            case 'ETISALAT':
+                formData.account_no = $('input[name="wallet_account"]').val();
+                break;
         }
         
         console.log("提交收款方式数据:", formData);
         
-        // 模拟提交成功
-        setTimeout(function() {
-            layer.close(loadingIndex);
-            
-            // 显示成功消息
-            $('#step2Content').hide();
-            $('#successMessage').show();
-            
-            // 隐藏取消按钮
-            $('.cancel-button-step2').hide();
-            
-            layer.msg('收款方式设置成功', {icon: 1});
-            
-            // 3秒后自动返回列表
-            setTimeout(function() {
-                window.location.href = '/payee/list';
-            }, 3000);
-        }, 1000);
-        
-        /*
-        // 实际提交代码
+        // 发送AJAX请求
         $.ajax({
-            url: '/payee/add_payment_method',
+            url: '/payee/create_account_ewallet',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(formData),
             success: function(res) {
                 layer.close(loadingIndex);
                 
+                // 恢复保存按钮状态
+                $('#savePaymentMethodBtn').removeClass('disabled').text('保存');
+                
                 if(res.code === 0) {
+                    // 保存成功，锁定当前表单
+                    lockCurrentPaymentMethodForm();
+                    
                     // 显示成功消息
-                    $('#step2Content').hide();
-                    $('#successMessage').show();
-                    
-                    // 隐藏取消按钮
-                    $('.cancel-button-step2').hide();
-                    
                     layer.msg('收款方式设置成功', {icon: 1});
-                    
-                    // 3秒后自动返回列表
-                    setTimeout(function() {
-                        window.location.href = '/payee/list';
-                    }, 3000);
                 } else {
                     layer.msg('设置收款方式失败: ' + (res.msg || '未知错误'), {icon: 2});
                 }
@@ -1444,9 +1504,77 @@ layui.use(['form', 'layer'], function(){
                 layer.close(loadingIndex);
                 console.error("提交数据失败:", xhr);
                 layer.msg('提交数据失败，请稍后重试', {icon: 2});
+                
+                // 恢复保存按钮状态
+                $('#savePaymentMethodBtn').removeClass('disabled').text('保存');
             }
         });
-        */
+    }
+    
+    // 锁定当前支付方式表单
+    function lockCurrentPaymentMethodForm() {
+        // 获取当前活跃的支付方式按钮
+        var activeButton = $('.payment-method-btn.active');
+        var methodCode = activeButton.data('code');
+        
+        // 给已保存的支付方式按钮添加保存标记
+        activeButton.addClass('saved-method');
+        activeButton.append('<span class="saved-tag">已保存</span>');
+        
+        // 禁用当前表单所有输入
+        $('#paymentMethodDetails input').prop('readonly', true);
+        $('#paymentMethodDetails select').prop('disabled', true);
+        
+        // 隐藏保存和取消按钮
+        $('#savePaymentMethodBtn').hide();
+        $('.cancel-button-step2').hide();
+        
+        // 添加提示
+        $('#paymentMethodDetails').append('<div class="save-success-tip">此收款方式已成功保存，可以继续设置其他收款方式</div>');
+        
+        // 添加编辑按钮，允许重新编辑
+        var editBtn = $('<button type="button" class="layui-btn layui-btn-primary edit-payment-btn">编辑</button>');
+        $('#paymentMethodDetails').append(editBtn);
+        
+        // 添加一个新按钮，允许选择其他收款方式
+        var selectOtherBtn = $('<button type="button" class="layui-btn layui-btn-normal select-other-btn">选择其他收款方式</button>');
+        $('#paymentMethodDetails').append(selectOtherBtn);
+        
+        // 绑定编辑按钮事件
+        editBtn.on('click', function() {
+            // 移除保存成功样式
+            activeButton.removeClass('saved-method');
+            activeButton.find('.saved-tag').remove();
+            
+            // 启用表单
+            $('#paymentMethodDetails input').prop('readonly', false);
+            $('#paymentMethodDetails select').prop('disabled', false);
+            
+            // 显示保存和取消按钮
+            $('#savePaymentMethodBtn').show();
+            $('.cancel-button-step2').show();
+            
+            // 移除提示和按钮
+            $('.save-success-tip').remove();
+            $('.edit-payment-btn').remove();
+            $('.select-other-btn').remove();
+        });
+        
+        // 绑定选择其他收款方式按钮事件
+        selectOtherBtn.on('click', function() {
+            // 移除提示和按钮
+            $('.save-success-tip').remove();
+            $('.edit-payment-btn').remove();
+            $('.select-other-btn').remove();
+            
+            // 查找未保存的第一个收款方式并点击
+            var firstUnsaved = $('.payment-method-btn:not(.saved-method):first');
+            if (firstUnsaved.length > 0) {
+                firstUnsaved.click();
+            } else {
+                layer.msg('所有收款方式已设置完成', {icon: 1});
+            }
+        });
     }
     
     // 执行初始化

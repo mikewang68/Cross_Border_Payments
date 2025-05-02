@@ -523,3 +523,43 @@
     max-height: 180px;
     overflow-y: auto;
 }
+
+/* 已保存的支付方式样式 */
+.payment-method-btn.saved-method {
+    border: 2px solid #5FB878;
+    background-color: #f8fff8;
+    position: relative;
+}
+
+.saved-tag {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: #5FB878;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.save-success-tip {
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f8fff8;
+    border-left: 3px solid #5FB878;
+    color: #5FB878;
+}
+
+.edit-payment-btn {
+    margin-top: 10px;
+}
+
+.select-other-btn {
+    margin-top: 10px;
+    margin-left: 10px;
+}
+
+.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

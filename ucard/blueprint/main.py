@@ -3,7 +3,7 @@ from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.flat_data import flat_data
-from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database,delete_single_data
+from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database,delete_single_data, query_field_from_table,query_multiple_fields
 from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info, realtime_update_payers
 from comm.db_api import batch_update_database
 import json
@@ -971,8 +971,7 @@ def payees():
         # 查询所有收款人信息
         payees_info_data = query_all_from_table('payees_info')
         available_payment_methods = query_all_from_table('payees_availpay_methods')
-        
-        # print(payees_info_data)
+        # payees_info_data_reversed = payees_info_data[::-1]
         
         print(f"查询到 {len(payees_info_data) if payees_info_data else 0} 条收款人数据")
         
@@ -1073,9 +1072,25 @@ def create_account_ewallet():
         payee_id = data.pop('payee_id')
         version = data.pop('version')
         gsalary_api = GSalaryAPI()
+        payee_account_result = []
         result = gsalary_api.create_account_ewallet(system_id=version, payee_id=payee_id, data=data)
         print(result)
         if result['result']['result'] == 'S':
+            account_result = gsalary_api.get_payee_accounts(system_id = version, payee_id = payee_id)
+            flatten_data = flat_data(version, account_result, 'data', 'accounts')
+            if flatten_data:
+                account_data = flatten_data[0]
+            currencies_list = account_data.get("currencies", [])
+            account_data["currencies"] = currencies_list[0]
+            account_data['payee_id'] = payee_id
+            if 'form_fields' in account_data:
+                # 提取并删除form_fields字段
+                form_fields = account_data.pop('form_fields')
+                # 将form字段提升到顶层
+                for field in form_fields:
+                    account_data[field['key']] = field['value']
+            payee_account_result.append(account_data)
+            insert_database('payees_account', payee_account_result)
             return jsonify({
                 "code": 0,
                 "msg": "添加成功",
@@ -1093,6 +1108,53 @@ def create_account_ewallet():
             "msg": f"发生错误: {str(e)}",
             "data": None
         })
+    
+@main_bp.route('/payee/delete', methods=['DELETE'])
+@login_required
+def payee_delete():
+    try:
+        data = request.get_json()
+        payee_id = data.pop('payee_id') 
+        version = data.pop('version')
+        conditions = {
+            'payee_id': payee_id,
+            'version': version
+        }
+        gsalary_api = GSalaryAPI()
+        result = gsalary_api.delete_payee(system_id=version, payee_id=payee_id)
+        if result['result']['result'] == 'S':
+            delete_payees_result = delete_single_data('payees', conditions)
+            payees_ids = query_multiple_fields('payees_account', payee_id, r'version = %s', version)
+            if payee_id in payees_ids:
+                delete_payees_account_result = delete_single_data('payees_account', conditions)
+            else:
+                delete_payees_account_result = True
+            if delete_payees_result and delete_payees_account_result:
+                return jsonify({
+                    "code": 0,  
+                    "msg": "官方和本地数据删除成功",
+                    "data": result
+                })
+            else:
+                return jsonify({
+                    "code": 1,
+                    "msg": "官方和本地数据删除失败",
+                    "data": None
+                })
+        else:
+            return jsonify({
+                "code": 1,
+                "msg": "官方数据删除失败",
+                "data": None
+            })
+    except Exception as e:
+        return jsonify({
+            "code": 1,
+            "msg": f"发生错误: {str(e)}",
+            "data": None
+        })
+
+
 # 添加付款人页面路由
 @main_bp.route('/payers/add_page')
 @login_required

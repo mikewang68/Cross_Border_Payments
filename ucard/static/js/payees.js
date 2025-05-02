@@ -187,12 +187,56 @@ layui.use(['table', 'form', 'layer'], function(){
         // 删除收款人确认
         function deletePayee(payeeId) {
             layer.confirm('确定要删除该收款人吗？', {icon: 3, title:'提示'}, function(index){
-                // 这里应该发送请求到后端执行删除
-                layer.msg('删除功能需要后端接口支持', {icon: 6});
-                layer.close(index);
+                // 获取当前表格中的数据
+                var currentData = table.checkStatus('payees-table').data;
                 
-                // 模拟删除成功后刷新表格
-                // table.reload('payees-table');
+                // 查找对应payeeId的行数据
+                var payeeData = null;
+                for (var i = 0; i < transformedData.length; i++) {
+                    if (transformedData[i].payee_id === payeeId) {
+                        payeeData = transformedData[i];
+                        break;
+                    }
+                }
+                
+                // 检查必要参数是否存在
+                if (!payeeData || !payeeData.version || !payeeData.payee_id) {
+                    layer.msg('缺少必要的参数(version或payee_id)', {icon: 2});
+                    layer.close(index);
+                    return;
+                }
+                
+                // 显示加载中
+                var loadIndex = layer.load(2);
+                
+                // 发送删除请求
+                $.ajax({
+                    url: '/payee/delete',
+                    type: 'DELETE',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        version: payeeData.version,
+                        payee_id: payeeData.payee_id
+                    }),
+                    success: function(res) {
+                        layer.close(loadIndex);
+                        if (res.code === 0) {
+                            layer.msg(res.msg || '删除成功', {icon: 1});
+                            // 删除成功后重新加载表格
+                            table.reload('payees-table');
+                        } else {
+                            layer.msg(res.msg || '删除失败', {icon: 2});
+                        }
+                    },
+                    error: function(xhr) {
+                        layer.close(loadIndex);
+                        console.error('删除收款人请求失败:', xhr);
+                        layer.msg('网络错误，请稍后重试', {icon: 2});
+                    },
+                    complete: function() {
+                        layer.close(index); // 关闭确认框
+                    }
+                });
             });
         }
         

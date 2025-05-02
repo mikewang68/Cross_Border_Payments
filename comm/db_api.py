@@ -361,7 +361,7 @@ def delete_single_data(table_name, conditions):
         condition_str = " AND ".join([f"{key} = %s" for key in conditions.keys()])
 
         # 构建删除 SQL 语句
-        sql = f"DELETE FROM {table_name} WHERE {condition_str} LIMIT 1"
+        sql = f"DELETE FROM {table_name} WHERE {condition_str}"
 
         # 执行删除操作，传递条件参数
         cursor.execute(sql, tuple(conditions.values()))
