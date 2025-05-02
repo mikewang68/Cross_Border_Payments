@@ -27,6 +27,7 @@ layui.use(['element', 'layer'], function(){
             'payers',
             'wallet_manage',
             'update_time',
+            'remittance',
         ];
         
         // 检查功能是否已实现

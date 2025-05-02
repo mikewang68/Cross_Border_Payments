@@ -566,6 +566,15 @@ class GSalaryAPI:
         return self.make_gsalary_request("DELETE", f"/v1/remittance/payers/{payer_id}",system_id=system_id)
 
     # 付款操作 - 汇款
+    def get_remittance_orders(self, system_id,params: Optional[Dict] = None) -> Dict[str, Any]:
+        """获取汇款订单列表
+        
+        Args:
+            params: 查询参数，可包含日期范围、状态等https://api.gsalary.com/v1/remittance/orders
+        """
+        return self.make_gsalary_request("GET", "/v1/remittance/orders", system_id=system_id, params=params)
+    
+    # 创建汇款
     def create_remittance(self, system_id,data: Dict) -> Dict[str, Any]:
         """创建汇款
         

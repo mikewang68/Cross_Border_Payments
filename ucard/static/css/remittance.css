@@ -1,0 +1,135 @@
+/* remittance.css - 仅应用于付款功能相关页面 */
+
+.remittance-page .layui-card {
+  margin-bottom: 15px;
+}
+
+.remittance-page .layui-card-header {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.remittance-page .table-container {
+  margin-top: 15px;
+}
+
+/* 付款方式样式 */
+.payment-method-item {
+  display: flex;
+  align-items: center;
+}
+
+.payment-method-item .payment-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+/* 详情弹窗样式 */
+.remittance-detail {
+  padding: 15px;
+}
+
+.remittance-detail .detail-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.remittance-detail .layui-table {
+  margin: 0;
+}
+
+.remittance-detail .layui-table td {
+  word-break: break-all;
+}
+
+/* 新状态标签样式 */
+.status-badge {
+  display: inline-block;
+  width: 80px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-success {
+  border-color: #52c41a;
+  background-color: #f6ffed;
+  color: #52c41a;
+}
+
+.status-failed {
+  border-color: #f5222d;
+  background-color: #fff1f0;
+  color: #f5222d;
+}
+
+.status-processing {
+  border-color: #1890ff;
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.status-created {
+  border-color: #faad14;
+  background-color: #fffbe6;
+  color: #faad14;
+}
+
+.status-cancelled {
+  border-color: #d9d9d9;
+  background-color: #f5f5f5;
+  color: #999;
+}
+
+/* 固定列中的状态标签样式 */
+.layui-table-fixed-r .status-badge {
+  width: 80px;
+  margin: 0 auto;
+}
+
+/* 搜索表单样式 */
+.remittance-page .layui-form-pane .layui-form-label {
+  width: 100px;
+}
+
+.remittance-page .layui-form-pane .layui-input-inline {
+  width: 180px;
+}
+
+/* 表格内容居中 */
+.layui-table td, .layui-table th {
+  text-align: center;
+}
+
+/* 表格操作按钮样式 */
+.layui-table-tool .layui-btn-container .layui-btn {
+  margin-right: 8px;
+}
+
+/* 详情表格样式 */
+.remittance-detail .layui-table td:first-child {
+  font-weight: bold;
+  background-color: #f9f9f9;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+  .remittance-page .layui-form-pane .layui-form-label {
+    width: 80px;
+  }
+  
+  .remittance-page .layui-form-pane .layui-input-inline {
+    width: 140px;
+  }
+}

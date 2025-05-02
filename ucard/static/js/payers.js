@@ -165,7 +165,7 @@ layui.use(['table', 'form', 'layer'], function(){
                     {field: 'business_scopes_text', title: '业务范围', width: 150},
                     {field: 'address', title: '地址', width: 300},
                     {field: 'version', title: '平台', width: 80},
-                    {fixed: 'right', title: '操作', toolbar: '#payer_barTool', width: 180}
+                    {fixed: 'right', title: '操作', toolbar: '#payer_barTool', width: 120}
                 ]],
                 done: function(res){
                     this.count = transformedData.length;

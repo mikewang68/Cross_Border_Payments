@@ -993,6 +993,18 @@ def payers():
     except Exception as e:
         print(f'获取付款人数据失败: {str(e)}', 'error')
         return render_template('main/payers.html', payers_info_data=[])
+    
+@main_bp.route('/remittance_orders')
+@login_required
+def remittance_orders():
+    try:
+        remittance_orders_data = query_all_from_table('remittance_orders_info')
+        print(f"查询到 {len(remittance_orders_data) if remittance_orders_data else 0} 条付款单数据")
+        sorted_card_holders = sorted(remittance_orders_data, key=lambda x: convert_time(x["create_time"]), reverse=True)
+        return render_template('main/remittance.html', remittance_orders_data=sorted_card_holders)
+    except Exception as e:
+        print(f'获取付款单数据失败: {str(e)}', 'error')
+        return render_template('main/remittance.html', remittance_orders_data=[])
 
 @main_bp.route('/payee/add')
 @login_required 
@@ -1665,3 +1677,15 @@ def api_set_time_update():
             'code': 1,
             'msg': f'系统错误: {str(e)}'
         })
+
+@main_bp.route('/remittance')
+@login_required
+def remittance():
+    return redirect(url_for('main.remittance_orders'))
+
+
+
+
+
+
+
