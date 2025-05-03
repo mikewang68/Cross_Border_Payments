@@ -248,8 +248,7 @@ def push_monthly_report():
     for card_holder in card_holders:
 
         # # 获取邮箱
-        # email = card_holder.get('email')
-        email = '842457745@qq.com'
+        email = card_holder.get('email')
 
         # 获取用户国籍
         region = card_holder.get('region')
@@ -261,7 +260,7 @@ def push_monthly_report():
         card_holder_id = card_holder.get('card_holder_id')
 
         # 初始化卡号
-        mask_card_number = 'test00'
+        mask_card_number = 'No Card'
         card_id = 'test01'
         # 获取卡号
         for card in cards :
