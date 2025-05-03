@@ -24,7 +24,7 @@ class EmailPusher:
     def send_email(self, to_email, subject, body):
         # 创建邮件对象
         message = MIMEMultipart()
-        message["From"] = self.MAIL_DEFAULT_SENDER
+        message["From"] = f"Galileo <{self.MAIL_DEFAULT_SENDER}>"
         message["To"] = to_email
         message["Subject"] = subject
 
