@@ -213,7 +213,6 @@ def query_field_from_table(table_name, field_name, condition=None):
         sql = f"SELECT {field_name} FROM {table_name}"
         if condition:
             sql += f" WHERE {condition}"
-        print(sql)
         cursor.execute(sql)
         results = cursor.fetchall()
         # 提取指定字段的值

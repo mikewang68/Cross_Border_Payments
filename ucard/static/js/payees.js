@@ -293,6 +293,125 @@ layui.use(['table', 'form', 'layer'], function(){
             });
         }
         
+        // 打开同步数据弹窗
+        function openSyncDataDialog() {
+            layer.open({
+                type: 1,
+                title: '同步数据',
+                area: ['500px', '400px'],
+                content: `
+                <div style="padding: 20px;">
+                    <form class="layui-form" lay-filter="syncDataForm">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">平台选择</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" name="version[]" value="J1" title="J1" checked>
+                                <input type="checkbox" name="version[]" value="J2" title="J2" checked>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">同步项目</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" name="list[]" value="payees" title="用卡人信息" checked>
+                                <input type="checkbox" name="list[]" value="payee_accounts" title="用卡人账户信息" checked>
+                                <input type="checkbox" name="list[]" value="available_payment_methods" title="可用付款方式">
+                                <input type="checkbox" name="list[]" value="supported_regions_currencies" title="支持付款国家和币种列表">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <div class="layui-word-aux" style="color: #FF5722; margin-bottom: 10px;">
+                                    可用付款方式和支持付款国家和币种列表更新时间较长，非必要无需更新
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="button" class="layui-btn" id="confirmSyncBtn">开始同步</button>
+                                <button type="button" class="layui-btn layui-btn-primary" id="cancelSyncBtn">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>`,
+                success: function(layero, index) {
+                    form.render(null, 'syncDataForm');
+                    
+                    // 确定按钮点击事件
+                    $('#confirmSyncBtn').on('click', function() {
+                        // 收集选中的平台
+                        var versionList = [];
+                        $('input[name="version[]"]:checked').each(function() {
+                            versionList.push($(this).val());
+                        });
+                        
+                        // 收集选中的同步项目
+                        var syncList = [];
+                        $('input[name="list[]"]:checked').each(function() {
+                            syncList.push($(this).val());
+                        });
+                        
+                        // 验证选择项
+                        if (versionList.length === 0) {
+                            layer.msg('请至少选择一个平台', {icon: 2});
+                            return;
+                        }
+                        
+                        if (syncList.length === 0) {
+                            layer.msg('请至少选择一个同步项目', {icon: 2});
+                            return;
+                        }
+                        
+                        // 准备数据
+                        var syncData = {
+                            version: versionList,
+                            list: syncList
+                        };
+                        
+                        // 发送同步请求
+                        syncPayeeData(syncData, index);
+                    });
+                    
+                    // 取消按钮点击事件
+                    $('#cancelSyncBtn').on('click', function() {
+                        layer.close(index);
+                    });
+                }
+            });
+        }
+        
+        // 发送同步请求
+        function syncPayeeData(syncData, layerIndex) {
+            // 显示加载中
+            var loadIndex = layer.load(2, {shade: [0.3, '#000']});
+            
+            // 发送同步请求
+            $.ajax({
+                url: '/payees/rt_payee',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(syncData),
+                success: function(res) {
+                    layer.close(loadIndex);
+                    
+                    if (res.code === 0) {
+                        layer.msg(res.msg || '同步成功', {icon: 1});
+                        // 同步成功后关闭弹窗并刷新页面
+                        layer.close(layerIndex);
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        layer.msg(res.msg || '同步失败', {icon: 2});
+                    }
+                },
+                error: function(xhr) {
+                    layer.close(loadIndex);
+                    console.error('同步数据请求失败:', xhr);
+                    layer.msg('网络错误，请稍后重试', {icon: 2});
+                }
+            });
+        }
+        
         // 加载添加收款人页面
         function loadPayeeAddPage(platform) {
             var cardBody = $('.payees-page .layui-card-body');
@@ -353,6 +472,10 @@ layui.use(['table', 'form', 'layer'], function(){
                     case 'add':
                         // 打开添加收款人页面
                         openAddPayeePage();
+                        break;
+                    case 'sync':
+                        // 打开同步数据弹窗
+                        openSyncDataDialog();
                         break;
                 }
             });

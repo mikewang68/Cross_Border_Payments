@@ -240,6 +240,116 @@ layui.use(['table', 'form', 'layer'], function(){
             });
         }
         
+        // 打开同步数据弹窗
+        function openSyncDataDialog() {
+            layer.open({
+                type: 1,
+                title: '同步数据',
+                area: ['500px', '350px'],
+                content: `
+                <div style="padding: 20px;">
+                    <form class="layui-form" lay-filter="syncDataForm">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">平台选择</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" name="version[]" value="J1" title="J1" checked>
+                                <input type="checkbox" name="version[]" value="J2" title="J2" checked>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">同步项目</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" name="list[]" value="payers" title="付款人信息" checked>
+                                <input type="checkbox" name="list[]" value="payers_info" title="付款人详情" checked>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="button" class="layui-btn" id="confirmSyncBtn">开始同步</button>
+                                <button type="button" class="layui-btn layui-btn-primary" id="cancelSyncBtn">取消</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>`,
+                success: function(layero, index) {
+                    form.render(null, 'syncDataForm');
+                    
+                    // 确定按钮点击事件
+                    $('#confirmSyncBtn').on('click', function() {
+                        // 收集选中的平台
+                        var versionList = [];
+                        $('input[name="version[]"]:checked').each(function() {
+                            versionList.push($(this).val());
+                        });
+                        
+                        // 收集选中的同步项目
+                        var syncList = [];
+                        $('input[name="list[]"]:checked').each(function() {
+                            syncList.push($(this).val());
+                        });
+                        
+                        // 验证选择项
+                        if (versionList.length === 0) {
+                            layer.msg('请至少选择一个平台', {icon: 2});
+                            return;
+                        }
+                        
+                        if (syncList.length === 0) {
+                            layer.msg('请至少选择一个同步项目', {icon: 2});
+                            return;
+                        }
+                        
+                        // 准备数据
+                        var syncData = {
+                            version: versionList,
+                            list: syncList
+                        };
+                        
+                        // 发送同步请求
+                        syncPayerData(syncData, index);
+                    });
+                    
+                    // 取消按钮点击事件
+                    $('#cancelSyncBtn').on('click', function() {
+                        layer.close(index);
+                    });
+                }
+            });
+        }
+        
+        // 发送同步请求
+        function syncPayerData(syncData, layerIndex) {
+            // 显示加载中
+            var loadIndex = layer.load(2, {shade: [0.3, '#000']});
+            
+            // 发送同步请求
+            $.ajax({
+                url: '/payers/rt_payer',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(syncData),
+                success: function(res) {
+                    layer.close(loadIndex);
+                    
+                    if (res.code === 0) {
+                        layer.msg(res.msg || '同步成功', {icon: 1});
+                        // 同步成功后关闭弹窗并刷新页面
+                        layer.close(layerIndex);
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        layer.msg(res.msg || '同步失败', {icon: 2});
+                    }
+                },
+                error: function(xhr) {
+                    layer.close(loadIndex);
+                    console.error('同步数据请求失败:', xhr);
+                    layer.msg('网络错误，请稍后重试', {icon: 2});
+                }
+            });
+        }
+        
         // 初始化事件监听
         function initEventListeners() {
             // 监听表格头工具栏事件
@@ -260,6 +370,10 @@ layui.use(['table', 'form', 'layer'], function(){
                                 });
                             }
                         });
+                        break;
+                    case 'sync':
+                        // 打开同步数据弹窗
+                        openSyncDataDialog();
                         break;
                 }
             });

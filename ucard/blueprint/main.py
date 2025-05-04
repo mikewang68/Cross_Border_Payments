@@ -5,6 +5,7 @@ from datetime import datetime
 from comm.flat_data import flat_data
 from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database,delete_single_data, query_field_from_table,query_multiple_fields
 from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info, realtime_update_payers
+from sync.realtime import rt_payees,rt_payee_accounts,rt_available_payment_methods,rt_supported_regions_currencies,rt_payers,rt_payers_info,rt_remittance_orders
 from comm.db_api import batch_update_database
 import json
 import time
@@ -1682,6 +1683,87 @@ def api_set_time_update():
 @login_required
 def remittance():
     return redirect(url_for('main.remittance_orders'))
+
+@main_bp.route('/payees/rt_payee', methods=['POST'])
+@login_required
+def rt_payee():
+    try:
+        data = request.get_json()
+        list = data.pop('list')
+        version_list = data.pop('version')
+        for version in version_list:
+            for i in list:
+                if i == 'payees':
+                    # rt_get_payees(version)
+                    # rt_update_payees(version)
+                    rt_payees(version)
+                elif i == 'payee_accounts':
+                    # rt_get_payee_accounts(version)
+                    # rt_update_payee_accounts(version)
+                    rt_payee_accounts(version)
+                elif i == 'available_payment_methods':
+                    # rt_get_available_payment_methods(version)
+                    # rt_update_available_payment_methods(version)
+                    rt_available_payment_methods(version)
+                elif i == 'supported_regions_currencies':
+                    # rt_insert_supported_regions_currencies(version)
+                    # rt_update_supported_regions_currencies(version)
+                    rt_supported_regions_currencies(version)
+        return jsonify({
+                'code': 0,
+                'msg': '同步成功'
+            })
+    except Exception as e:
+        return jsonify({
+            'code': 1,
+            'msg': f'同步失败: {str(e)}'
+        })
+
+@main_bp.route('/payers/rt_payer', methods=['POST'])
+@login_required
+def rt_payer():
+    try:
+        data = request.get_json()
+        list = data.pop('list')
+        version_list = data.pop('version')
+        for version in version_list:
+            for i in list:
+                if i == 'payers':   
+                    # rt_get_payers(version)
+                    # rt_update_payers(version)
+                    rt_payers(version)
+                elif i == 'payers_info':
+                    # rt_get_payers_info(version)
+                    # rt_update_payers_info(version)
+                    rt_payers_info(version)
+        return jsonify({    
+            'code': 0,
+            'msg': '同步成功'
+        })
+    except Exception as e:
+        return jsonify({
+            'code': 1,
+            'msg': f'同步失败: {str(e)}'
+        })
+@main_bp.route('/remittance/rt_remittance', methods=['POST'])
+@login_required
+def rt_remittance():
+    try:
+        data = request.get_json()
+        version_list = data.pop('version')
+        # rt_get_remittance_orders(version)
+        # rt_update_remittance_orders(version)
+        for version in version_list:
+            rt_remittance_orders(version)
+        return jsonify({
+            'code': 0,
+            'msg': '同步成功'
+        })
+    except Exception as e:
+        return jsonify({
+            'code': 1,
+            'msg': f'同步失败: {str(e)}'
+        })
 
 
 
