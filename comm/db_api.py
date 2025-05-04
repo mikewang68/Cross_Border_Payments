@@ -61,12 +61,12 @@ def insert_database(table_name, records):
         val = tuple(valid_record.values())
         try:
             cursor.execute(sql, val)
-            logger.info(f"成功插入记录: {valid_record.get('insert_time')}")
+            logger.info(f"{table_name}成功插入记录: {valid_record.get('insert_time')}")
         except pymysql.Error as err:
             if err.args[0] == 1062:  # 检查是否为主键冲突错误
-                logger.info(f"检测到重复数据: {valid_record.get('insert_time')}，错误信息: {err}")
+                logger.info(f"{table_name}检测到重复数据: {valid_record.get('insert_time')}，错误信息: {err}")
             else:
-                logger.info(f"插入数据时发生错误，错误信息: {err}")
+                logger.info(f"{table_name}插入数据时发生错误，错误信息: {err}")
                 conn.rollback()
                 return
 
@@ -106,10 +106,10 @@ def update_database(table_name, set_columns_values, where_conditions):
         sql = f"UPDATE {table_name} SET {set_str} WHERE {where_str}"
         cursor.execute(sql, values)
         conn.commit()
-        logger.info(f"成功更新 {cursor.rowcount} 条记录。")
+        logger.info(f"{table_name}成功更新 {cursor.rowcount} 条记录。")
         return True
     except pymysql.Error as err:
-        logger.error(f"更新数据时出现错误: {err}")
+        logger.error(f"{table_name}更新数据时出现错误: {err}")
         conn.rollback()
         return False
     finally:
@@ -119,7 +119,7 @@ def update_database(table_name, set_columns_values, where_conditions):
 
 # 对于单个表中的所有记录进行更新/暂时操作
 # table_name: 表名，set_columns_values: 数据，condition1: 条件字段名1，condition2: 条件字段名2(如果表中含有两个主键，可添加condition2)
-def batch_update_database(table_name, set_columns_values, condition1=None, condition2=None):
+def batch_update_database(table_name, set_columns_values, condition1=None, condition2=None, condition3=None):
     conn = create_db_connection()
     if conn is None:
         logger.error("无法建立数据库连接，程序退出。")
@@ -127,12 +127,15 @@ def batch_update_database(table_name, set_columns_values, condition1=None, condi
     cursor = conn.cursor()
     try:
         for i in set_columns_values:
-
-            if condition1 is not None and condition2 is None:
+            if condition1 is not None and condition2 is None and condition3 is None:
                 conditiondata1 = i.pop(condition1)
-            else:
+            elif condition1 is not None and condition2 is not None and condition3 is None:
                 conditiondata1 = i.pop(condition1)
                 conditiondata2 = i.pop(condition2)
+            elif condition1 is not None and condition2 is not None and condition3 is not None:
+                conditiondata1 = i.pop(condition1)
+                conditiondata2 = i.pop(condition2)
+                conditiondata3 = i.pop(condition3)
             # 构建set子句
             set_clauses = []
             values = []
@@ -142,24 +145,32 @@ def batch_update_database(table_name, set_columns_values, condition1=None, condi
             set_str = ", ".join(set_clauses)
             # 构建where子句
             where_clause = []
-            if condition2 is None:
+            if condition2 is None and condition3 is None:
                 where_clause.append(f"{condition1} = %s")
                 values.append(conditiondata1)
                 where_str = ''.join(where_clause)
-            else:
+            elif condition2 is not None and condition3 is None:
                 where_clause.append(f"{condition1} = %s")
                 where_clause.append(f"{condition2} = %s")
                 values.append(conditiondata1)
                 values.append(conditiondata2)
                 where_str = ' AND '.join(where_clause)
+            elif condition2 is not None and condition3 is not None:
+                where_clause.append(f"{condition1} = %s")
+                where_clause.append(f"{condition2} = %s")
+                where_clause.append(f"{condition3} = %s")
+                values.append(conditiondata1)
+                values.append(conditiondata2)
+                values.append(conditiondata3)
+                where_str = ' AND '.join(where_clause)
 
             sql = f"UPDATE {table_name} SET {set_str} WHERE {where_str}"
             cursor.execute(sql, values)
             conn.commit()
-            logger.info(f"成功更新 {cursor.rowcount} 条记录。")
+            logger.info(f"{table_name}成功更新 {cursor.rowcount} 条记录。")
         return True
     except pymysql.Error as err:
-        logger.error(f"更新数据时出现错误: {err}")
+        logger.error(f"{table_name}更新数据时出现错误: {err}")
         return False
     finally:
         cursor.close()
@@ -183,7 +194,7 @@ def query_database(table_name, column_name, query_value):
         results = cursor.fetchall()
         return results
     except pymysql.Error as err:
-        logger.error(f"查询数据时出现错误: {err}")
+        logger.error(f"{table_name}查询数据时出现错误: {err}")
         return []
     finally:
         cursor.close()
@@ -202,16 +213,17 @@ def query_field_from_table(table_name, field_name, condition=None):
         sql = f"SELECT {field_name} FROM {table_name}"
         if condition:
             sql += f" WHERE {condition}"
+        print(sql)
         cursor.execute(sql)
         results = cursor.fetchall()
         # 提取指定字段的值
         field_values = [row[field_name] for row in results]
         return field_values
     except pymysql.Error as err:
-        logger.error(f"查询数据时出现错误: {err}")
+        logger.error(f"{table_name}查询数据时出现错误: {err}")
         return []
     except KeyError:
-        logger.error(f"未找到指定的字段: {field_name}")
+        logger.error(f"{table_name}未找到指定的字段: {field_name}")
         return []
     finally:
         cursor.close()
@@ -232,7 +244,7 @@ def query_all_from_table(table_name):
         results = cursor.fetchall()
         return results
     except pymysql.Error as err:
-        logger.error(f"查询数据时出现错误: {err}")
+        logger.error(f"{table_name}查询数据时出现错误: {err}")
         return []
     finally:
         cursor.close()
@@ -252,7 +264,7 @@ def query_match_from_table(table_name, column_name,column_value,m):
         results = cursor.fetchall()
         return results
     except pymysql.Error as err:
-        logger.error(f"查询数据时出现错误: {err}")
+        logger.error(f"{table_name}查询数据时出现错误: {err}")
         return []
     finally:
         cursor.close()
@@ -305,10 +317,10 @@ def query_multiple_fields(table_name, field_names, condition=None, params=None):
         return cursor.fetchall()
     
     except pymysql.Error as err:
-        logger.error(f"查询数据时出现错误: {err}")
+        logger.error(f"{table_name}查询数据时出现错误: {err}")
         return []
     except Exception as e:
-        logger.error(f"未预期的错误: {str(e)}")
+        logger.error(f"{table_name}未预期的错误: {str(e)}")
         return []
     finally:
         cursor.close()
@@ -334,7 +346,7 @@ def query_date_from_table(table_name, column_name, start_date, end_date):
         results = cursor.fetchall()
         return results
     except pymysql.Error as err:
-        logger.error(f"查询数据时出现错误: {err}")
+        logger.error(f"{table_name}查询数据时出现错误: {err}")
         return []
     finally:
         cursor.close()
@@ -377,7 +389,7 @@ def delete_single_data(table_name, conditions):
             logger.warning(f"未找到符合条件的记录，删除失败。")
             return False
     except pymysql.Error as err:
-        logger.error(f"删除数据时出现错误: {err}")
+        logger.error(f"{table_name}删除数据时出现错误: {err}")
         return False
     finally:
         cursor.close()

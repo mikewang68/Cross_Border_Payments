@@ -202,6 +202,20 @@ async def balance_history(version):
     except Exception as e:
         logger.error(f"插入余额明细时出错: {e}")
 
+async def get_remittance_orders(version):
+    gsalary = GSalaryAPI()
+    result = gsalary.get_remittance_orders(version)
+    flatten_result = flat_data(version, result,'data','orders')
+    print(flatten_result)
+    insert_database('remittance_orders', flatten_result)
+
+async def update_remittance_orders(version):
+    gsalary = GSalaryAPI()
+    result = gsalary.get_remittance_orders(version)
+    flatten_result = flat_data(version, result,'data','orders')
+    print(flatten_result)
+    batch_update_database('remittance_orders', flatten_result, 'order_id')
+
 
 
 async def wallet_balance(version):
@@ -263,8 +277,9 @@ async def fetch_info():
             cards_secure_info_insert(version),
             cards_info_update(version),
             cards_info_insert(version),
-            push_tele_messages()
-
+            push_tele_messages(),
+            get_remittance_orders(version),
+            update_remittance_orders(version)
         ]
         all_tasks.extend(tasks)
 

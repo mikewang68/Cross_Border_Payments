@@ -1136,8 +1136,8 @@ def payee_delete():
         result = gsalary_api.delete_payee(system_id=version, payee_id=payee_id)
         if result['result']['result'] == 'S':
             delete_payees_result = delete_single_data('payees', conditions)
-            payees_ids = query_multiple_fields('payees_account', payee_id, r'version = %s', version)
-            if payee_id in payees_ids:
+            payees_ids = query_multiple_fields('payees_account', ['payee_id'], f'version = %s', version,)
+            if any(item['payee_id'] == payee_id for item in payees_ids):
                 delete_payees_account_result = delete_single_data('payees_account', conditions)
             else:
                 delete_payees_account_result = True
