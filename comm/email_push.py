@@ -30,7 +30,7 @@ class EmailPusher:
 
 
         # 添加邮件正文
-        message.attach(MIMEText(body, "plain"))
+        # message.attach(MIMEText(body, "plain"))
         message.attach(MIMEText(body, 'html'))
 
         try:
@@ -226,7 +226,7 @@ def make_email_body(transaction_data,region,qd_level,mask_card_number,accounting
 
 def push_monthly_report():
     email_pusher = EmailPusher()
-    subject = "测试邮件"
+    subject = "MonthlyReport"
 
     # 获取月报时间
     start_date, end_date = get_monthly_date()
@@ -247,7 +247,7 @@ def push_monthly_report():
     # 遍历用户列表
     for card_holder in card_holders:
 
-        # # 获取邮箱
+        # 获取邮箱
         email = card_holder.get('email')
 
         # 获取用户国籍
