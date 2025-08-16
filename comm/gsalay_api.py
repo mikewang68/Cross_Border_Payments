@@ -682,3 +682,20 @@ class GSalaryAPI:
             params: 查询参数，如日期范围
         """
         return self.make_gsalary_request("GET", f"/webhooks/{webhook_id}/logs", system_id=system_id, params=params)
+
+    def assign_card (self, system_id,data: Dict) -> Dict[str, Any]:
+        """分配实体卡
+
+        Args:
+            data: card_number、card_holder_id、card_currency
+        """
+        return self.make_gsalary_request("POST", "/v1/cards/assign_card", system_id=system_id, data=data)
+
+    def active_card (self, system_id, card_id,data: Dict) -> Dict[str, Any]:
+        """激活实体卡
+
+        Args:
+            card_id: 卡片ID
+            data: 卡的激活码、卡的新PIN(必须是6位数字)、无需PIN验证的卡交易的允许金额(默认值为200USD,可以为0)
+        """
+        return self.make_gsalary_request("POST", f"/v1/cards/{card_id}/active_card", system_id=system_id, data=data)
