@@ -395,7 +395,22 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                             });
                         }
                     });
-                }else if (obj.event === 'wallet_balance') {
+                }else if (obj.event === 'assign_physical_card') {
+                                        layer.open({
+                        type: 2,
+                        title: '分配实体卡',
+                        area: ['800px', '600px'],
+                        content: '/cards/assign_physical_card',
+                        end: function(){
+                            table.reload('cards-table', {
+                                page: {
+                                    curr: 1 // 重新从第一页开始
+                                }
+                            });
+                        }
+                    });
+                }
+                else if (obj.event === 'wallet_balance') {
                     showBalanceDetail(wallet_balance_data);
                 }
             });

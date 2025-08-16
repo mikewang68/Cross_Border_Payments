@@ -1,5 +1,8 @@
 import pymysql
 import logging
+
+from django.db.models.expressions import result
+
 from comm.utils import get_db
 
 logger = logging.getLogger(__name__)
@@ -50,7 +53,6 @@ def insert_database(table_name, records):
     for record in records:
         # 过滤掉表中不存在的字段
         valid_record = {key: value for key, value in record.items() if key in columns_in_table}
-        
         # 处理key字段，使用反引号转义
         if 'key' in valid_record:
             valid_record['`key`'] = valid_record.pop('key')
@@ -73,6 +75,63 @@ def insert_database(table_name, records):
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def insert_physical_card(table_name, records):
+    conn = None
+    cursor = None
+    try:
+        conn = create_db_connection()
+        if conn is None:
+            logger.error("无法建立数据库连接，程序退出。")
+            return 0
+
+        cursor = conn.cursor()
+
+        # 获取表的实际字段列表并处理关键字转义
+        cursor.execute(f"SHOW COLUMNS FROM `{table_name}`")
+        columns_in_table = [column[0] for column in cursor.fetchall()]
+
+        # 处理所有记录
+        valid_records = []
+        for record in records:
+            # 过滤掉表中不存在的字段
+            valid_record = {key: value for key, value in record.items()
+                            if key in columns_in_table}
+
+            # 统一处理字段名转义（处理关键字和特殊字符）
+            escaped_record = {f'`{key}`': value for key, value in valid_record.items()}
+            valid_records.append(escaped_record)
+
+        if not valid_records:
+            logger.warning("没有有效的记录可供插入")
+            return 0
+
+        # 所有记录使用相同的字段结构（取第一条记录的字段）
+        columns = ', '.join(valid_records[0].keys())
+        values_placeholder = ', '.join(['%s'] * len(valid_records[0]))
+        sql = f"INSERT INTO `{table_name}` ({columns}) VALUES ({values_placeholder})"
+
+        # 提取所有记录的值
+        values = [tuple(rec.values()) for rec in valid_records]
+
+        # 批量插入
+        result = cursor.executemany(sql, values)
+        conn.commit()
+        logger.info(f"成功插入 {result} 条记录到表 {table_name}")
+        return result
+
+    except pymysql.Error as err:
+        if conn:
+            conn.rollback()
+        logger.error(f"插入记录时发生错误: {err}")
+        return -1  # 用-1标识错误状态
+    finally:
+        # 确保资源释放
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
 
 # ---------------------------------------------update------------------------------------------------------------------
