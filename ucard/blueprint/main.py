@@ -1786,10 +1786,8 @@ def assign_card():
     try:
         # 解析JSON数据，处理解析失败的情况
         data = request.get_json()
-        # 生成请求ID并添加到数据中
-        request_id = str(uuid.uuid4())
-        data['request_id'] = request_id
-        records = [data]  # 重命名变量，更符合语义
+        data['status'] = "new"
+        records = [data]
 
         # 执行插入操作
         result = insert_physical_card('physical_cards', records)
