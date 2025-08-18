@@ -1,15 +1,12 @@
-import ast
-
 from flask import Blueprint, render_template, session, jsonify, request, redirect, url_for
 from ucard.blueprint.auth import login_required
 from comm.gsalay_api import GSalaryAPI
 from datetime import datetime
 from comm.flat_data import flat_data
 from comm.db_api import insert_database, query_all_from_table, update_database, create_db_connection, query_database, \
-    delete_single_data, query_field_from_table, query_multiple_fields, insert_physical_card
-from sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info, realtime_update_payers
-from sync.realtime import rt_payees,rt_payee_accounts,rt_available_payment_methods,rt_supported_regions_currencies,rt_payers,rt_payers_info,rt_remittance_orders
-from comm.db_api import batch_update_database
+    delete_single_data, query_multiple_fields, insert_physical_card,batch_update_database
+from ucard.sync.realtime import realtime_card_info_update, modify_response_data_insert, realtime_insert_payers,realtime_insert_payers_info, realtime_update_payers
+from ucard.sync.realtime import rt_payees,rt_payee_accounts,rt_available_payment_methods,rt_supported_regions_currencies,rt_payers,rt_payers_info,rt_remittance_orders
 import json
 import time
 import uuid
