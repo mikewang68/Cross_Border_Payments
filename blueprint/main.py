@@ -158,22 +158,131 @@ def daily():
         cards = query_all_from_table('cards')
         # 
         balance_history = query_all_from_table('balance_history')
-        card_transactions = query_all_from_table('card_transactions')     
+        card_transactions = query_all_from_table('card_transactions')
+        # 查询开卡费
+        card_types = query_all_from_table('card_type')
+        
         # 打印调试信息
         print(f"查询到 {len(cards) if cards else 0} 条卡记录")
         print(f"查询到 {len(balance_history) if balance_history else 0} 条交易明细记录")
         print(f"查询到 {len(card_transactions) if card_transactions else 0} 条卡交易明细记录")
+        print(f"查询到 {len(wallet_transactions) if wallet_transactions else 0} 条钱包交易记录")
+        
+        # ========== 业务总览统计数据 ==========
+        # 1. 计算总投入金额（钱包充值金额）
+        total_input = 0
+        if wallet_transactions:
+            for trans in wallet_transactions:
+                # 充值类型：BALANCE_RECHARGE 或 MANUAL
+                if trans.get('txn_type') in ['BALANCE_RECHARGE', 'MANUAL']:
+                    amount = trans.get('amount', 0)
+                    if amount and float(amount) > 0:
+                        total_input += float(amount)
+        
+        # 2. 计算总开卡费
+        total_opening_fee = 0
+        if card_types:
+            for card_type in card_types:
+                opening_fee = card_type.get('opening_fee', 0)
+                if opening_fee:
+                    try:
+                        total_opening_fee += float(opening_fee)
+                    except:
+                        pass
+        
+        # 3. 计算各卡余额总和
+        total_card_balance = 0
+        if cards:
+            for card in cards:
+                available_balance = card.get('available_balance', 0)
+                if available_balance:
+                    try:
+                        total_card_balance += float(available_balance)
+                    except:
+                        pass
+        
+        # 4. 今日充值统计
+        from datetime import date
+        today = date.today().strftime('%Y-%m-%d')
+        today_recharge_count = 0
+        today_recharge_amount = 0
+        today_recharge_list = []
+        
+        if wallet_transactions:
+            for trans in wallet_transactions:
+                if trans.get('txn_type') in ['BALANCE_RECHARGE', 'MANUAL']:
+                    trans_time = trans.get('transaction_time', '')
+                    if trans_time and trans_time.startswith(today):
+                        amount = trans.get('amount', 0)
+                        if amount and float(amount) > 0:
+                            today_recharge_count += 1
+                            today_recharge_amount += float(amount)
+                            today_recharge_list.append(trans)
+        
+        # 5. 今日配额调整记录数
+        today_quota_adjust_count = 0
+        if balance_history:
+            for record in balance_history:
+                bill_date = record.get('bill_date')
+                if bill_date:
+                    # 转换bill_date为字符串
+                    if hasattr(bill_date, 'strftime'):
+                        bill_date_str = bill_date.strftime('%Y-%m-%d')
+                    else:
+                        bill_date_str = str(bill_date).split(' ')[0]
+                    
+                    if bill_date_str == today:
+                        txn_type = record.get('txn_type', '')
+                        # 配额调整通常是 ADJUST 或 BALANCE_MODIFY 等类型
+                        if 'ADJUST' in txn_type.upper() or 'MODIFY' in txn_type.upper() or txn_type == 'CARD_RECHARGE':
+                            today_quota_adjust_count += 1
+        
         # 如果数据为空，添加测试数据（仅用于测试前端显示）
         if not cards or len(cards) == 0:
             # 添加测试数据，仅用于开发阶段
             print("未找到卡数据，使用测试数据")
+        
+        # 构建业务总览数据
+        business_overview = {
+            'total_input': round(total_input, 2),
+            'total_opening_fee': round(total_opening_fee, 2),
+            'total_card_balance': round(total_card_balance, 2),
+            'today_recharge_count': today_recharge_count,
+            'today_recharge_amount': round(today_recharge_amount, 2),
+            'today_quota_adjust_count': today_quota_adjust_count,
+            'today_recharge_list': today_recharge_list
+        }
+        
+        print(f"业务总览数据: {business_overview}")
                     
         # 将数据转换为JSON并返回给前端
-        return render_template('main/daily.html', cards=cards, balance_history=balance_history, card_transactions=card_transactions, wallet_transactions=wallet_transactions, wallet_balances=wallet_balances)
+        return render_template('main/daily.html', 
+                             cards=cards, 
+                             balance_history=balance_history, 
+                             card_transactions=card_transactions, 
+                             wallet_transactions=wallet_transactions, 
+                             wallet_balances=wallet_balances,
+                             business_overview=business_overview)
     except Exception as e:
         print(f"查询钱包数据时出错: {str(e)}")
+        import traceback
+        traceback.print_exc()
         # 返回空列表，避免模板渲染错误
-        return render_template('main/daily.html', cards=[], balance_history=[], card_transactions=[],wallet_transactions=[],wallet_balances=[])
+        return render_template('main/daily.html', 
+                             cards=[], 
+                             balance_history=[], 
+                             card_transactions=[],
+                             wallet_transactions=[],
+                             wallet_balances=[],
+                             business_overview={
+                                 'total_input': 0,
+                                 'total_opening_fee': 0,
+                                 'total_card_balance': 0,
+                                 'today_recharge_count': 0,
+                                 'today_recharge_amount': 0,
+                                 'today_quota_adjust_count': 0,
+                                 'today_recharge_list': []
+                             })
     
 @main_bp.route('/recharge')
 @login_required

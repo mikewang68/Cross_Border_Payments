@@ -75,7 +75,7 @@ layui.use(['form', 'laydate', 'table'], function(){
         layer.msg('数据加载失败，请刷新页面重试', {icon: 2});
     }
 
-    // 初始化表格
+    // 初始化异常交易表格
     var errorTransTable = table.render({
         elem: '#errorTransTable',
         data: [],
@@ -116,6 +116,87 @@ layui.use(['form', 'laydate', 'table'], function(){
             type: 'desc'
         }
     });
+
+    // 初始化今日钱包充值记录表格
+    var rechargeTable = table.render({
+        elem: '#rechargeTable',
+        data: [],
+        cols: [[
+            {field: 'transaction_time', title: '充值时间', width: 180, sort: true, templet: function(d){
+                return d.transaction_time ? new Date(d.transaction_time).toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                }) : '';
+            }},
+            {field: 'transaction_id', title: '交易ID', width: 250},
+            {field: 'amount_formatted', title: '充值金额', width: 150},
+            {field: 'after_balance_formatted', title: '充值后余额', width: 150},
+            {field: 'txn_type', title: '交易类型', width: 150},
+            {field: 'remark', title: '备注', minWidth: 200},
+            {field: 'version', title: '平台', width: 100}
+        ]],
+        page: true,
+        limit: 10,
+        limits: [10, 20, 50, 100],
+        text: {
+            none: '今日暂无充值记录'
+        },
+        initSort: {
+            field: 'transaction_time',
+            type: 'desc'
+        }
+    });
+
+    // 初始化今日充值记录数据
+    function loadTodayRechargeData() {
+        var today = new Date().toISOString().split('T')[0];
+        var todayRechargeList = walletTransactionsData.filter(function(trans) {
+            if (trans.txn_type === 'BALANCE_RECHARGE' || trans.txn_type === 'MANUAL') {
+                var transTime = trans.transaction_time || '';
+                if (transTime.startsWith(today)) {
+                    var amount = trans.amount || 0;
+                    return parseFloat(amount) > 0;
+                }
+            }
+            return false;
+        });
+
+        // 格式化数据
+        var formattedData = todayRechargeList.map(function(trans) {
+            return {
+                transaction_time: trans.transaction_time,
+                transaction_id: trans.transaction_id || '-',
+                amount_formatted: (parseFloat(trans.amount || 0).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })) + ' ' + (trans.amount_currency || 'USD'),
+                after_balance_formatted: (parseFloat(trans.after_balance_amount || 0).toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })) + ' ' + (trans.after_balance_currency || 'USD'),
+                txn_type: trans.txn_type || '-',
+                remark: trans.remark || '-',
+                version: trans.version || '-'
+            };
+        });
+
+        // 按时间倒序排序
+        formattedData.sort(function(a, b) {
+            return new Date(b.transaction_time) - new Date(a.transaction_time);
+        });
+
+        // 重新渲染表格
+        table.reload('rechargeTable', {
+            data: formattedData
+        });
+    }
+
+    // 页面加载时初始化今日充值记录
+    loadTodayRechargeData();
 
     // 将日期转换为YYYY-MM-DD格式，仅保留日期部分
     function formatDateToYYYYMMDD(dateStr) {

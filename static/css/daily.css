@@ -5,6 +5,154 @@
     box-sizing: border-box;
 }
 
+/* 区块标题样式 */
+.section-title {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #303133;
+    margin-bottom: 15px;
+}
+
+.section-title .layui-icon {
+    font-size: 22px;
+    margin-right: 8px;
+    color: #409EFF;
+}
+
+/* 业务总览区域样式 */
+.business-overview-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.overview-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.overview-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.overview-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.overview-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    margin-right: 15px;
+}
+
+.overview-icon .layui-icon {
+    font-size: 30px;
+    color: #fff;
+}
+
+.overview-content {
+    flex: 1;
+}
+
+.overview-label {
+    font-size: 14px;
+    color: #606266;
+    margin-bottom: 8px;
+}
+
+.overview-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #303133;
+}
+
+/* 今日统计区域样式 */
+.today-stats-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.today-stats-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.today-stat-card {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #fff 0%, #f9fafb 100%);
+    border-radius: 8px;
+    border-left: 4px solid #409EFF;
+    transition: all 0.3s ease;
+}
+
+.today-stat-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateX(5px);
+}
+
+.today-stat-card .stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #409EFF 0%, #1E9FFF 100%);
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.today-stat-card .stat-icon .layui-icon {
+    font-size: 24px;
+    color: #fff;
+}
+
+.today-stat-card .stat-info {
+    flex: 1;
+}
+
+.today-stat-card .stat-label {
+    font-size: 14px;
+    color: #606266;
+    margin-bottom: 5px;
+}
+
+.today-stat-card .stat-number {
+    font-size: 22px;
+    font-weight: bold;
+    color: #303133;
+}
+
+/* 钱包充值记录表格容器 */
+.recharge-table-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
 /* 筛选区域样式 */
 .filter-container {
     background-color: #fff;
@@ -356,6 +504,14 @@
     .top3-container {
         grid-template-columns: 1fr;
     }
+    
+    .overview-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .today-stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media screen and (max-width: 768px) {
@@ -380,11 +536,50 @@
         display: block;
         margin-bottom: 5px;
     }
+    
+    .overview-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .today-stats-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .overview-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .overview-icon .layui-icon {
+        font-size: 24px;
+    }
+    
+    .overview-value {
+        font-size: 20px;
+    }
 }
 
 @media screen and (max-width: 480px) {
     .stats-container {
         grid-template-columns: 1fr;
+    }
+    
+    .business-overview-container,
+    .today-stats-container,
+    .recharge-table-container {
+        padding: 15px;
+    }
+    
+    .section-title {
+        font-size: 16px;
+    }
+    
+    .overview-card {
+        padding: 15px;
+    }
+    
+    .today-stat-card {
+        padding: 12px 15px;
     }
 }
 

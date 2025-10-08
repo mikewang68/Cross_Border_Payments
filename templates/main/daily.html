@@ -1,5 +1,88 @@
 <!DOCTYPE html>
 <div class="daily-page">
+    <!-- 业务总览区域 -->
+    <div class="business-overview-container">
+        <div class="section-title">
+            <i class="layui-icon layui-icon-chart"></i>
+            <span>业务总览</span>
+        </div>
+        <div class="overview-cards">
+            <div class="overview-card">
+                <div class="overview-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <i class="layui-icon layui-icon-rmb"></i>
+                </div>
+                <div class="overview-content">
+                    <div class="overview-label">总投入金额</div>
+                    <div class="overview-value">{{ business_overview.total_input if business_overview else 0 }} USD</div>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="overview-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <i class="layui-icon layui-icon-template-1"></i>
+                </div>
+                <div class="overview-content">
+                    <div class="overview-label">总开卡费</div>
+                    <div class="overview-value">{{ business_overview.total_opening_fee if business_overview else 0 }} USD</div>
+                </div>
+            </div>
+            <div class="overview-card">
+                <div class="overview-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                    <i class="layui-icon layui-icon-diamond"></i>
+                </div>
+                <div class="overview-content">
+                    <div class="overview-label">各卡总余额</div>
+                    <div class="overview-value">{{ business_overview.total_card_balance if business_overview else 0 }} USD</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 今日统计区域 -->
+    <div class="today-stats-container">
+        <div class="section-title">
+            <i class="layui-icon layui-icon-date"></i>
+            <span>今日统计</span>
+        </div>
+        <div class="today-stats-cards">
+            <div class="today-stat-card">
+                <div class="stat-icon">
+                    <i class="layui-icon layui-icon-upload-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">今日充值次数</div>
+                    <div class="stat-number">{{ business_overview.today_recharge_count if business_overview else 0 }}</div>
+                </div>
+            </div>
+            <div class="today-stat-card">
+                <div class="stat-icon">
+                    <i class="layui-icon layui-icon-rmb"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">今日充值金额</div>
+                    <div class="stat-number">{{ business_overview.today_recharge_amount if business_overview else 0 }} USD</div>
+                </div>
+            </div>
+            <div class="today-stat-card">
+                <div class="stat-icon">
+                    <i class="layui-icon layui-icon-edit"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-label">今日配额调整</div>
+                    <div class="stat-number">{{ business_overview.today_quota_adjust_count if business_overview else 0 }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 钱包充值记录表格 -->
+    <div class="recharge-table-container">
+        <div class="section-title">
+            <i class="layui-icon layui-icon-list"></i>
+            <span>今日钱包充值记录</span>
+        </div>
+        <table id="rechargeTable" lay-filter="rechargeTable"></table>
+    </div>
+
     <!-- 筛选区域 -->
     <div class="filter-container">
         <form class="layui-form" lay-filter="dailyFilterForm">
