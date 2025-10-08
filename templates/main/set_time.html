@@ -1,0 +1,105 @@
+<div class="set-time-container">
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-card-header">更新时间设置</div>
+            <div class="layui-card-body">
+                <div class="layui-btn-container">
+                    <button id="refreshBtn" class="layui-btn layui-btn-primary">
+                        <i class="layui-icon">&#xe669;</i> 刷新
+                    </button>
+                </div>
+                
+                <table id="setTimeTable" lay-filter="setTimeTable"></table>
+                
+                <script type="text/html" id="tableToolbar">
+                    <div class="layui-btn-container">
+                        <button class="layui-btn layui-btn-xs" lay-event="edit">
+                            <i class="layui-icon">&#xe642;</i> 编辑
+                        </button>
+                    </div>
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑更新时间表单 -->
+    <div id="setTimeForm" style="display: none; padding: 20px;">
+        <form class="layui-form" lay-filter="timeForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">同步时间间隔</label>
+                <div class="layui-input-block">
+                    <input type="text" name="async_time" placeholder="请输入同步时间间隔（秒）" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">日报更新时间</label>
+                <div class="layui-input-block">
+                    <input type="text" name="daily_report" placeholder="请输入日报更新时间" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">日汇率起始</label>
+                <div class="layui-input-block">
+                    <input type="text" name="daily_start" placeholder="请输入日汇率起始时间" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">日汇率截止</label>
+                <div class="layui-input-block">
+                    <input type="text" name="daily_end" placeholder="请输入日汇率截止时间" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">周起始时间</label>
+                <div class="layui-input-block">
+                    <input type="text" name="weekly_start" placeholder="请选择周起始日期" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">周截止时间</label>
+                <div class="layui-input-block">
+                    <input type="text" name="weekly_end" placeholder="请选择周截止日期" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">月起始时间</label>
+                <div class="layui-input-block">
+                    <input type="text" name="monthly_start" placeholder="请选择月起始日期" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">月截止时间</label>
+                <div class="layui-input-block">
+                    <input type="text" name="monthly_end" placeholder="请选择月截止日期" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">起始年份</label>
+                <div class="layui-input-block">
+                    <input type="text" name="annual_start" placeholder="请输入起始年份" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">截止年份</label>
+                <div class="layui-input-block">
+                    <input type="text" name="annual_end" placeholder="请输入截止年份" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">平台名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="version" placeholder="请输入平台名" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="submitTime">提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/static/css/set_time.css">
+<script src="/static/js/set_time.js"></script> 

@@ -1,0 +1,92 @@
+.layui-container {
+    padding: 20px;
+    max-width: 100%;
+}
+
+h3 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 15px 0;
+    color: #1E9FFF;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.card-info {
+    background-color: #f8f8f8;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.layui-form-label {
+    width: 90px;
+}
+
+.layui-input-block {
+    margin-left: 120px;
+}
+
+.layui-form-item {
+    margin-bottom: 15px;
+}
+
+.layui-input[readonly] {
+    background-color: #f9f9f9;
+    cursor: not-allowed;
+}
+
+.input-error {
+    border-color: #FF5722 !important;
+}
+
+#currency_label {
+    position: absolute;
+    right: 10px;
+    top: 9px;
+    color: #999;
+}
+
+.account-balance-info {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 13px;
+}
+
+#account_balance_label {
+    color: #009688;
+}
+
+#platform_balance_label {
+    color: #1E9FFF;
+    margin-top: 8px;
+}
+
+.layui-btn {
+    background-color: #1E9FFF;
+}
+
+.layui-btn-primary {
+    background-color: #fff;
+    color: #666;
+    border: 1px solid #e6e6e6;
+}
+
+/* 适配iframe内部布局 */
+body {
+    padding: 0;
+    margin: 0;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 500px) {
+    .layui-form-label {
+        width: 70px;
+    }
+    
+    .layui-input-block {
+        margin-left: 100px;
+    }
+}

@@ -1,0 +1,60 @@
+body {
+    background-color: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.login-box {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    padding: 30px;
+}
+
+.login-title {
+    text-align: center;
+    color: #009688;
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+.error-msg {
+    color: #FF5722;
+    padding: 10px;
+    margin-bottom: 15px;
+    background-color: #FFEBE5;
+    border-radius: 2px;
+    text-align: center;
+}
+
+.layui-form-label {
+    width: 60px;
+}
+
+.layui-input-block {
+    margin-left: 90px;
+}
+
+.login-btn-container {
+    margin-top: 20px;
+}
+
+/* 为了与主题色保持一致 */
+.layui-btn-normal {
+    background-color: #009688;
+}
+
+.layui-btn-normal:hover {
+    background-color: #008676;
+} 

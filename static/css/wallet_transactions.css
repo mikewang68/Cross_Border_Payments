@@ -1,0 +1,554 @@
+.wallet-transactions-page {
+    padding: 15px;
+    background-color: #fff;
+    height: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.wallet-transactions-page .search-container {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.wallet-transactions-page .search-container .search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.wallet-transactions-page .search-container .search-item {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.wallet-transactions-page .search-container .search-item .layui-form-label {
+    width: auto;
+    padding: 9px 0;
+}
+
+.wallet-transactions-page .search-container .search-item .layui-input-block {
+    margin-left: 0;
+}
+
+.wallet-transactions-page .search-container .search-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.wallet-transactions-page .table-container {
+    flex: 1;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: auto;
+}
+
+.wallet-transactions-page .table-container .layui-table {
+    margin: 0;
+}
+
+.wallet-transactions-page .table-container .layui-table thead tr {
+    background-color: #f8f8f8;
+}
+
+.wallet-transactions-page .table-container .layui-table th {
+    font-weight: bold;
+    color: #333;
+    background-color: #f8f8f8;
+    padding: 12px 15px;
+}
+
+.wallet-transactions-page .table-container .layui-table td {
+    padding: 12px 15px;
+}
+
+.wallet-transactions-page .table-container .layui-table tbody tr:hover {
+    background-color: #f5f7fa;
+}
+
+/* 金额列样式 */
+.wallet-transactions-page .table-container .layui-table td.amount-column {
+    text-align: right;
+    font-family: Monaco, Consolas, monospace;
+}
+
+/* 收入金额显示为绿色 */
+.wallet-transactions-page .table-container .layui-table td.amount-column.income {
+    color: #67C23A;
+}
+
+/* 支出金额显示为红色 */
+.wallet-transactions-page .table-container .layui-table td.amount-column.expense {
+    color: #F56C6C;
+}
+
+/* 时间列样式 */
+.wallet-transactions-page .table-container .layui-table td.time-column {
+    white-space: nowrap;
+    font-family: Monaco, Consolas, monospace;
+}
+
+/* 状态列样式 */
+.wallet-transactions-page .table-container .layui-table td.status-column {
+    white-space: nowrap;
+}
+
+/* 平台列样式 */
+.wallet-transactions-page .table-container .layui-table td.platform-column {
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* 备注列样式 */
+.wallet-transactions-page .table-container .layui-table td.remark-column {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 分页样式 */
+.wallet-transactions-page .layui-table-page {
+    margin: 15px 0 0;
+    text-align: right;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+    .wallet-transactions-page .search-container .search-item {
+        min-width: 100%;
+    }
+    
+    .wallet-transactions-page .table-container {
+        padding: 10px;
+    }
+    
+    .wallet-transactions-page .table-container .layui-table th,
+    .wallet-transactions-page .table-container .layui-table td {
+        padding: 10px;
+    }
+}
+
+/* 弹窗样式优化 */
+.wallet-transactions-page .layui-layer {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 隐藏最大化和最小化按钮 */
+.wallet-transactions-page .layui-layer-max,
+.wallet-transactions-page .layui-layer-min {
+    display: none !important;
+}
+
+/* 弹窗标题栏样式 */
+.wallet-transactions-page .layui-layer-title {
+    background-color: #f8f8f8;
+    border-radius: 8px 8px 0 0;
+    border-bottom: 1px solid #eee;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    height: auto;
+    line-height: 1.4;
+    cursor: default !important;
+    user-select: none;
+}
+
+/* 弹窗内容区域样式 */
+.wallet-transactions-page .layui-layer-content {
+    padding: 20px;
+    max-height: calc(90vh - 56px) !important;
+    overflow: auto !important;
+}
+
+/* 钱包信息卡片样式 */
+.wallet-info-card {
+    background: linear-gradient(135deg, #1E9FFF 0%, #0C2461 100%);
+    border-radius: 16px;
+    padding: 25px;
+    color: white;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 背景装饰效果 */
+.wallet-info-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    transform: translate(30%, -30%);
+    pointer-events: none;
+}
+
+.wallet-info-card .wallet-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.wallet-info-card .wallet-header .currency-icon {
+    width: 48px;
+    height: 48px;
+    margin-right: 16px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.wallet-info-card .wallet-header .currency-icon:hover {
+    transform: scale(1.05);
+}
+
+.wallet-info-card .wallet-header .currency-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.wallet-info-card .wallet-header .currency-info {
+    flex: 1;
+}
+
+.wallet-info-card .wallet-header .currency-code {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
+.wallet-info-card .wallet-header .currency-name {
+    font-size: 15px;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+.wallet-info-card .balance-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+}
+
+.wallet-info-card .balance-item {
+    position: relative;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.wallet-info-card .balance-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-info-card .balance-label {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+    font-weight: 400;
+}
+
+.wallet-info-card .balance-value {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+}
+
+.wallet-info-card .balance-currency {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-left: 4px;
+}
+
+/* 响应式优化 */
+@media screen and (max-width: 768px) {
+    .wallet-info-card {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .wallet-info-card .wallet-header .currency-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .wallet-info-card .wallet-header .currency-icon img {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .wallet-info-card .wallet-header .currency-code {
+        font-size: 24px;
+    }
+    
+    .wallet-info-card .balance-info {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .wallet-info-card .balance-item {
+        padding: 12px;
+    }
+    
+    .wallet-info-card .balance-value {
+        font-size: 20px;
+    }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wallet-info-card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.wallet-info-card .balance-item {
+    animation: fadeIn 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.wallet-info-card .balance-item:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.wallet-info-card .balance-item:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.wallet-info-card .balance-item:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+/* 搜索区域样式优化 */
+.search-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.search-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    align-items: end;
+}
+
+.search-item {
+    position: relative;
+}
+
+.search-item .layui-form-label {
+    font-size: 14px;
+    color: #666;
+    padding: 9px 0;
+    width: auto;
+}
+
+.search-item .layui-input-block {
+    margin-left: 0;
+}
+
+.search-item .layui-input,
+.search-item .layui-select {
+    height: 36px;
+    line-height: 36px;
+    border-radius: 4px;
+    border: 1px solid #e2e2e2;
+    transition: all 0.3s;
+}
+
+.search-item .layui-input:hover,
+.search-item .layui-select:hover {
+    border-color: #1E9FFF;
+}
+
+.search-item .layui-input:focus,
+.search-item .layui-select:focus {
+    border-color: #1E9FFF;
+    box-shadow: 0 0 0 2px rgba(30, 159, 255, 0.1);
+}
+
+.search-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.search-buttons .layui-btn {
+    height: 36px;
+    line-height: 36px;
+    padding: 0 20px;
+    border-radius: 4px;
+    transition: all 0.3s;
+}
+
+.search-buttons .layui-btn-primary {
+    border: 1px solid #ddd;
+}
+
+.search-buttons .layui-btn-primary:hover {
+    border-color: #1E9FFF;
+    color: #1E9FFF;
+}
+
+/* 表格样式优化 */
+.table-container {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-container .layui-table {
+    margin: 0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.table-container .layui-table thead tr {
+    background-color: #fafafa;
+}
+
+.table-container .layui-table th {
+    font-weight: 500;
+    color: #333;
+    background-color: #fafafa;
+    padding: 12px 15px;
+    border-bottom: 2px solid #f2f2f2;
+}
+
+.table-container .layui-table td {
+    padding: 12px 15px;
+    transition: all 0.3s;
+}
+
+.table-container .layui-table tbody tr:hover {
+    background-color: #f5f7fa;
+}
+
+/* 金额列样式优化 */
+.table-container .layui-table td.amount-column {
+    text-align: right;
+    font-family: 'Roboto Mono', Monaco, Consolas, monospace;
+    font-weight: 500;
+}
+
+.table-container .layui-table td.amount-column.income {
+    color: #67C23A;
+}
+
+.table-container .layui-table td.amount-column.expense {
+    color: #F56C6C;
+}
+
+/* 分页样式优化 */
+.layui-table-page {
+    margin: 20px 0 0;
+    padding: 0;
+    text-align: right;
+}
+
+.layui-table-page .layui-laypage a,
+.layui-table-page .layui-laypage span {
+    border-radius: 4px;
+    margin: 0 3px;
+}
+
+.layui-table-page .layui-laypage input {
+    border-radius: 4px;
+}
+
+/* 美化滚动条 */
+.wallet-transactions-page .layui-layer-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.wallet-transactions-page .layui-layer-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.wallet-transactions-page .layui-layer-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+/* 响应式优化 */
+@media screen and (max-width: 768px) {
+    .wallet-info-card {
+        padding: 15px;
+    }
+    
+    .wallet-info-card .wallet-header .currency-code {
+        font-size: 20px;
+    }
+    
+    .wallet-info-card .balance-value {
+        font-size: 16px;
+    }
+    
+    .search-form {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-buttons {
+        flex-direction: column;
+    }
+    
+    .search-buttons .layui-btn {
+        width: 100%;
+    }
+    
+    .table-container {
+        padding: 10px;
+    }
+} 

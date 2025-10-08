@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<div class="daily-page">
+    <!-- 筛选区域 -->
+    <div class="filter-container">
+        <form class="layui-form" lay-filter="dailyFilterForm">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label class="layui-form-label">日期</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" id="dateFilter" placeholder="选择日期">
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="layui-form-label">时间段</label>
+                    <div class="layui-input-block">
+                        <input type="text" class="layui-input" id="dateRangeFilter" placeholder="选择时间段">
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <label class="layui-form-label">平台</label>
+                    <div class="layui-input-block">
+                        <select name="platform" lay-filter="platformSelect">
+                            <option value="">全部平台</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <button type="button" class="layui-btn" lay-filter="filterSubmit">查询</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 统计卡片区域 -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-title">开卡数</div>
+            <div class="stat-value" id="cardCount">--</div>
+            <div class="stat-trend">
+                <span id="cardTrend">--</span>
+                <i class="layui-icon"></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">消费总额</div>
+            <div class="stat-value" id="totalAmount">--</div>
+            <div class="stat-trend">
+                <span id="amountTrend">--</span>
+                <i class="layui-icon"></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">钱包消费总笔数</div>
+            <div class="stat-value" id="walletTransCount">--</div>
+            <div class="stat-trend">
+                <span id="walletTransTrend">--</span>
+                <i class="layui-icon"></i>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-title">卡消费总笔数</div>
+            <div class="stat-value" id="cardTransCount">--</div>
+            <div class="stat-trend">
+                <span id="cardTransTrend">--</span>
+                <i class="layui-icon"></i>
+            </div>
+        </div>
+        <div class="stat-card warning">
+            <div class="stat-title">异常交易数</div>
+            <div class="stat-value" id="errorCount">--</div>
+            <div class="stat-label">警告</div>
+        </div>
+    </div>
+
+    <!-- 异常交易表格 -->
+    <div class="table-container">
+        <div class="table-header">
+            <div class="table-title">异常交易列表</div>
+            <div class="table-desc">
+                <span class="desc-item"><i class="layui-icon layui-icon-about"></i> 说明：</span>
+                <span class="desc-item"><span class="status-failed">失败</span>: 交易失败的记录</span>
+                <span class="desc-item"><span class="status-void">作废</span>: 已作废的交易</span>
+            </div>
+        </div>
+        <table id="errorTransTable" lay-filter="errorTransTable"></table>
+    </div>
+
+    <!-- TOP3统计区域 -->
+    <div class="top3-container">
+        <div class="top3-card">
+            <div class="top3-header">
+                <i class="layui-icon layui-icon-chart"></i>
+                <span>消费次数TOP3</span>
+            </div>
+            <div class="top3-content" id="countTop3">
+                <div class="top3-item">
+                    <div class="rank">1</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+                <div class="top3-item">
+                    <div class="rank">2</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+                <div class="top3-item">
+                    <div class="rank">3</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="top3-card warning">
+            <div class="top3-header">
+                <i class="layui-icon layui-icon-about"></i>
+                <span>异常交易TOP3</span>
+            </div>
+            <div class="top3-content" id="errorTop3">
+                <div class="top3-item">
+                    <div class="rank">1</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+                <div class="top3-item">
+                    <div class="rank">2</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+                <div class="top3-item">
+                    <div class="rank">3</div>
+                    <div class="info">
+                        <div class="card-number">--</div>
+                        <div class="count">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 将数据传递给JavaScript -->
+<script id="cards-data" type="application/json">
+    {{ cards|tojson|safe }}
+</script>
+<script id="wallet-data" type="application/json">
+    {{ wallet_balances|tojson|safe }}
+</script>
+<script id="balance-history-data" type="application/json">
+    {{ balance_history|tojson|safe }}
+</script>
+<script id="card-transactions-data" type="application/json">
+    {{ card_transactions|tojson|safe }}
+</script>
+<script id="wallet-transactions-data" type="application/json">
+    {{ wallet_transactions|tojson|safe }}
+</script>
+
+<!-- 引入相关CSS和JS文件 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/daily.css') }}">
+<script src="{{ url_for('static', filename='js/daily.js') }}"></script>

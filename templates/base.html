@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>UCard管理系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <!-- 头部区域 -->
+        <div class="layui-header">
+            <div class="layui-logo">UCard管理系统</div>
+            <!-- 头部右侧 -->
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="javascript:;">
+                        <i class="layui-icon layui-icon-user"></i>
+                        {{ user_account }}
+                    </a>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="{{ url_for('auth.logout') }}">退出</a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- 左侧导航区域 -->
+        <div class="layui-side layui-bg-green">
+            <div class="layui-side-scroll">
+                <ul class="layui-nav layui-nav-tree layui-bg-green" lay-filter="test">
+                    <!-- 账户 -->
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">账户</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="wallet_balance" data-title="钱包">钱包</a></dd>
+                        </dl>
+                    </li>
+                    <!-- 企业用户 -->
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">企业用户</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="recharge" data-title="充值">充值</a></dd>
+                        </dl>
+                    </li>
+                    <!-- 工资&付款 -->
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">工资&付款</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="payees" data-title="收款人">收款人</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="payers" data-title="付款人">付款人</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="remittance" data-title="付款">付款</a></dd>
+                        </dl>
+                    </li>
+                    <!-- 吉薪卡 -->
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">吉薪卡</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="card_users" data-title="用卡人">用卡人</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="transactions" data-title="交易明细">交易明细</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="balance_history" data-title="额度">额度</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="cards" data-title="所有卡">所有卡</a></dd>
+
+                        </dl>
+                    </li>
+                    <!-- 统计分析 -->
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">统计分析</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="daily" data-title="日报">日报</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="weekly" data-title="周报">周报</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="monthly" data-title="月报">月报</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="yearly" data-title="年报">年报</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="anomaly" data-title="异常">异常</a></dd>
+                        </dl>
+                    </li>
+                    <!-- 系统维护 -->
+                    <li class="layui-nav-item">
+                        <a href="javascript:;">系统维护</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="wallet_manage" data-title="钱包管理">钱包管理</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="local_settings" data-title="本地设置">本地设置</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="country_settings" data-title="国家设置">国家设置</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="update_time" data-title="更新时间">更新时间</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="add_system" data-title="添加平台">添加平台</a></dd>
+                            <dd><a href="javascript:;" data-type="tabAdd" data-tab="change_password" data-title="密码修改">密码修改</a></dd>
+                        </dl>
+                    </li>
+                    <!-- 汇率报价 -->
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" data-type="tabAdd" data-tab="exchange_usdt" data-title="汇率报价">汇率报价</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 内容主体区域 -->
+        <div class="layui-body">
+            <!-- 选项卡 -->
+            <div class="layui-tab" lay-filter="main-tab" lay-allowclose="true">
+                <ul class="layui-tab-title">
+                    <li class="layui-this" lay-id="home">首页</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <div class="welcome-container">
+                            <h1>欢迎使用UCard管理系统</h1>
+                            <p>请从左侧菜单选择功能</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部固定区域 -->
+        <div class="layui-footer">
+            © UCard管理系统
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html> 
