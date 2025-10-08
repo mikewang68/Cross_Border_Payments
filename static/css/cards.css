@@ -93,6 +93,41 @@
     letter-spacing: 0.5px;
 }
 
+/* 卡片类型标签样式 */
+.cards-page .list-card .card-type-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* 内部卡样式 */
+.cards-page .list-card.internal-card {
+    border: 2px solid #4CAF50;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+}
+
+.cards-page .list-card.internal-card .card-type-label {
+    background: linear-gradient(135deg, #66BB6A, #4CAF50);
+    color: #fff;
+}
+
+/* 外部卡样式 */
+.cards-page .list-card.external-card {
+    border: 2px solid #2196F3;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+}
+
+.cards-page .list-card.external-card .card-type-label {
+    background: linear-gradient(135deg, #42A5F5, #2196F3);
+    color: #fff;
+}
+
 /* 限额信息样式 */
 .cards-page .limit-info {
     display: flex;

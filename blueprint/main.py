@@ -512,7 +512,7 @@ def api_wallet_data():
 def cards():
     try: 
         # 查询所有卡数据
-        cards_all_info = query_all_from_table('cards_all_info')
+        cards_all_info = query_all_from_table('cards_info')
         card_holders = query_all_from_table('card_holder')
         wallet_balance = query_all_from_table('wallet_balance')
         transform_wallet_balance = wallet_balance_transform(wallet_balance)

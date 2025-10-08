@@ -97,6 +97,20 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                     });
                 }
                 
+                // 按卡片类型筛选（内部卡/外部卡）
+                if (formData.card_type && formData.card_type !== '') {
+                    filteredData = filteredData.filter(function(item) {
+                        var internal = isInternalCard(item.mask_card_number);
+                        
+                        if (formData.card_type === 'internal') {
+                            return internal;
+                        } else if (formData.card_type === 'external') {
+                            return !internal;
+                        }
+                        return true;
+                    });
+                }
+                
                 // 重载表格，使用筛选后的数据
                 table.reload('cards-table', {
                     data: filteredData,
@@ -114,6 +128,13 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                 
                 return false;  // 阻止表单默认提交
             });
+        }
+
+        // 判断是否为内部卡的工具函数
+        function isInternalCard(cardNumber) {
+            if (!cardNumber) return false;
+            var lastFour = String(cardNumber).slice(-4);
+            return ['0880', '5095', '1475', '8144'].indexOf(lastFour) !== -1;
         }
 
         function formatTime(timeStr) {
@@ -171,11 +192,18 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                             var currency = d.card_currency || 'USD';
                             var cardNumber = d.mask_card_number || '5258********9110';
                             var cardName = d.card_name || '--';
+                            
+                            // 判断是否为内部卡
+                            var internal = isInternalCard(cardNumber);
+                            var cardTypeClass = internal ? 'internal-card' : 'external-card';
+                            var cardTypeLabel = internal ? '内部' : '外部';
+                            
                             // 生成卡片模板，模仿图片样式
-                            return '<div class="list-card">' +
+                            return '<div class="list-card ' + cardTypeClass + '">' +
                                    '<span class="card-number">' + cardNumber + '</span>' +
                                    '<span class="card-name">' + cardName + '</span>' +
                                    '<div class="card-currency">' + currency + '</div>' +
+                                   '<div class="card-type-label">' + cardTypeLabel + '</div>' +
                                    '</div>';
                         }
                     },
@@ -341,11 +369,15 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
 
             // 计算剩余有效期
             var remainingMonths = calculateRemainingMonths(data.expire_year, data.expire_month);
+            
+            // 判断卡片类型
+            var internal = isInternalCard(data.mask_card_number);
+            var cardTypeText = internal ? '<span style="color: #4CAF50; font-weight: bold;">内部卡</span>' : '<span style="color: #2196F3; font-weight: bold;">外部卡</span>';
 
             layer.open({
                 type: 1,
                 title: '卡片详情',
-                area: ['600px', '550px'],
+                area: ['600px', '580px'],
                 content: `
                     <div class="layui-card">
                         <div class="layui-card-body">
@@ -356,6 +388,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 </colgroup>
                                 <tbody>
                                     <tr><td>卡号</td><td>${data.mask_card_number || '--'}</td></tr>
+                                    <tr><td>卡片类型</td><td>${cardTypeText}</td></tr>
                                     <tr><td>卡ID</td><td>${data.card_id || '--'}</td></tr>
                                     <tr><td>姓名</td><td>${data.first_name || ''} ${data.last_name || ''}</td></tr>
                                     <tr><td>卡昵称</td><td>${data.card_name || '--'}</td></tr>
