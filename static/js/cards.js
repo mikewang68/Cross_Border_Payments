@@ -374,13 +374,28 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
             var internal = isInternalCard(data.mask_card_number);
             var cardTypeText = internal ? '<span style="color: #4CAF50; font-weight: bold;">内部卡</span>' : '<span style="color: #2196F3; font-weight: bold;">外部卡</span>';
 
+            // 格式化管理信息显示
+            var supplementChannelText = data.supplement_channel || '--';
+            var contactPersonText = data.contact_person || '--';
+            var activationStatusText = data.is_activated ? '<span style="color: #67C23A; font-weight: bold;">已激活</span>' : '<span style="color: #F56C6C; font-weight: bold;">未激活</span>';
+            var bindStatusText = data.is_bound ? '<span style="color: #67C23A; font-weight: bold;">已绑定</span>' : '<span style="color: #F56C6C; font-weight: bold;">未绑定</span>';
+            var issueNotesText = data.issue_notes || '--';
+            var endorsementText = data.endorsement || '--';
+
             layer.open({
                 type: 1,
                 title: '卡片详情',
-                area: ['600px', '580px'],
+                area: ['700px', '750px'],
                 content: `
                     <div class="layui-card">
                         <div class="layui-card-body">
+                            <div class="layui-tab layui-tab-brief" lay-filter="cardDetailTab">
+                                <ul class="layui-tab-title">
+                                    <li class="layui-this">基本信息</li>
+                                    <li>管理信息</li>
+                                </ul>
+                                <div class="layui-tab-content">
+                                    <div class="layui-tab-item layui-show">
                             <table class="layui-table">
                                 <colgroup>
                                     <col width="30%">
@@ -388,7 +403,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 </colgroup>
                                 <tbody>
                                     <tr><td>卡号</td><td>${data.mask_card_number || '--'}</td></tr>
-                                    <tr><td>卡片类型</td><td>${cardTypeText}</td></tr>
+                                                <tr><td>卡片类型</td><td>${cardTypeText}</td></tr>
                                     <tr><td>卡ID</td><td>${data.card_id || '--'}</td></tr>
                                     <tr><td>姓名</td><td>${data.first_name || ''} ${data.last_name || ''}</td></tr>
                                     <tr><td>卡昵称</td><td>${data.card_name || '--'}</td></tr>
@@ -406,7 +421,186 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 </tbody>
                             </table>
                         </div>
-                    </div>`
+                                    <div class="layui-tab-item">
+                                        <table class="layui-table">
+                                            <colgroup>
+                                                <col width="30%">
+                                                <col width="70%">
+                                            </colgroup>
+                                            <tbody>
+                                                <tr><td>补充渠道</td><td>${supplementChannelText}</td></tr>
+                                                <tr><td>联系人</td><td>${contactPersonText}</td></tr>
+                                                <tr><td>激活状态</td><td>${activationStatusText}</td></tr>
+                                                <tr><td>绑定状态</td><td>${bindStatusText}</td></tr>
+                                                <tr><td>背书</td><td>${endorsementText}</td></tr>
+                                                <tr><td>问题备注</td><td style="word-break: break-all; white-space: pre-wrap;">${issueNotesText}</td></tr>
+                                                <tr><td>更新时间</td><td>${formatTime(data.management_update_time)}</td></tr>
+                                            </tbody>
+                                        </table>
+                                        <div style="text-align: center; margin-top: 20px;">
+                                            <button class="layui-btn layui-btn-normal" id="editManagementBtn" data-card-id="${data.card_id}">
+                                                <i class="layui-icon layui-icon-edit"></i> 编辑管理信息
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`,
+                success: function(layero, index) {
+                    // 重新渲染tab组件
+                    layui.element.render('tab');
+                    
+                    // 绑定编辑按钮事件
+                    $('#editManagementBtn').on('click', function() {
+                        var cardId = $(this).data('card-id');
+                        showEditManagementForm(data, index);
+                    });
+                }
+            });
+        }
+
+        // 显示编辑管理信息表单
+        function showEditManagementForm(cardData, parentIndex) {
+            var supplementChannelOptions = [
+                '<option value="">请选择补充渠道</option>',
+                '<option value="official">官方渠道</option>',
+                '<option value="agent">代理商</option>',
+                '<option value="direct">直销</option>',
+                '<option value="partner">合作伙伴</option>',
+                '<option value="online">线上渠道</option>',
+                '<option value="offline">线下渠道</option>',
+                '<option value="other">其他</option>'
+            ].join('');
+
+            // 设置当前选中的渠道
+            if (cardData.supplement_channel) {
+                supplementChannelOptions = supplementChannelOptions.replace(
+                    `value="${cardData.supplement_channel}"`,
+                    `value="${cardData.supplement_channel}" selected`
+                );
+            }
+
+            layer.open({
+                type: 1,
+                title: '编辑管理信息',
+                area: ['600px', '650px'],
+                content: `
+                    <div class="layui-card">
+                        <div class="layui-card-body" style="padding: 20px;">
+                            <form class="layui-form" id="managementForm" lay-filter="managementForm">
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">补充渠道</label>
+                                    <div class="layui-input-block">
+                                        <select name="supplement_channel" lay-verify="">
+                                            ${supplementChannelOptions}
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">联系人</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="contact_person" placeholder="请输入联系人" 
+                                               value="${cardData.contact_person || ''}" class="layui-input">
+                                    </div>
+                                </div>
+                                
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">激活状态</label>
+                                    <div class="layui-input-block">
+                                        <input type="checkbox" name="is_activated" lay-skin="switch" 
+                                               lay-text="已激活|未激活" ${cardData.is_activated ? 'checked' : ''}>
+                                    </div>
+                                </div>
+                                
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">绑定状态</label>
+                                    <div class="layui-input-block">
+                                        <input type="checkbox" name="is_bound" lay-skin="switch" 
+                                               lay-text="已绑定|未绑定" ${cardData.is_bound ? 'checked' : ''}>
+                                    </div>
+                                </div>
+                                
+                                <div class="layui-form-item">
+                                    <label class="layui-form-label">背书</label>
+                                    <div class="layui-input-block">
+                                        <input type="text" name="endorsement" placeholder="请输入背书信息" 
+                                               value="${cardData.endorsement || ''}" class="layui-input">
+                                    </div>
+                                </div>
+                                
+                                <div class="layui-form-item layui-form-text">
+                                    <label class="layui-form-label">问题备注</label>
+                                    <div class="layui-input-block">
+                                        <textarea name="issue_notes" placeholder="请输入问题备注" 
+                                                  class="layui-textarea" rows="4">${cardData.issue_notes || ''}</textarea>
+                                    </div>
+                                </div>
+                                
+                                <div class="layui-form-item" style="text-align: center; margin-top: 30px;">
+                                    <button class="layui-btn" lay-submit lay-filter="submitManagement">
+                                        <i class="layui-icon layui-icon-ok"></i> 保存
+                                    </button>
+                                    <button type="button" class="layui-btn layui-btn-primary" id="cancelManagementBtn">
+                                        <i class="layui-icon layui-icon-close"></i> 取消
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>`,
+                success: function(layero, index) {
+                    // 重新渲染表单
+                    form.render();
+                    
+                    // 取消按钮事件
+                    $('#cancelManagementBtn').on('click', function() {
+                        layer.close(index);
+                    });
+                    
+                    // 表单提交事件
+                    form.on('submit(submitManagement)', function(formData) {
+                        var submitData = {
+                            card_id: cardData.card_id,
+                            supplement_channel: formData.field.supplement_channel,
+                            contact_person: formData.field.contact_person,
+                            is_activated: formData.field.is_activated === 'on',
+                            is_bound: formData.field.is_bound === 'on',
+                            issue_notes: formData.field.issue_notes,
+                            endorsement: formData.field.endorsement
+                        };
+                        
+                        // 显示加载中
+                        var loadIndex = layer.load(2);
+                        
+                        // 发送请求到后端
+                        $.ajax({
+                            url: '/cards/update_management_info',
+                            type: 'PUT',
+                            contentType: 'application/json',
+                            data: JSON.stringify(submitData),
+                            success: function(res) {
+                                layer.close(loadIndex);
+                                if (res.code === 0) {
+                                    layer.msg('管理信息更新成功', {icon: 1, time: 2000}, function() {
+                                        layer.close(index); // 关闭编辑窗口
+                                        layer.close(parentIndex); // 关闭详情窗口
+                                        // 重新加载表格数据
+                                        table.reload('cards-table');
+                                    });
+                                } else {
+                                    layer.msg(res.msg || '管理信息更新失败', {icon: 2});
+                                }
+                            },
+                            error: function(xhr, status, error) {
+                                layer.close(loadIndex);
+                                layer.msg('服务器错误，请稍后重试: ' + error, {icon: 2});
+                            }
+                        });
+                        
+                        return false; // 阻止表单默认提交
+                    });
+                }
             });
         }
 
