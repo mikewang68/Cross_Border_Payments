@@ -98,12 +98,12 @@
             {% raw %}
                 <div class="layui-table-col-special">
                     <div class="card-operations">
-                        {{# if(d.cards_status === 'CANCELLED'){ }}
+                        {{# if(d.status === 'CANCELLED'){ }}
                         <!-- 销卡状态只显示详情按钮 -->
                         <div class="operation-row">
                             <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
                         </div>
-                        {{# } else if(d.cards_status === 'FROZEN'){ }}
+                        {{# } else if(d.status === 'FROZEN'){ }}
                         <!-- 冻结状态显示详情、解冻、销卡按钮 -->
                         <div class="operation-row">
                             <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
@@ -114,7 +114,7 @@
                         <!-- <div class="operation-row">
                             <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="cancel">销卡</a>
                         </div> -->
-                        {{# } else if(d.cards_status === 'ACTIVE'){ }}
+                        {{# } else if(d.status === 'ACTIVE'){ }}
                         <!-- 冻结状态显示详情、解冻、销卡按钮 -->
                         <div class="operation-row">
                             <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>

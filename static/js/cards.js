@@ -259,7 +259,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         width: 80,
                         align: 'center',
                         templet: function(d){
-                            var status = d.cards_status || 'INACTIVE';
+                            var status = d.status || 'INACTIVE';
                             if (status === 'ACTIVE') {
                                 return '<span class="layui-badge layui-bg-green">激活</span>';
                             } else if (status === 'FROZEN') {
