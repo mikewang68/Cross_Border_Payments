@@ -47,7 +47,7 @@ var PinSecurity = {
                             <label class="layui-form-label">PIN码</label>
                             <div class="layui-input-block">
                                 <input type="password" id="pinInput" placeholder="请输入6位数字PIN码" 
-                                       maxlength="6" class="layui-input pin-input" autocomplete="off">
+                                       maxlength="6" class="layui-input pin-input" autocomplete="off" value="666666">
                             </div>
                         </div>
                         
@@ -55,7 +55,7 @@ var PinSecurity = {
                             <label class="layui-form-label">确认PIN码</label>
                             <div class="layui-input-block">
                                 <input type="password" id="confirmPinInput" placeholder="请再次输入PIN码" 
-                                       maxlength="6" class="layui-input pin-input" autocomplete="off">
+                                       maxlength="6" class="layui-input pin-input" autocomplete="off" value="666666">
                             </div>
                         </div>
                         
@@ -178,6 +178,12 @@ var PinSecurity = {
                                 <i class="layui-icon layui-icon-close"></i> 取消
                             </button>
                         </div>
+                        
+                        <div style="text-align: center; margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                            <a href="javascript:void(0)" id="resetPinLink" style="color: #999; font-size: 12px;">
+                                <i class="layui-icon layui-icon-refresh"></i> 忘记PIN码？点击重置
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <style>
@@ -205,6 +211,16 @@ var PinSecurity = {
                 $('#cancelVerifyBtn').on('click', function() {
                     layer.close(index);
                     if (callback) callback('用户取消操作', false);
+                });
+
+                // 重置PIN码链接
+                $('#resetPinLink').on('click', function() {
+                    layer.close(index);
+                    PinSecurity.showResetPinDialog(function(resetError, resetSuccess) {
+                        if (resetSuccess) {
+                            layer.msg('PIN码已重置，请重新设置', {icon: 1});
+                        }
+                    });
                 });
 
                 // 验证PIN码按钮
@@ -248,6 +264,97 @@ var PinSecurity = {
 
                 // 聚焦到输入框
                 $('#verifyPinInput').focus();
+            }
+        });
+    },
+
+    // 显示PIN重置弹窗
+    showResetPinDialog: function(callback) {
+        layer.open({
+            type: 1,
+            title: '重置安全PIN码',
+            area: ['450px', '300px'],
+            content: `
+                <div class="pin-reset-container" style="padding: 20px;">
+                    <div class="layui-form">
+                        <div class="reset-info" style="margin-bottom: 20px; padding: 15px; background: #fff2e8; border-radius: 4px; border-left: 4px solid #fa8c16;">
+                            <div style="color: #fa8c16; font-weight: bold; margin-bottom: 8px;">
+                                <i class="layui-icon layui-icon-about"></i> 重置提示
+                            </div>
+                            <div style="color: #666; font-size: 13px; line-height: 1.5;">
+                                • 重置PIN码需要验证当前登录密码<br>
+                                • 重置后需要重新设置新的PIN码<br>
+                                • 重置会清除失败次数和锁定状态
+                            </div>
+                        </div>
+                        
+                        <div class="layui-form-item">
+                            <label class="layui-form-label">当前密码</label>
+                            <div class="layui-input-block">
+                                <input type="password" id="currentPasswordInput" placeholder="请输入当前登录密码" 
+                                       class="layui-input" autocomplete="off">
+                            </div>
+                        </div>
+                        
+                        <div class="layui-form-item" style="text-align: center; margin-top: 30px;">
+                            <button type="button" class="layui-btn layui-btn-danger" id="resetPinBtn">
+                                <i class="layui-icon layui-icon-refresh"></i> 重置PIN码
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-primary" id="cancelResetBtn">
+                                <i class="layui-icon layui-icon-close"></i> 取消
+                            </button>
+                        </div>
+                    </div>
+                </div>`,
+            success: function(layero, index) {
+                // 取消按钮
+                $('#cancelResetBtn').on('click', function() {
+                    layer.close(index);
+                });
+
+                // 回车键提交
+                $('#currentPasswordInput').on('keypress', function(e) {
+                    if (e.which === 13) {
+                        $('#resetPinBtn').click();
+                    }
+                });
+
+                // 重置PIN码按钮
+                $('#resetPinBtn').on('click', function() {
+                    var password = $('#currentPasswordInput').val();
+
+                    if (!password) {
+                        layer.msg('请输入当前登录密码', {icon: 2});
+                        return;
+                    }
+
+                    // 发送重置请求
+                    var loadIndex = layer.load(2);
+                    $.ajax({
+                        url: '/api/security/reset_pin',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({current_password: password}),
+                        success: function(res) {
+                            layer.close(loadIndex);
+                            if (res.code === 0) {
+                                layer.msg('PIN码重置成功，请重新设置', {icon: 1, time: 2000}, function() {
+                                    layer.close(index);
+                                    if (callback) callback(null, true);
+                                });
+                            } else {
+                                layer.msg(res.msg || 'PIN码重置失败', {icon: 2});
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            layer.close(loadIndex);
+                            layer.msg('重置PIN码失败: ' + error, {icon: 2});
+                        }
+                    });
+                });
+
+                // 聚焦到密码输入框
+                $('#currentPasswordInput').focus();
             }
         });
     },

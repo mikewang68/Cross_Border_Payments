@@ -883,6 +883,495 @@ def change_password():
             'msg': f'系统错误: {str(e)}'
         })
 
+@main_bp.route('/api/security/reset_pin', methods=['POST'])
+@login_required
+def reset_pin():
+    """重置PIN码（需要验证原密码）"""
+    try:
+        data = request.get_json()
+        if not data or 'current_password' not in data:
+            return jsonify({
+                'code': 1,
+                'msg': '请输入当前登录密码'
+            })
+        
+        current_password = data['current_password']
+        
+        # 获取当前管理员账号
+        admin_account = session.get('user_account')
+        if not admin_account:
+            return jsonify({
+                'code': 1,
+                'msg': '用户未登录'
+            })
+        
+        # 查询管理员信息，验证密码
+        admin_list = query_all_from_table('admins')
+        current_admin = None
+        for admin in admin_list:
+            if admin.get('admin_account') == admin_account:
+                current_admin = admin
+                break
+        
+        if not current_admin:
+            return jsonify({
+                'code': 1,
+                'msg': '管理员账号不存在'
+            })
+        
+        # 验证当前密码
+        if current_admin.get('admin_password') != current_password:
+            return jsonify({
+                'code': 1,
+                'msg': '当前密码不正确'
+            })
+        
+        # 重置PIN码（清空PIN码和相关设置）
+        conn = create_db_connection()
+        if conn is None:
+            return jsonify({
+                'code': 1,
+                'msg': '数据库连接失败'
+            })
+        
+        cursor = conn.cursor()
+        try:
+            admin_id = current_admin.get('admin_id')
+            
+            # 重置PIN码相关字段
+            cursor.execute(
+                """UPDATE admin_security 
+                   SET pin_code = NULL, pin_salt = NULL, failed_attempts = 0, locked_until = NULL 
+                   WHERE admin_id = %s""",
+                (admin_id,)
+            )
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            return jsonify({
+                'code': 0,
+                'msg': 'PIN码重置成功，请重新设置'
+            })
+            
+        except Exception as e:
+            conn.rollback()
+            cursor.close()
+            conn.close()
+            print(f"重置PIN码失败: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'重置PIN码失败: {str(e)}'
+            })
+            
+    except Exception as e:
+        print(f"重置PIN码时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
+@main_bp.route('/api/security/check_pin_status', methods=['GET'])
+@login_required
+def check_pin_status():
+    """检查PIN码设置状态"""
+    try:
+        # 获取当前管理员账号
+        admin_account = session.get('user_account')
+        if not admin_account:
+            return jsonify({
+                'code': 1,
+                'msg': '用户未登录'
+            })
+        
+        # 查询管理员信息
+        admin_list = query_all_from_table('admins')
+        current_admin = None
+        for admin in admin_list:
+            if admin.get('admin_account') == admin_account:
+                current_admin = admin
+                break
+        
+        if not current_admin:
+            return jsonify({
+                'code': 1,
+                'msg': '管理员账号不存在'
+            })
+        
+        admin_id = current_admin.get('admin_id')
+        
+        # 查询安全设置
+        conn = create_db_connection()
+        if conn is None:
+            return jsonify({
+                'code': 1,
+                'msg': '数据库连接失败'
+            })
+        
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "SELECT pin_code, failed_attempts, locked_until FROM admin_security WHERE admin_id = %s",
+                (admin_id,)
+            )
+            result = cursor.fetchone()
+            
+            if result:
+                pin_code, failed_attempts, locked_until = result
+                has_pin = pin_code is not None and pin_code != ''
+                
+                # 检查是否被锁定
+                is_locked = False
+                if locked_until:
+                    from datetime import datetime
+                    if datetime.now() < locked_until:
+                        is_locked = True
+                
+                return jsonify({
+                    'code': 0,
+                    'msg': '获取PIN状态成功',
+                    'data': {
+                        'has_pin': has_pin,
+                        'is_locked': is_locked,
+                        'failed_attempts': failed_attempts or 0,
+                        'remaining_attempts': max(0, 5 - (failed_attempts or 0))
+                    }
+                })
+            else:
+                # 如果没有安全设置记录，创建一个
+                cursor.execute(
+                    "INSERT INTO admin_security (admin_id) VALUES (%s)",
+                    (admin_id,)
+                )
+                conn.commit()
+                
+                return jsonify({
+                    'code': 0,
+                    'msg': '获取PIN状态成功',
+                    'data': {
+                        'has_pin': False,
+                        'is_locked': False,
+                        'failed_attempts': 0,
+                        'remaining_attempts': 5
+                    }
+                })
+                
+        except Exception as e:
+            conn.rollback()
+            print(f"查询PIN状态失败: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'查询PIN状态失败: {str(e)}'
+            })
+        finally:
+            cursor.close()
+            conn.close()
+            
+    except Exception as e:
+        print(f"检查PIN状态时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
+@main_bp.route('/api/security/setup_pin', methods=['POST'])
+@login_required
+def setup_pin():
+    """设置PIN码"""
+    try:
+        data = request.get_json()
+        if not data or 'pin_code' not in data or 'confirm_pin' not in data:
+            return jsonify({
+                'code': 1,
+                'msg': '请输入PIN码和确认PIN码'
+            })
+        
+        pin_code = data['pin_code']
+        confirm_pin = data['confirm_pin']
+        
+        # 验证PIN码格式
+        if not pin_code or len(pin_code) != 6 or not pin_code.isdigit():
+            return jsonify({
+                'code': 1,
+                'msg': 'PIN码必须是6位数字'
+            })
+        
+        # 验证两次输入是否一致
+        if pin_code != confirm_pin:
+            return jsonify({
+                'code': 1,
+                'msg': '两次输入的PIN码不一致'
+            })
+        
+        # 获取当前管理员账号
+        admin_account = session.get('user_account')
+        if not admin_account:
+            return jsonify({
+                'code': 1,
+                'msg': '用户未登录'
+            })
+        
+        # 查询管理员信息
+        admin_list = query_all_from_table('admins')
+        current_admin = None
+        for admin in admin_list:
+            if admin.get('admin_account') == admin_account:
+                current_admin = admin
+                break
+        
+        if not current_admin:
+            return jsonify({
+                'code': 1,
+                'msg': '管理员账号不存在'
+            })
+        
+        admin_id = current_admin.get('admin_id')
+        
+        # 生成盐值和哈希PIN码
+        import hashlib
+        import secrets
+        import base64
+        
+        salt = secrets.token_bytes(32)
+        salt_b64 = base64.b64encode(salt).decode('utf-8')
+        
+        # 使用PBKDF2进行哈希
+        pin_hash = hashlib.pbkdf2_hmac('sha256', pin_code.encode('utf-8'), salt, 100000)
+        pin_hash_b64 = base64.b64encode(pin_hash).decode('utf-8')
+        
+        # 保存到数据库
+        conn = create_db_connection()
+        if conn is None:
+            return jsonify({
+                'code': 1,
+                'msg': '数据库连接失败'
+            })
+        
+        cursor = conn.cursor()
+        try:
+            # 检查是否已存在记录
+            cursor.execute(
+                "SELECT id FROM admin_security WHERE admin_id = %s",
+                (admin_id,)
+            )
+            existing = cursor.fetchone()
+            
+            if existing:
+                # 更新现有记录
+                cursor.execute(
+                    """UPDATE admin_security 
+                       SET pin_code = %s, pin_salt = %s, failed_attempts = 0, locked_until = NULL 
+                       WHERE admin_id = %s""",
+                    (pin_hash_b64, salt_b64, admin_id)
+                )
+            else:
+                # 插入新记录
+                cursor.execute(
+                    """INSERT INTO admin_security (admin_id, pin_code, pin_salt, failed_attempts) 
+                       VALUES (%s, %s, %s, 0)""",
+                    (admin_id, pin_hash_b64, salt_b64)
+                )
+            
+            conn.commit()
+            
+            return jsonify({
+                'code': 0,
+                'msg': 'PIN码设置成功'
+            })
+            
+        except Exception as e:
+            conn.rollback()
+            print(f"设置PIN码失败: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'设置PIN码失败: {str(e)}'
+            })
+        finally:
+            cursor.close()
+            conn.close()
+            
+    except Exception as e:
+        print(f"设置PIN码时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
+@main_bp.route('/api/security/verify_pin', methods=['POST'])
+@login_required
+def verify_pin():
+    """验证PIN码"""
+    try:
+        data = request.get_json()
+        if not data or 'pin_code' not in data:
+            return jsonify({
+                'code': 1,
+                'msg': '请输入PIN码'
+            })
+        
+        pin_code = data['pin_code']
+        operation_type = data.get('operation_type', 'unknown')
+        card_id = data.get('card_id', '')
+        
+        # 验证PIN码格式
+        if not pin_code or len(pin_code) != 6 or not pin_code.isdigit():
+            return jsonify({
+                'code': 1,
+                'msg': 'PIN码必须是6位数字'
+            })
+        
+        # 获取当前管理员账号
+        admin_account = session.get('user_account')
+        if not admin_account:
+            return jsonify({
+                'code': 1,
+                'msg': '用户未登录'
+            })
+        
+        # 查询管理员信息
+        admin_list = query_all_from_table('admins')
+        current_admin = None
+        for admin in admin_list:
+            if admin.get('admin_account') == admin_account:
+                current_admin = admin
+                break
+        
+        if not current_admin:
+            return jsonify({
+                'code': 1,
+                'msg': '管理员账号不存在'
+            })
+        
+        admin_id = current_admin.get('admin_id')
+        
+        # 查询安全设置
+        conn = create_db_connection()
+        if conn is None:
+            return jsonify({
+                'code': 1,
+                'msg': '数据库连接失败'
+            })
+        
+        cursor = conn.cursor()
+        try:
+            cursor.execute(
+                "SELECT pin_code, pin_salt, failed_attempts, locked_until FROM admin_security WHERE admin_id = %s",
+                (admin_id,)
+            )
+            result = cursor.fetchone()
+            
+            if not result:
+                return jsonify({
+                    'code': 1,
+                    'msg': '请先设置PIN码'
+                })
+            
+            stored_pin, salt_b64, failed_attempts, locked_until = result
+            
+            if not stored_pin:
+                return jsonify({
+                    'code': 1,
+                    'msg': '请先设置PIN码'
+                })
+            
+            # 检查是否被锁定
+            if locked_until:
+                from datetime import datetime
+                if datetime.now() < locked_until:
+                    return jsonify({
+                        'code': 1,
+                        'msg': '账户已被锁定，请10分钟后再试'
+                    })
+            
+            # 验证PIN码
+            import hashlib
+            import base64
+            
+            salt = base64.b64decode(salt_b64.encode('utf-8'))
+            pin_hash = hashlib.pbkdf2_hmac('sha256', pin_code.encode('utf-8'), salt, 100000)
+            pin_hash_b64 = base64.b64encode(pin_hash).decode('utf-8')
+            
+            if pin_hash_b64 == stored_pin:
+                # 验证成功，重置失败次数
+                cursor.execute(
+                    "UPDATE admin_security SET failed_attempts = 0, locked_until = NULL WHERE admin_id = %s",
+                    (admin_id,)
+                )
+                conn.commit()
+                
+                # 记录验证日志
+                try:
+                    cursor.execute(
+                        """INSERT INTO verification_logs (admin_id, operation_type, card_id, success, ip_address, user_agent) 
+                           VALUES (%s, %s, %s, 1, %s, %s)""",
+                        (admin_id, operation_type, card_id, request.remote_addr, request.headers.get('User-Agent', ''))
+                    )
+                    conn.commit()
+                except:
+                    pass  # 日志记录失败不影响主流程
+                
+                return jsonify({
+                    'code': 0,
+                    'msg': 'PIN码验证成功'
+                })
+            else:
+                # 验证失败，增加失败次数
+                new_failed_attempts = (failed_attempts or 0) + 1
+                locked_until = None
+                
+                if new_failed_attempts >= 5:
+                    # 锁定10分钟
+                    from datetime import datetime, timedelta
+                    locked_until = datetime.now() + timedelta(minutes=10)
+                
+                cursor.execute(
+                    "UPDATE admin_security SET failed_attempts = %s, locked_until = %s WHERE admin_id = %s",
+                    (new_failed_attempts, locked_until, admin_id)
+                )
+                conn.commit()
+                
+                # 记录验证日志
+                try:
+                    cursor.execute(
+                        """INSERT INTO verification_logs (admin_id, operation_type, card_id, success, ip_address, user_agent) 
+                           VALUES (%s, %s, %s, 0, %s, %s)""",
+                        (admin_id, operation_type, card_id, request.remote_addr, request.headers.get('User-Agent', ''))
+                    )
+                    conn.commit()
+                except:
+                    pass  # 日志记录失败不影响主流程
+                
+                remaining_attempts = max(0, 5 - new_failed_attempts)
+                if remaining_attempts == 0:
+                    return jsonify({
+                        'code': 1,
+                        'msg': 'PIN码错误，账户已被锁定10分钟'
+                    })
+                else:
+                    return jsonify({
+                        'code': 1,
+                        'msg': f'PIN码错误，还剩{remaining_attempts}次尝试机会'
+                    })
+                
+        except Exception as e:
+            conn.rollback()
+            print(f"验证PIN码失败: {str(e)}")
+            return jsonify({
+                'code': 1,
+                'msg': f'验证PIN码失败: {str(e)}'
+            })
+        finally:
+            cursor.close()
+            conn.close()
+            
+    except Exception as e:
+        print(f"验证PIN码时出错: {str(e)}")
+        return jsonify({
+            'code': 1,
+            'msg': f'系统错误: {str(e)}'
+        })
+
 
 @main_bp.route('/add_system')
 @login_required

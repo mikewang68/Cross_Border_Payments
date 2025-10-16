@@ -652,37 +652,62 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         showCardDetail(data);
                         break;
                     case 'modify':
-                        // 打开调额弹窗 - 使用iframe加载独立的HTML页面
-                        layer.open({
-                            type: 2,  // iframe类型
-                            title: '调整卡额度',
-                            area: ['500px', '500px'],
-                            content: '/cards/modify_card_balance',  // 加载后端路由
-                            success: function(layero, index) {
-                                // 获取iframe中的window对象
-                                var iframeWin = window[layero.find('iframe')[0]['name']];
-                                
-                                // 传递数据到iframe
-                                iframeWin.initCardData({
-                                    card_id: data.card_id,
-                                    mask_card_number: data.mask_card_number,
-                                    first_name: data.first_name,
-                                    last_name: data.last_name,
-                                    version: data.version,
-                                    available_balance: data.available_balance,
-                                    card_currency: data.card_currency || 'USD',
-                                    wallet_balance_data: wallet_balance_data
-                                });
-                            },
-                            end: function() {
-                                // 弹窗关闭后刷新表格
-                                table.reload('cards-table');
-                            }
-                        });
+                        // 使用PIN验证保护调额操作
+                        if (typeof PinSecurity !== 'undefined') {
+                            PinSecurity.executeSecureOperation('adjust_balance', data.card_id, function() {
+                                // PIN验证成功后执行调额操作
+                                openModifyBalanceDialog();
+                            });
+                        } else {
+                            // 如果PIN验证组件未加载，直接执行操作
+                            openModifyBalanceDialog();
+                        }
+                        
+                        function openModifyBalanceDialog() {
+                            // 打开调额弹窗 - 使用iframe加载独立的HTML页面
+                            layer.open({
+                                type: 2,  // iframe类型
+                                title: '调整卡额度',
+                                area: ['500px', '500px'],
+                                content: '/cards/modify_card_balance',  // 加载后端路由
+                                success: function(layero, index) {
+                                    // 获取iframe中的window对象
+                                    var iframeWin = window[layero.find('iframe')[0]['name']];
+                                    
+                                    // 传递数据到iframe
+                                    iframeWin.initCardData({
+                                        card_id: data.card_id,
+                                        mask_card_number: data.mask_card_number,
+                                        first_name: data.first_name,
+                                        last_name: data.last_name,
+                                        version: data.version,
+                                        available_balance: data.available_balance,
+                                        card_currency: data.card_currency || 'USD',
+                                        wallet_balance_data: wallet_balance_data
+                                    });
+                                },
+                                end: function() {
+                                    // 弹窗关闭后刷新表格
+                                    table.reload('cards-table');
+                                }
+                            });
+                        }
                         break;
                     case 'set_limit':
-                        // 打开设置限额的弹窗
-                        layer.open({
+                        // 使用PIN验证保护设置限额操作
+                        if (typeof PinSecurity !== 'undefined') {
+                            PinSecurity.executeSecureOperation('set_limit', data.card_id, function() {
+                                // PIN验证成功后执行设置限额操作
+                                openSetLimitDialog();
+                            });
+                        } else {
+                            // 如果PIN验证组件未加载，直接执行操作
+                            openSetLimitDialog();
+                        }
+                        
+                        function openSetLimitDialog() {
+                            // 打开设置限额的弹窗
+                            layer.open({
                             type: 1,
                             title: '设置卡片限额',
                             area: ['500px', '350px'],
@@ -790,6 +815,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 });
                             }
                         });
+                        }
                         break;
                     case 'edit_nickname':
                         layer.prompt({
@@ -842,7 +868,19 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         });
                         break;
                     case 'cancel':
-                        layer.confirm('确定要销卡吗？确定后销卡操作无法撤回', function(index){
+                        // 使用PIN验证保护销卡操作
+                        if (typeof PinSecurity !== 'undefined') {
+                            PinSecurity.executeSecureOperation('cancel_card', data.card_id, function() {
+                                // PIN验证成功后执行销卡操作
+                                executeCancelCard();
+                            });
+                        } else {
+                            // 如果PIN验证组件未加载，直接执行操作
+                            executeCancelCard();
+                        }
+                        
+                        function executeCancelCard() {
+                            layer.confirm('确定要销卡吗？确定后销卡操作无法撤回', function(index){
                             layer.close(index); // 先关闭确认弹窗
                             
                             // 获取卡号后四位
@@ -948,12 +986,25 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 }
                             });
                         });
+                        }
                         break;
                     case 'freeze':
-                        layer.confirm('确定要冻结该卡吗？', function(index){
+                        // 使用PIN验证保护冻结操作
+                        if (typeof PinSecurity !== 'undefined') {
+                            PinSecurity.executeSecureOperation('freeze_card', data.card_id, function() {
+                                // PIN验证成功后执行冻结操作
+                                executeFreezeCard();
+                            });
+                        } else {
+                            // 如果PIN验证组件未加载，直接执行操作
+                            executeFreezeCard();
+                        }
+                        
+                        function executeFreezeCard() {
+                            layer.confirm('确定要冻结该卡吗？', function(index){
                             console.log('冻结卡', data);
                             layer.msg('正在冻结，需要等待几秒', {icon: 0});
-                            if (data && data.cards_status === 'ACTIVE') {
+                            if (data && data.status === 'ACTIVE') {
                                 // 显示加载中
                                 var loadIndex = layer.load(2);
                                 
@@ -993,6 +1044,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                 layer.close(index);
                             }
                         });
+                        }
                         break;
                     case 'unfreeze':
                         layer.confirm('确定要解冻该卡吗？', function(index){
