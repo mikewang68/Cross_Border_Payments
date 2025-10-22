@@ -532,13 +532,17 @@ def cards():
 def update_card_management_info():
     try:
         data = request.get_json()
+        print(f"收到的管理信息更新请求数据: {data}")
+        
         if not data or 'card_id' not in data:
+            print("请求数据无效或缺少卡片ID")
             return jsonify({
                 'code': 1,
                 'msg': '请求数据无效或缺少卡片ID'
             })
         
         card_id = data['card_id']
+        print(f"要更新的卡片ID: {card_id}")
         
         # 构建更新数据
         update_data = {}
@@ -546,28 +550,37 @@ def update_card_management_info():
         # 补充渠道
         if 'supplement_channel' in data:
             update_data['supplement_channel'] = data['supplement_channel']
+            print(f"补充渠道: {data['supplement_channel']}")
         
         # 联系人
         if 'contact_person' in data:
             update_data['contact_person'] = data['contact_person']
+            print(f"联系人: {data['contact_person']}")
         
         # 激活状态
         if 'is_activated' in data:
             update_data['is_activated'] = 1 if data['is_activated'] else 0
+            print(f"激活状态: {data['is_activated']} -> {update_data['is_activated']}")
         
         # 绑定状态
         if 'is_bound' in data:
             update_data['is_bound'] = 1 if data['is_bound'] else 0
+            print(f"绑定状态: {data['is_bound']} -> {update_data['is_bound']}")
         
         # 问题备注
         if 'issue_notes' in data:
             update_data['issue_notes'] = data['issue_notes']
+            print(f"问题备注: {data['issue_notes']}")
         
         # 背书
         if 'endorsement' in data:
             update_data['endorsement'] = data['endorsement']
+            print(f"背书: {data['endorsement']}")
+        
+        print(f"构建的更新数据: {update_data}")
         
         if not update_data:
+            print("没有需要更新的数据")
             return jsonify({
                 'code': 1,
                 'msg': '没有需要更新的数据'
@@ -575,14 +588,20 @@ def update_card_management_info():
         
         # 执行更新
         condition = {'card_id': card_id}
-        result = update_database('cards_info', condition, update_data)
+        print(f"更新条件: {condition}")
+        print(f"准备调用 update_database('cards_info', {condition}, {update_data})")
+        
+        result = update_database('cards_info', update_data, condition)
+        print(f"数据库更新结果: {result}")
         
         if result:
+            print("管理信息更新成功")
             return jsonify({
                 'code': 0,
                 'msg': '管理信息更新成功'
             })
         else:
+            print("管理信息更新失败")
             return jsonify({
                 'code': 1,
                 'msg': '管理信息更新失败'

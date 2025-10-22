@@ -570,6 +570,9 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                             endorsement: formData.field.endorsement
                         };
                         
+                        console.log('表单数据:', formData.field);
+                        console.log('提交数据:', submitData);
+                        
                         // 显示加载中
                         var loadIndex = layer.load(2);
                         
