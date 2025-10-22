@@ -1,0 +1,71 @@
+<div class="layui-fluid card-holders-page">
+    <div class="layui-card">
+        <div class="layui-card-header">用卡人管理</div>
+        <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="userSearchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">姓名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">邮箱</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="email" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">平台</label>
+                        <div class="layui-input-inline">
+                            <select name="version">
+                                <option value="">全部</option>
+                                <option value="J1">J1</option>
+                                <option value="J2">J2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- 表格工具栏 -->
+            <script type="text/html" id="toolbar_card_holders">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add">
+                        <i class="layui-icon">&#xe654;</i> 添加用卡人
+                    </button>
+                </div>
+            </script>
+            
+            <!-- 表格容器 -->
+            <div class="table-container">
+                <table id="user-table" lay-filter="user-table"></table>
+            </div>
+            
+            <!-- 行工具栏 -->
+            <script type="text/html" id="card_holder_barTool">
+                <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+                <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">编辑</a>
+            </script>
+        </div>
+    </div>
+    
+    <!-- 保存后端传递的数据 -->
+    <script id="card-holders-data" type="application/json">
+        {{ card_holders|tojson|safe }}
+    </script>
+</div>
+
+<!-- 引入用卡人CSS和JS -->
+<link rel="stylesheet" href="/static/css/card_holders.css">
+<script src="/static/js/card_holders.js"></script> 

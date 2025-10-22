@@ -1,0 +1,68 @@
+<div class="layui-fluid payers-page">
+    <div class="layui-card">
+        <div class="layui-card-header">付款人管理</div>
+        <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="payerSearchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">付款人姓名</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" placeholder="请输入姓名" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">平台</label>
+                        <div class="layui-input-inline">
+                            <select name="version">
+                                <option value="">全部</option>
+                                <option value="J1">J1</option>
+                                <option value="J2">J2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- 表格工具栏 -->
+            <script type="text/html" id="toolbar_payers">
+                <div class="layui-btn-container">
+                    <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="add">
+                        <i class="layui-icon">&#xe654;</i> 添加付款人
+                    </button>
+                    <button class="layui-btn layui-btn-sm layui-btn-warm" lay-event="sync">
+                        <i class="layui-icon">&#xe669;</i> 同步数据
+                    </button>
+                </div>
+            </script>
+            
+            <!-- 表格容器 -->
+            <div class="table-container">
+                <table id="payer-table" lay-filter="payer-table"></table>
+            </div>
+            
+            <!-- 行工具栏 -->
+            <script type="text/html" id="payer_barTool">
+                <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+                <!-- <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="edit">编辑</a> -->
+                <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="delete">删除</a>
+            </script>
+        </div>
+    </div>
+</div>
+
+<!-- 保存后端传递的数据 -->
+<script id="payers-info-data" type="text/html">
+    {{ payers_info_data|tojson|safe }}
+</script>
+<!-- 引入付款人CSS和JS -->
+<link rel="stylesheet" href="/static/css/payers.css">
+<script src="/static/js/payers.js"></script>

@@ -1,0 +1,161 @@
+/* 汇率报价页面样式 */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 标签页样式 */
+.layui-tab-title {
+    border-bottom: 2px solid #eee;
+}
+
+.layui-tab-title li {
+    padding: 0 20px;
+    font-size: 16px;
+}
+
+.layui-tab-content {
+    padding: 20px 0;
+}
+
+/* 计算器样式 */
+.exchange-calculator {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.calculator-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.calculator-header h3 {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.calculator-desc {
+    color: #999;
+    font-size: 14px;
+}
+
+.calculator-body {
+    margin-bottom: 25px;
+}
+
+/* 结果区域样式 */
+.result-container {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 25px;
+    border-left: 4px solid #009688;
+}
+
+.result-header {
+    margin-bottom: 15px;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 10px;
+}
+
+.result-header h3 {
+    font-size: 18px;
+    color: #333;
+}
+
+.result-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.result-label {
+    color: #666;
+    font-size: 14px;
+}
+
+.result-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.result-highlight {
+    background-color: rgba(0, 150, 136, 0.1);
+    border-left: 3px solid #009688;
+}
+
+.result-highlight .result-value {
+    color: #009688;
+    font-size: 18px;
+}
+
+/* 汇率表格样式 */
+.exchange-rates-table {
+    margin-top: 30px;
+}
+
+.exchange-rates-table h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    padding-left: 10px;
+    border-left: 4px solid #009688;
+}
+
+/* 待开发功能区域 */
+.feature-coming-soon {
+    padding: 100px 0;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.feature-coming-soon i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    color: #999;
+}
+
+.feature-coming-soon p {
+    color: #999;
+    font-size: 16px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .result-body {
+        grid-template-columns: 1fr;
+    }
+    
+    .layui-form-label {
+        width: 80px;
+    }
+    
+    .layui-input-block {
+        margin-left: 110px;
+    }
+    
+    .calculator-header h3 {
+        font-size: 18px;
+    }
+    
+    .exchange-calculator {
+        padding: 15px;
+    }
+}

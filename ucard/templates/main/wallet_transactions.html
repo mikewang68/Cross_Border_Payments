@@ -1,0 +1,105 @@
+<!-- 钱包交易明细弹窗内容 -->
+<div class="transactions-container">
+    <!-- 钱包信息卡片 -->
+    <div class="wallet-info-card">
+        <div class="wallet-header">
+            <div class="currency-flag" id="currency-flag">
+                <!-- 国旗图片将通过JS动态添加 -->
+            </div>
+            <div class="currency-icon">
+                <i class="layui-icon layui-icon-dollar" style="font-size: 24px; color: rgba(255,255,255,0.9);"></i>
+            </div>
+            <div class="currency-info">
+                <div class="currency-code">USD</div>
+                
+            </div>
+        </div>
+        <div class="balance-info">
+            <div class="balance-item">
+                <div class="balance-label">账户总额</div>
+                <div class="balance-value">
+                    723.91
+                    <span class="balance-currency">USD</span>
+                </div>
+            </div>
+            <div class="balance-item">
+                <div class="balance-label">共享卡已开卡余额</div>
+                <div class="balance-value">
+                    672.50
+                    <span class="balance-currency">USD</span>
+                </div>
+            </div>
+            <div class="balance-item">
+                <div class="balance-label">可用余额</div>
+                <div class="balance-value">
+                    51.41
+                    <span class="balance-currency">USD</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="transactions-search">
+        <div class="search-input search-box">
+            <input type="text" id="transaction-id-input" placeholder="流水号" class="layui-input" autocomplete="off">
+        </div>
+        <div class="search-input search-type">
+            <select id="transaction-type" class="layui-select" lay-filter="transaction-type">
+                <option value="">交易类型</option>
+                <option value="income">收入</option>
+                <option value="expense">支出</option>
+                <option value="ACCOUNT_PAY">账户支付</option>
+                <option value="ACCOUNT_PAY_FEE">账户支付手续费</option>
+                <option value="BALANCE_RECHARGE">充值到资金账户</option>
+                <option value="BALANCE_RECHARGE_FEE">充值手续费</option>
+                <option value="EXCHANGE_OUT">换汇支出</option>
+                <option value="EXCHANGE_IN">换汇买入</option>
+                <option value="ACCOUNT_PAY_REVERT">账户支付退回</option>
+                <option value="MANUAL">运营手动调账</option>
+                <option value="CARD_PAYMENT">虚拟卡交易结算</option>
+                <option value="CARD_REFUND">虚拟卡交易退款</option>
+                <option value="OTHER">其他</option>
+            </select>
+        </div>
+        <div class="search-input date-filter">
+            <input type="text" id="date-start" placeholder="起始日期" class="layui-input" autocomplete="off">
+            <span class="date-separator">至</span>
+            <input type="text" id="date-end" placeholder="结束日期" class="layui-input" autocomplete="off">
+        </div>
+        <div class="search-actions">
+            <button type="button" class="layui-btn layui-btn-normal" id="search-btn">搜索</button>
+            <button type="button" class="layui-btn" id="export-btn">导出</button>
+            <button type="button" class="layui-btn layui-btn-primary" id="clear-btn">重置</button>
+        </div>
+    </div>
+    
+    <div class="transactions-table">
+        <!-- 表格将通过JS动态生成 -->
+    </div>
+    
+    <div class="transactions-pagination" id="transactions-pagination">
+        <!-- 分页将通过JS动态生成 -->
+    </div>
+    
+    <div class="footer-info">
+        © UCard管理系统
+    </div>
+</div>
+
+<!-- 将数据传递给JavaScript -->
+<script>
+    // 定义全局变量以便JavaScript脚本可以访问
+    var walletDataJson = document.getElementById('wallet-data').textContent;
+    var transactionsDataJson = document.getElementById('transactions-data').textContent;
+    var regionDataJson = document.getElementById('region-data').textContent;
+</script>
+
+<script id="wallet-data" type="application/json">
+    {{ wallet_balances|tojson|safe }}
+</script>
+<script id="transactions-data" type="application/json">
+    {{ wallet_transactions|tojson|safe }}
+</script>
+<script id="region-data" type="application/json">
+    {{ regions|tojson|safe }}
+</script>

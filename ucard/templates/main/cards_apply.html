@@ -1,0 +1,97 @@
+<!-- 引入layui的CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+<!-- 引入自定义CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards_apply.css') }}">
+<!-- 引入layui的JS -->
+<script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
+<!-- 引入自定义JS -->
+<script src="{{ url_for('static', filename='js/cards_apply.js') }}"></script>
+
+<div class="layui-card">
+    <div class="layui-card-header">开卡申请</div>
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="cardApplyForm">
+            <!-- 设置卡信息部分 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择平台</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="platform" value="J1" title="J1平台" lay-filter="platform" checked>
+                    <input type="radio" name="platform" value="J2" title="J2平台" lay-filter="platform">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择币种</label>
+                <div class="layui-input-block">
+                    <select name="currency" lay-verify="required" lay-filter="currency">
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">卡产品</label>
+                <div class="layui-input-block" id="productButtons">
+                    <!-- 产品按钮将通过JS动态生成 -->
+                </div>
+                <div class="layui-form-mid layui-word-aux" id="productDescription"></div>
+                <div class="layui-form-mid layui-word-aux" id="productStock"></div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择用卡人</label>
+                <div class="layui-input-block">
+                    <select name="card_holder_id" id="card_holder_select" lay-verify="required" lay-search>
+                        <option value="">请选择用卡人</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 卡片额度部分 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">交易额度</label>
+                <div class="layui-input-block">
+                    <input type="number" name="init_balance" lay-verify="required|number" placeholder="请输入交易额度" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">可用余额：<span id="availableBalance">0</span></div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">日限额</label>
+                <div class="layui-input-block">
+                    <input type="number" name="limit_per_day" placeholder="不填写则采用系统默认值" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">月限额</label>
+                <div class="layui-input-block">
+                    <input type="number" name="limit_per_month" placeholder="不填写则采用系统默认值" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">单笔限额</label>
+                <div class="layui-input-block">
+                    <input type="number" name="limit_per_transaction" placeholder="不填写则采用系统默认值" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="cardApplySubmit">提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script id="card-holders-data" type="application/json">
+        {{ card_holders|tojson|safe }}
+    </script>
+    <script id="cards-product-data" type="application/json">
+        {{ cards_product|tojson|safe }}
+    </script>
+    <script id="wallet-balance-data" type="application/json">
+        {{ wallet_balance|tojson|safe }}
+    </script>
+</div>

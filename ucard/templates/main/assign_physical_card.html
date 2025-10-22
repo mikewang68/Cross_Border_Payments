@@ -1,0 +1,65 @@
+<!-- 引入layui的CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+<!-- 引入自定义CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/cards_apply.css') }}">
+<!-- 引入layui的JS -->
+<script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
+<!-- 引入自定义JS -->
+<script src="{{ url_for('static', filename='js/assign_physical_card.js') }}"></script>
+
+<div class="layui-card">
+    <div class="layui-card-header">实体卡分配申请</div>
+    <div class="layui-card-body">
+        <form class="layui-form" lay-filter="cardAssignSubmit">
+            <!-- 设置卡信息部分 -->
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择平台</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="version" value="J1" title="J1平台" lay-filter="platform">
+                    <input type="radio" name="version" value="J2" title="J2平台" lay-filter="platform" checked>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择币种</label>
+                <div class="layui-input-block">
+                    <select name="card_currency" lay-verify="required" lay-filter="currency">
+                        <option value="USD">USD</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">选择用卡人</label>
+                <div class="layui-input-block">
+                    <select name="card_holder_id" id="card_holder_select" lay-verify="required" lay-search>
+                        <option value="">请选择用卡人</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">实体卡卡号</label>
+                <div class="layui-input-block">
+                    <input type="number" name="card_number" placeholder="请输入实体卡卡号" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="cardAssignSubmit">提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script id="card-holders-data" type="application/json">
+        {{ card_holders|tojson|safe }}
+    </script>
+    <script id="cards-product-data" type="application/json">
+        {{ cards_product|tojson|safe }}
+    </script>
+    <script id="wallet-balance-data" type="application/json">
+        {{ wallet_balance|tojson|safe }}
+    </script>
+</div>

@@ -1,85 +1,10 @@
-# ======================================
-# 🐍 Flask + Layui + MariaDB 项目 .gitignore
-# ======================================
-
-# -----------------------------
-# 🧠 Python / Flask
-# -----------------------------
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Flask 环境配置与实例目录
-instance/
-*.env
-*.env.*
-config/*.env
-
-# Flask 日志与运行缓存
-*.log
-*.pid
-*.bak
-*.swp
-*.tmp
-
-# Flask 数据文件（本地开发）
-*.db
-*.sqlite3
-*.sqlite
-*.db-journal
-
-# -----------------------------
-# 💾 数据库与备份
-# -----------------------------
-# 忽略数据库导出和备份文件
-*.sql
-*.sql.gz
-*.dump
-backup/
-db_backup/
-data/
-
-# -----------------------------
-# 🌐 前端资源（Layui / 构建产物）
-# -----------------------------
-# 前端依赖（若使用 npm/yarn 构建）
-node_modules/
-package-lock.json
-yarn.lock
-
-# 前端打包产物（若有构建流程）
-dist/
-build/
-public/static/
-static/cache/
-static/tmp/
-
-# 临时上传文件目录（UCard 文件上传）
-uploads/
-media/
-tmp/
-cache/
-
-# -----------------------------
-# 📦 Python 依赖构建产物
-# -----------------------------
-build/
-dist/
-.eggs/
-*.egg-info/
-*.egg
-pip-wheel-metadata/
-
-# -----------------------------
-# 🧪 测试与覆盖率
-# -----------------------------
-.coverage
-htmlcov/
-.tox/
-pytest_cache/
-.pytest_cache/
-tests/__pycache__/
-
-# -----------------------------
-# ⚙️ 编辑器与IDE
-# ---
+.env
+GSalary Gateway API (1.7).md
+__pycache__
+.venv
+problem.txt
+db.log
+gsalay_api.log
+gsalary_api.log
+test* 
+error.log
