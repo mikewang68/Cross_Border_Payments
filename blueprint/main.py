@@ -747,14 +747,54 @@ def modify_card():
     try:
         # 获取表单数据
         data = request.get_json()
+        card_id = data.get('card_id')
+        
+        # 检查卡片状态
+        if card_id:
+            card_info = query_database('cards_info', 'card_id', card_id)
+            if card_info and len(card_info) > 0:
+                card_status = card_info[0].get('status', '')
+                if card_status != 'ACTIVE':
+                    status_text_map = {
+                        'FROZEN': '冻结',
+                        'CANCELLED': '已销卡',
+                        'EXPIRED': '已过期',
+                        'INACTIVE': '待激活'
+                    }
+                    status_text = status_text_map.get(card_status, card_status)
+                    return jsonify({
+                        "code": 1,
+                        "msg": f"卡片状态为'{status_text}'，无法进行调额操作",
+                        "data": None
+                    })
+        
+        # print(data)
         request_id = str(uuid.uuid4())
         data['request_id'] = request_id
         version = data.pop('version')
         gsalary_api = GSalaryAPI()
         result = gsalary_api.modify_card_balance(system_id=version, data = data)
-        if result['result']['result'] == 'S':
+        print(f"API调用结果: {result}")
+        
+        # 检查是否有网络错误
+        if 'error_type' in result:
+            error_messages = {
+                'SSL_ERROR': '网络SSL连接错误，请检查网络连接后重试',
+                'CONNECTION_ERROR': '网络连接失败，请检查网络状态后重试', 
+                'TIMEOUT_ERROR': '请求超时，请稍后重试',
+                'HTTP_ERROR': 'API服务器错误，请稍后重试',
+                'MAX_RETRIES_EXCEEDED': '网络连接多次失败，请检查网络后重试'
+            }
+            error_msg = error_messages.get(result['error_type'], '网络连接异常，请重试')
+            return jsonify({
+                "code": 1,
+                "msg": error_msg,
+                "data": result.get('error', '网络错误')
+            })
+        
+        if result.get('result', {}).get('result') == 'S':
             modify_response_data_insert(version = version, result = result)
-            if result['data']['status'] == 'SUCCESS':
+            if result.get('data', {}).get('status') == 'SUCCESS':
                 return jsonify({
                     "code": 0,
                     "msg": "调额成功",
@@ -767,10 +807,17 @@ def modify_card():
                 "data": None
             })
         else:
+            # 处理API返回的业务错误
+            error_msg = "调额失败"
+            if 'message' in result:
+                error_msg = f"调额失败: {result['message']}"
+            elif 'error' in result:
+                error_msg = f"调额失败: {result['error']}"
+            
             return jsonify({
                 "code": 1,
-                "msg": "服务器访问出错，调额失败",
-                "data": None
+                "msg": error_msg,
+                "data": result
             })
     except Exception as e:
         return jsonify({

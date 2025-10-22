@@ -254,7 +254,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         }
                     },
                     {
-                        field: 'cards_status', 
+                        field: 'status', 
                         title: '状态', 
                         width: 80,
                         align: 'center',
@@ -415,7 +415,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                                     <tr><td>日限额</td><td>${data.limit_per_day || '0.00'} ${data.card_currency || 'USD'}</td></tr>
                                     <tr><td>月限额</td><td>${data.limit_per_month || '0.00'} ${data.card_currency || 'USD'}</td></tr>
                                     <tr><td>有效期</td><td>${data.expire_month || '--'}月/${data.expire_year || '--'}年 (剩余${remainingMonths}个月)</td></tr>
-                                    <tr><td>卡片状态</td><td>${statusMap[data.cards_status] || data.cards_status || '--'}</td></tr>
+                                    <tr><td>卡片状态</td><td>${statusMap[data.status] || data.status || '--'}</td></tr>
                                     <tr><td>申请时间</td><td>${formatTime(data.create_time)}</td></tr>
                                     <tr><td>激活时间</td><td>${formatTime(data.active_time)}</td></tr>
                                 </tbody>
@@ -652,6 +652,20 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         showCardDetail(data);
                         break;
                     case 'modify':
+                        // 检查卡片状态是否允许调额
+                        if (data && data.status !== 'ACTIVE') {
+                            var statusText = '';
+                            switch(data.status) {
+                                case 'FROZEN': statusText = '冻结'; break;
+                                case 'CANCELLED': statusText = '已销卡'; break;
+                                case 'EXPIRED': statusText = '已过期'; break;
+                                case 'INACTIVE': statusText = '待激活'; break;
+                                default: statusText = data.status || '未知';
+                            }
+                            layer.msg('卡片状态为"' + statusText + '"，无法进行调额操作', {icon: 2});
+                            return;
+                        }
+                        
                         // 使用PIN验证保护调额操作
                         if (typeof PinSecurity !== 'undefined') {
                             PinSecurity.executeSecureOperation('adjust_balance', data.card_id, function() {
@@ -1050,7 +1064,7 @@ layui.use(['table', 'form', 'laydate', 'layer', 'dropdown'], function () {
                         layer.confirm('确定要解冻该卡吗？', function(index){
                             console.log('解冻卡', data);
                             layer.msg('正在解冻，需要等待几秒', {icon: 0});
-                            if (data && data.cards_status === 'FROZEN') {
+                            if (data && data.status === 'FROZEN') {
                                 // 显示加载中
                                 var loadIndex = layer.load(2);
                                 
