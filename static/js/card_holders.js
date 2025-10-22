@@ -85,6 +85,10 @@ layui.use(['table', 'form', 'layer'], function(){
                     {field: 'phone_number', title: '手机号码', width: 150},
                     {field: 'region', title: '地区', width: 80},
                     {field: 'email', title: '邮箱', width: 210},
+                    {field: 'telegram_email', title: 'Telegram邮箱', width: 210, templet: function(d){
+                        // 如果telegram_email为空，则显示email的值
+                        return d.telegram_email || d.email || '';
+                    }},
                     {field: 'version', title: '平台', width: 80},
                     {field: 'create_time', title: '创建时间', width: 160},
                     {field: 'bill_address_country', title: '国家', width: 80},  

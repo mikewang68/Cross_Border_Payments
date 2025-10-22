@@ -24,6 +24,7 @@ layui.use(['form', 'layer', 'laydate'], function(){
                 "region": data.region,
                 "birth": data.birth,
                 "email": data.email,
+                "telegram_email": data.telegram_email || data.email, // 如果telegram_email为空，使用email作为默认值
                 "mobile_nation_code": data.mobile_nation_code,
                 "mobile": data.mobile,
                 "bill_address_country": data.bill_address_country,
@@ -93,6 +94,7 @@ function transformData(original) {
         last_name: original.last_name,
         birth: original.birth,
         email: original.email,
+        telegram_email: original.telegram_email,
         // 重组手机号字段
         mobile: {
             nation_code: original.mobile_nation_code,

@@ -406,16 +406,30 @@ def card_holder_edit():
     try:
         # 获取JSON数据
         data = request.get_json()
+        print(f"收到的用卡人编辑数据: {data}")
+        
         card_holder_id = data.pop('card_holder_id')  # 删除json['card_holder_id']并将其赋值给card_holder_id
         version = data.pop('version')  # 删除json['version']并将其赋值给version
-        # print(data)
-        # print(card_holder_id)
-        # print(version)
+        telegram_email = data.pop('telegram_email', None)  # 提取telegram_email字段
+        
+        print(f"卡持有人ID: {card_holder_id}, 版本: {version}, Telegram邮箱: {telegram_email}")
+        
         # 创建API实例
         gsalary_api = GSalaryAPI()
-        # 调用API创建用卡人
-        result = gsalary_api.update_card_holder(system_id = version, holder_id=card_holder_id, data=data)  # 替换实际的system_id
+        # 调用API更新用卡人（外部API可能不支持telegram_email字段）
+        result = gsalary_api.update_card_holder(system_id = version, holder_id=card_holder_id, data=data)
+        
         if result['result']['result'] == 'S':
+            # 外部API更新成功后，同步更新本地数据库的telegram_email字段
+            if telegram_email is not None:
+                try:
+                    local_update_data = {'telegram_email': telegram_email}
+                    condition = {'card_holder_id': card_holder_id}
+                    local_result = update_database('card_holder', local_update_data, condition)
+                    print(f"本地数据库telegram_email更新结果: {local_result}")
+                except Exception as e:
+                    print(f"更新本地数据库telegram_email时出错: {str(e)}")
+            
             return jsonify({
                 "code": 0,
                 "msg": "修改成功",
