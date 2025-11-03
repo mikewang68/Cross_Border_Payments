@@ -6,6 +6,88 @@
     <title>UCard管理系统</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    
+    <!-- N8N聊天助手样式 -->
+    <style>
+        .chat-assistant-float {
+            position: fixed;
+            right: 20px;
+            bottom: 30px;
+            width: auto;
+            height: 50px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+            border-radius: 25px;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+            cursor: pointer;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 0 20px 0 15px;
+            min-width: 120px;
+            border: none;
+            outline: none;
+        }
+        
+        .chat-assistant-float:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.4);
+            background: linear-gradient(135deg, #5b5bf6 0%, #7c3aed 50%, #9333ea 100%);
+        }
+        
+        .chat-assistant-float:active {
+            transform: translateY(0px);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+        
+        .chat-icon {
+            width: 24px;
+            height: 24px;
+            color: white;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .chat-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor;
+        }
+        
+        .chat-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .chat-assistant-float {
+                right: 15px;
+                bottom: 20px;
+                height: 45px;
+                min-width: 110px;
+                padding: 0 15px 0 12px;
+            }
+            
+            .chat-icon {
+                width: 20px;
+                height: 20px;
+                margin-right: 6px;
+            }
+            
+            .chat-text {
+                font-size: 13px;
+            }
+        }
+    </style>
+    
     {% block head %}{% endblock %}
 </head>
 <body class="layui-layout-body">
@@ -120,9 +202,50 @@
         </div>
     </div>
     
+    <!-- N8N聊天助手浮动按钮 -->
+    <div class="chat-assistant-float" id="chatAssistant" title="N8N聊天助手">
+        <div class="chat-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="currentColor"/>
+                <circle cx="8" cy="10" r="1.5" fill="#6366f1"/>
+                <circle cx="16" cy="10" r="1.5" fill="#6366f1"/>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="chat-text">N8N助手</div>
+    </div>
+    
     <script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <!-- N8N聊天助手JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatAssistant = document.getElementById('chatAssistant');
+            
+            if (chatAssistant) {
+                chatAssistant.addEventListener('click', function() {
+                    // 在新窗口中打开N8N聊天助手
+                    window.open('{{ N8N_CHAT_URL }}', '_blank');
+                });
+                
+                // 添加键盘支持（可访问性）
+                chatAssistant.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+                
+                // 设置可访问性属性
+                chatAssistant.setAttribute('tabindex', '0');
+                chatAssistant.setAttribute('role', 'button');
+                chatAssistant.setAttribute('aria-label', 'N8N聊天助手 - 点击打开聊天窗口');
+            }
+        });
+    </script>
+    
     {% block scripts %}{% endblock %}
 </body>
 </html> 

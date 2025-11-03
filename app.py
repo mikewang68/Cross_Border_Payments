@@ -3,13 +3,13 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import config
 
 # 创建Flask应用
 app = Flask(__name__)
 
-
 # 设置session密钥
-app.secret_key = os.urandom(24)
+app.secret_key = config.SECRET_KEY if config.SECRET_KEY else os.urandom(24)
 
 
 # 注册蓝图
@@ -25,6 +25,15 @@ def register_blueprints(app):
 
 # 注册蓝图
 register_blueprints(app)
+
+# 全局模板变量
+@app.context_processor
+def inject_config():
+    """注入配置变量到所有模板"""
+    return dict(
+        N8N_CHAT_URL=config.N8N_CHAT_URL,
+        GSALARY_API_URL=config.GSALARY_API_URL
+    )
 
 # 错误处理
 @app.errorhandler(404)

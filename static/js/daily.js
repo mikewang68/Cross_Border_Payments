@@ -151,22 +151,39 @@ layui.use(['form', 'laydate', 'table'], function(){
         }
     });
 
-    // 初始化今日充值记录数据
-    function loadTodayRechargeData() {
-        var today = new Date().toISOString().split('T')[0];
-        var todayRechargeList = walletTransactionsData.filter(function(trans) {
-            if (trans.txn_type === 'BALANCE_RECHARGE' || trans.txn_type === 'MANUAL') {
-                var transTime = trans.transaction_time || '';
-                if (transTime.startsWith(today)) {
+    // 全局变量控制显示模式
+    var showAllRechargeRecords = false;
+
+    // 加载钱包充值记录数据
+    function loadRechargeData(showAll) {
+        var rechargeList = [];
+        
+        if (showAll) {
+            // 显示全部充值记录
+            rechargeList = walletTransactionsData.filter(function(trans) {
+                if (trans.txn_type === 'BALANCE_RECHARGE' || trans.txn_type === 'MANUAL') {
                     var amount = trans.amount || 0;
                     return parseFloat(amount) > 0;
                 }
-            }
-            return false;
-        });
+                return false;
+            });
+        } else {
+            // 显示今日充值记录
+            var today = new Date().toISOString().split('T')[0];
+            rechargeList = walletTransactionsData.filter(function(trans) {
+                if (trans.txn_type === 'BALANCE_RECHARGE' || trans.txn_type === 'MANUAL') {
+                    var transTime = trans.transaction_time || '';
+                    if (transTime.startsWith(today)) {
+                        var amount = trans.amount || 0;
+                        return parseFloat(amount) > 0;
+                    }
+                }
+                return false;
+            });
+        }
 
         // 格式化数据
-        var formattedData = todayRechargeList.map(function(trans) {
+        var formattedData = rechargeList.map(function(trans) {
             return {
                 transaction_time: trans.transaction_time,
                 transaction_id: trans.transaction_id || '-',
@@ -189,10 +206,23 @@ layui.use(['form', 'laydate', 'table'], function(){
             return new Date(b.transaction_time) - new Date(a.transaction_time);
         });
 
+        // 更新表格提示文本
+        var noneText = showAll ? '暂无充值记录' : '今日暂无充值记录';
+        
         // 重新渲染表格
         table.reload('rechargeTable', {
-            data: formattedData
+            data: formattedData,
+            text: {
+                none: noneText
+            }
         });
+        
+        console.log(`加载了 ${formattedData.length} 条${showAll ? '全部' : '今日'}充值记录`);
+    }
+
+    // 初始化今日充值记录数据（保持向后兼容）
+    function loadTodayRechargeData() {
+        loadRechargeData(false);
     }
 
     // 页面加载时初始化今日充值记录
@@ -673,8 +703,37 @@ layui.use(['form', 'laydate', 'table'], function(){
         }, 0);
     });
 
+    // 切换充值记录显示模式
+    function toggleRechargeRecords() {
+        showAllRechargeRecords = !showAllRechargeRecords;
+        
+        // 更新标题文本和图标状态
+        var titleText = showAllRechargeRecords ? '全部钱包充值记录' : '今日钱包充值记录';
+        var tooltipText = showAllRechargeRecords ? '点击切换显示今日记录' : '点击切换显示全部记录';
+        
+        $('#rechargeTitleText').text(titleText);
+        $('#toggleIcon').attr('title', tooltipText);
+        
+        // 更新样式状态
+        if (showAllRechargeRecords) {
+            $('#rechargeTitle').addClass('active');
+        } else {
+            $('#rechargeTitle').removeClass('active');
+        }
+        
+        // 重新加载数据
+        loadRechargeData(showAllRechargeRecords);
+        
+        console.log('切换到显示：' + titleText);
+    }
+
     // 初始化页面加载完成后设置点击事件
     $(document).ready(function() {
+        // 为充值记录标题添加点击事件
+        $('#rechargeTitle').on('click', function() {
+            toggleRechargeRecords();
+        });
+        
         // 为TOP3项目添加点击事件处理
         $('#countTop3').on('click', '.top3-item', function() {
             var cardNumber = $(this).attr('data-card-number');

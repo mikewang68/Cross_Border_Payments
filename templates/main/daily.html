@@ -76,9 +76,10 @@
 
     <!-- 钱包充值记录表格 -->
     <div class="recharge-table-container">
-        <div class="section-title">
+        <div class="section-title clickable-title" id="rechargeTitle">
             <i class="layui-icon layui-icon-list"></i>
-            <span>今日钱包充值记录</span>
+            <span id="rechargeTitleText">今日钱包充值记录</span>
+            <i class="layui-icon layui-icon-refresh toggle-icon" id="toggleIcon" title="点击切换显示全部记录"></i>
         </div>
         <table id="rechargeTable" lay-filter="rechargeTable"></table>
     </div>

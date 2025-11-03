@@ -153,6 +153,36 @@
     margin-bottom: 20px;
 }
 
+/* 可点击标题样式 */
+.clickable-title {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 10px;
+    border-radius: 6px;
+    margin: -10px -10px 15px -10px;
+}
+
+.clickable-title:hover {
+    background-color: #f0f9ff;
+    transform: translateX(3px);
+}
+
+.clickable-title .toggle-icon {
+    margin-left: auto;
+    font-size: 16px;
+    color: #409EFF;
+    transition: transform 0.3s ease;
+}
+
+.clickable-title:hover .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.clickable-title.active .toggle-icon {
+    color: #67C23A;
+}
+
 /* 筛选区域样式 */
 .filter-container {
     background-color: #fff;
