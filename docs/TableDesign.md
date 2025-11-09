@@ -80,7 +80,7 @@
 交易商户名称	merchant_name	varchar(255) NULL	
 交易商户所在国家、地区，使用ISO-3166清单中的2字符国家编码.	merchant_region	varchar(255) NULL	
 平台名	version	varchar(255) NULL	
-3.2.6 卡类型 card_type表（暂时没用，用cards_product表代替）
+3.2.6 卡类型 card_type表
 中文含义	英文名称	字段类型	备注
 序号	id	int(11) NOT NULL	
 卡片类型	card_type	varchar(255) NOT NULL	
