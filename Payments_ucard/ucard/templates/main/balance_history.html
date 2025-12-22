@@ -1,0 +1,89 @@
+<div class="layui-fluid">
+    <div class="layui-card balance-history-container">
+        <div class="layui-card-header">额度明细</div>
+        <div class="layui-card-body">
+            <!-- 搜索框 -->
+            <form class="layui-form layui-form-pane" lay-filter="searchForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">流水号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="transaction_id" placeholder="请输入流水号" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">卡号后四位</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="card_last_digits" placeholder="请输入卡号后四位" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">平台</label>
+                        <div class="layui-input-inline">
+                            <select name="version">
+                                <option value="">全部</option>
+                                <option value="J1">J1</option>
+                                <option value="J2">J2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">日期范围</label>
+                        <div class="layui-input-inline" style="width: 180px;">
+                            <input type="text" name="date_start" id="date_start" placeholder="开始日期" autocomplete="off" class="layui-input">
+                        </div>
+                        <div class="layui-form-mid">-</div>
+                        <div class="layui-input-inline" style="width: 180px;">
+                            <input type="text" name="date_end" id="date_end" placeholder="结束日期" autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="formSearch">
+                            <i class="layui-icon layui-icon-search"></i> 搜索
+                        </button>
+                        <button type="reset" class="layui-btn layui-btn-primary">
+                            <i class="layui-icon layui-icon-refresh"></i> 重置
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <!-- 表格容器 -->
+            <div class="table-container">
+                <table id="balance-table" lay-filter="balance-table"></table>
+            </div>
+            
+            <!-- 表格工具栏 -->
+            <script type="text/html" id="toolbar_balance_history">
+            {% raw %}
+                <div class="layui-btn-container">
+                    <div class="layui-table-tool-self">
+                        <div class="layui-inline" title="筛选列" lay-event="LAYTABLE_COLS">
+                            <i class="layui-icon layui-icon-cols"></i>
+                        </div>
+                        <div class="layui-inline" title="导出" lay-event="LAYTABLE_EXPORT">
+                            <i class="layui-icon layui-icon-export"></i>
+                        </div>
+                    </div>
+                </div>
+            {% endraw %}
+            </script>
+            
+            <!-- 行工具栏 -->
+            <script type="text/html" id="balance_history_barTool">
+            {% raw %}
+                <a class="layui-btn layui-btn-xs" lay-event="detail">详情</a>
+            {% endraw %}
+            </script>
+        </div>
+        <script id="balance-history-data" type="application/json">
+            {{ balance_history|tojson|safe }}
+        </script>
+
+    </div>
+</div>
+
+
+<!-- 引入额度明细CSS和JS -->
+<link rel="stylesheet" href="/static/css/balance_history.css">
+<script src="/static/js/balance_history.js"></script> 

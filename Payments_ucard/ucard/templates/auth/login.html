@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>UCard管理系统 - 登录</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='layui/css/layui.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h2 class="login-title">UCard管理系统</h2>
+            <form class="layui-form" action="{{ url_for('auth.login') }}" method="post">
+                {% if error %}
+                <div class="layui-form-item">
+                    <div class="layui-input-block error-msg">
+                        {{ error }}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="account" required lay-verify="required" placeholder="请输入账号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">密码</label>
+                    <div class="layui-input-block">
+                        <input type="password" name="password" required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block login-btn-container">
+                        <button class="layui-btn layui-btn-normal layui-btn-fluid" lay-submit>登录</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='layui/layui.js') }}"></script>
+    <script>
+        layui.use(['form', 'layer'], function(){
+            var form = layui.form;
+            var layer = layui.layer;
+            
+            form.on('submit(login)', function(data){
+                return true;
+            });
+        });
+    </script>
+</body>
+</html> 

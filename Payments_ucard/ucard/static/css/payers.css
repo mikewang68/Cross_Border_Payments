@@ -1,0 +1,166 @@
+/**
+ * 付款人管理页面样式
+ */
+
+/* 表格容器样式 */
+.payers-page .table-container {
+    margin-top: 15px;
+    width: 100%;
+    overflow-x: auto;
+    position: relative;
+}
+
+/* 搜索表单样式 */
+.payers-page .layui-form-pane .layui-form-label {
+    width: 120px;
+    overflow: visible;
+    white-space: nowrap;
+    text-overflow: clip;
+}
+
+.payers-page .layui-form-pane .layui-input-inline {
+    width: 180px;
+}
+
+/* 禁用表格固定高度 */
+.payers-page .layui-table-view {
+    height: auto !important;
+    margin-bottom: 10px;
+}
+
+/* 防止分页栏被遮挡 */
+.payers-page .layui-card-body {
+    padding-bottom: 20px;
+    overflow: visible;
+}
+
+/* 详情弹窗样式 */
+.payers-page .layui-layer-content .layui-card-header {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.payers-page .layui-layer-content .layui-table {
+    margin-top: 10px;
+}
+
+/* 状态标签样式 */
+.payers-page .layui-badge {
+    width: 36px;
+    height: 22px;
+    align-content: center;
+    padding: 0px 5px;
+    font-size: 12px;
+}
+
+/* 表格内容溢出处理 */
+.payers-page .layui-table-cell {
+    height: auto;
+    line-height: 22px;
+    padding: 8px 12px;
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 表格行悬停效果 */
+.payers-page .layui-table-hover {
+    background-color: #f8f8f8;
+}
+
+/* 工具栏按钮间距 */
+.payers-page .layui-btn + .layui-btn {
+    margin-left: 8px;
+}
+
+/* 按钮样式微调 */
+.payers-page .layui-btn-xs {
+    padding: 0 8px;
+    height: 22px;
+    line-height: 22px;
+}
+
+/* 确保下拉菜单正确显示 */
+.payers-page .layui-form-select .layui-input {
+    padding-right: 30px;
+}
+
+.payers-page .layui-form-select dl {
+    top: 42px;
+    z-index: 999;
+    max-height: 300px;
+}
+
+/* 确保下拉菜单在其他元素之上 */
+.payers-page .layui-form-select dl dd, 
+.payers-page .layui-form-select dl dt {
+    line-height: 36px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 表格工具栏样式 */
+.payers-page .layui-table-tool-self {
+    position: absolute;
+    right: 17px;
+    top: 10px;
+}
+
+.payers-page .layui-table-tool-self .layui-inline {
+    margin: 0 0 0 10px;
+}
+
+/* 证件图片样式 */
+.payers-page .cert-image {
+    max-width: 200px;
+    max-height: 150px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 2px;
+}
+
+/* 确保表格在小屏幕上也能正常显示 */
+@media screen and (max-width: 992px) {
+    .payers-page .layui-table-view {
+        width: 100%;
+        overflow-x: auto;
+    }
+    
+    .payers-page .layui-table-body {
+        min-width: 800px;
+    }
+} 
+
+/* 付款人页面 - 修复滚动条问题 */
+.payers-page .layui-table-body {
+    overflow-y: auto !important; /* 允许表格内容垂直滚动 */
+}
+
+.payers-page .layui-table-fixed .layui-table-body {
+    overflow-y: hidden !important; /* 固定列不需要垂直滚动 */
+}
+
+.payers-page .layui-body {
+    overflow: hidden !important; /* 防止body层出现额外滚动条 */
+}
+
+.payers-page .layui-fluid {
+    overflow: hidden; /* 防止fluid层出现额外滚动条 */
+}
+
+.payers-page .layui-table-page {
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+    position: relative;
+}
+
+/* 确保内部padding合适 */
+.payers-page .layui-form-pane .layui-input {
+    padding-left: 5px;
+    padding-right: 5px;
+    width: calc(100% - 2px);
+    box-sizing: border-box;
+}

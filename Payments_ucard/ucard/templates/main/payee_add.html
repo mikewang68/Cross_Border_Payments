@@ -1,0 +1,253 @@
+<!-- 添加收款人表单页面 -->
+<div class="layui-fluid payee-add-page">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <button type="button" class="layui-btn layui-btn-sm layui-btn-primary return-button">
+                <i class="layui-icon layui-icon-left"></i> 返回
+            </button>
+            <span class="page-title">在<span class="selected-platform"></span>添加收款人</span>
+        </div>
+        
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <!-- 左侧表单 -->
+                <div class="layui-col-md8">
+                    <form class="layui-form" id="payeeAddForm" lay-filter="payeeAddForm">
+                        <div id="step1Form">
+                            <!-- 平台选择 -->
+                            <div class="step-title">1. 设置收款人信息</div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label required">平台</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="version" readonly class="layui-input" id="platformInput">
+                                </div>
+                            </div>
+                            
+                            <!-- 收款人类型 -->
+                            <div class="layui-form-item">
+                                <label class="layui-form-label required">您需要付款给谁？</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="subject_type" value="INDIVIDUAL" title="个人" checked lay-filter="subject_type">
+                                    <input type="radio" name="subject_type" value="ENTERPRISE" title="企业" lay-filter="subject_type">
+                                </div>
+                            </div>
+                            
+                            <!-- 收款账户类型 -->
+                            <div class="layui-form-item">
+                                <label class="layui-form-label required">收款账户类型</label>
+                                <div class="layui-input-block">
+                                    <input type="radio" name="account_type" value="E_WALLET" title="电子钱包" checked lay-filter="account_type">
+                                    <input type="radio" name="account_type" value="BANK_ACCOUNT" title="银行账户" lay-filter="account_type">
+                                </div>
+                            </div>
+                            
+                            <!-- 国家地区/币种选择 - 电子钱包 -->
+                            <div class="layui-form-item wallet-country" id="walletCountryItem">
+                                <label class="layui-form-label required">所在国家或地区</label>
+                                <div class="layui-input-block">
+                                    <div class="custom-select-container">
+                                        <div class="custom-select">
+                                            <input type="text" id="walletCountryInput" readonly class="layui-input" placeholder="请选择国家或地区">
+                                            <input type="hidden" name="country" id="walletCountryValue">
+                                            <i class="layui-icon layui-icon-down"></i>
+                                        </div>
+                                        <div class="custom-select-options" id="walletCountryOptions">
+                                            <!-- 国家选项将通过JS动态加载 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 银行所在国家地区/币种选择 - 银行账户 -->
+                            <div class="layui-form-item bank-country" id="bankCountryItem" style="display:none;">
+                                <label class="layui-form-label required">银行所在国家或地区</label>
+                                <div class="layui-input-inline">
+                                    <div class="custom-select-container">
+                                        <div class="custom-select">
+                                            <input type="text" id="bankCountryInput" readonly class="layui-input" placeholder="请选择国家或地区">
+                                            <input type="hidden" name="bank_country" id="bankCountryValue">
+                                            <i class="layui-icon layui-icon-down"></i>
+                                        </div>
+                                        <div class="custom-select-options" id="bankCountryOptions">
+                                            <!-- 国家选项将通过JS动态加载 -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <label class="layui-form-label required">币种</label>
+                                <div class="layui-input-inline">
+                                    <div class="custom-select-container">
+                                        <div class="custom-select">
+                                            <input type="text" id="currencyInput" readonly class="layui-input" placeholder="请选择币种">
+                                            <input type="hidden" name="currency" id="currencyValue">
+                                            <i class="layui-icon layui-icon-down"></i>
+                                        </div>
+                                        <div class="custom-select-options" id="currencyOptions">
+                                            <!-- 币种选项将通过JS动态加载 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 个人信息 - 个人 -->
+                            <div class="layui-form-item individual-fields">
+                                <label class="layui-form-label required">名字</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="first_name" placeholder="请输入名字" autocomplete="off" class="layui-input">
+                                </div>
+                                <label class="layui-form-label required">姓氏</label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="last_name" placeholder="请输入姓氏" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            
+                            <!-- 企业信息 - 企业 -->
+                            <div class="layui-form-item enterprise-fields" style="display:none;">
+                                <label class="layui-form-label required">账户持有人（公司名称）</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="account_holder" placeholder="请输入公司名称" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            
+                            <!-- 法人类型 - 企业且银行账户 -->
+                            <div class="layui-form-item enterprise-bank-fields" style="display:none;">
+                                <label class="layui-form-label required">法人类型</label>
+                                <div class="layui-input-block">
+                                    <div class="custom-select-container">
+                                        <div class="custom-select">
+                                            <input type="text" id="legalTypeInput" readonly class="layui-input" placeholder="请选择法人类型">
+                                            <input type="hidden" name="legal_type" id="legalTypeValue">
+                                            <i class="layui-icon layui-icon-down"></i>
+                                        </div>
+                                        <div class="custom-select-options" id="legalTypeOptions">
+                                            <div class="option-item" data-value="PUBLIC">上市公司</div>
+                                            <div class="option-item" data-value="PRIVATE">私营公司</div>
+                                            <div class="option-item" data-value="SOLE_PROPRIETORSHIP">个体经营或独资企业</div>
+                                            <div class="option-item" data-value="LLC">有限责任公司</div>
+                                            <div class="option-item" data-value="LLP">有限责任合伙</div>
+                                            <div class="option-item" data-value="NON_PROFIT">非营利组织</div>
+                                            <div class="option-item" data-value="LTD">私人有限公司</div>
+                                            <div class="option-item" data-value="INC">注册公司</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 银行账户地址信息 -->
+                            <div class="layui-form-item bank-address-fields" style="display:none;">
+                                <label class="layui-form-label required">城市</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="city" placeholder="请输入城市" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            
+                            <div class="layui-form-item bank-address-fields" style="display:none;">
+                                <label class="layui-form-label required">收款人详细地址</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="address" placeholder="请输入详细地址" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            
+                            <div class="layui-form-item bank-address-fields" style="display:none;">
+                                <label class="layui-form-label required">邮编</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="postcode" placeholder="请输入邮编" autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            
+                            <!-- 手机号码区域 - 银行账户 -->
+                            <div class="layui-form-item bank-address-fields" style="display:none;">
+                                <label class="layui-form-label required">手机号码</label>
+                                <div class="layui-input-block">
+                                    <div style="display: flex;">
+                                        <div class="custom-select-container" style="width: 120px; margin-right: 10px;">
+                                            <div class="custom-select">
+                                                <input type="text" id="nationCodeInput" readonly class="layui-input" placeholder="国家区号" value="+86">
+                                                <input type="hidden" name="nation_code" id="nationCodeValue" value="86">
+                                                <i class="layui-icon layui-icon-down"></i>
+                                            </div>
+                                            <div class="custom-select-options" id="nationCodeOptions">
+                                                <div class="option-item" data-value="86">+86 (中国)</div>
+                                                <div class="option-item" data-value="1">+1 (美国/加拿大)</div>
+                                                <div class="option-item" data-value="852">+852 (香港)</div>
+                                                <div class="option-item" data-value="853">+853 (澳门)</div>
+                                                <div class="option-item" data-value="886">+886 (台湾)</div>
+                                                <div class="option-item" data-value="44">+44 (英国)</div>
+                                                <div class="option-item" data-value="65">+65 (新加坡)</div>
+                                                <div class="option-item" data-value="81">+81 (日本)</div>
+                                                <div class="option-item" data-value="82">+82 (韩国)</div>
+                                                <div class="option-item" data-value="61">+61 (澳大利亚)</div>
+                                            </div>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <input type="text" name="mobile" placeholder="请输入手机号码" autocomplete="off" class="layui-input">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="layui-form-item">
+                                <div class="layui-input-block form-buttons">
+                                    <button type="button" class="layui-btn layui-btn-primary cancel-button">取消</button>
+                                    <button type="button" class="layui-btn next-button" id="nextStepBtn">下一步</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 下一步提示 -->
+                            <div class="layui-form-item next-step-tips">
+                                <div class="next-step-box">
+                                    <div class="next-step-title">下一步: 设置收款方式</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 第二步：设置收款方式 -->
+                        <div id="step2Form" style="display:none;">
+                            <div class="step-title">2. 设置收款方式</div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">选择要开通的收款方式</label>
+                                <div class="layui-input-block">
+                                    <div class="payment-methods-container" id="paymentMethodsContainer">
+                                        <!-- 收款方式选项由JS动态生成 -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 收款方式详细表单字段 -->
+                            <div class="payment-method-details" id="paymentMethodDetails">
+                                <!-- 收款方式表单由JS动态生成 -->
+                            </div>
+
+                            <div class="layui-form-item">
+                                <div class="layui-input-block form-buttons">
+                                    <button type="button" class="layui-btn layui-btn-primary cancel-button-step2">取消</button>
+                                    <button type="button" class="layui-btn save-button" id="savePaymentMethodBtn">保存</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- 右侧信息盒子 -->
+                <div class="layui-col-md4">
+                    <div class="payment-info-box">
+                        <h3><span id="platformName"></span>支持的付款方式</h3>
+                        <p>支持 108+ 个国家/地区，22+ 币种，涵盖银行转账、Paypal及本地钱包等各种收款方式。</p>
+                        <button type="button" class="layui-btn" id="showPaymentMethodsBtn">我已开通</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入收款人CSS和JS -->
+<link rel="stylesheet" href="/static/css/payee_add.css">
+<script src="/static/js/payee_add.js"></script>
+
+<!-- 后端数据 -->
+<script id="payment-methods-data" type="application/json">
+    {{ available_payment_methods|tojson|safe }}
+</script>
+<script id="regions-currencies-data" type="application/json">
+    {{ supported_regions_currencies|tojson|safe }}
+</script>

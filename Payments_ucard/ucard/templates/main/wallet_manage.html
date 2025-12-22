@@ -1,0 +1,63 @@
+<div class="wallet-manage-container">
+    <div class="layui-fluid">
+        <div class="layui-card">
+            <div class="layui-card-header">钱包管理</div>
+            <div class="layui-card-body">
+                <div class="layui-btn-container">
+                    <button id="addWalletBtn" class="layui-btn layui-btn-normal">
+                        <i class="layui-icon">&#xe654;</i> 添加费率
+                    </button>
+                    <button id="refreshBtn" class="layui-btn layui-btn-primary">
+                        <i class="layui-icon">&#xe669;</i> 刷新
+                    </button>
+                </div>
+                
+                <table id="walletManageTable" lay-filter="walletManageTable"></table>
+                
+                <script type="text/html" id="tableToolbar">
+                    <div class="layui-btn-container">
+                        <button class="layui-btn layui-btn-xs" lay-event="edit">
+                            <i class="layui-icon">&#xe642;</i> 编辑
+                        </button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">
+                            <i class="layui-icon">&#xe640;</i> 删除
+                        </button>
+                    </div>
+                </script>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑费率表单 -->
+    <div id="walletManageForm" style="display: none; padding: 20px;">
+        <form class="layui-form" lay-filter="walletForm">
+            <div class="layui-form-item">
+                <label class="layui-form-label">手续费率</label>
+                <div class="layui-input-block">
+                    <input type="text" name="fee" placeholder="请输入手续费率" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">利润率</label>
+                <div class="layui-input-block">
+                    <input type="text" name="percentage" placeholder="请输入利润率" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">兑换费率</label>
+                <div class="layui-input-block">
+                    <input type="text" name="exchange_rate" placeholder="请输入兑换费率" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn" lay-submit lay-filter="submitWallet">提交</button>
+                    <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/static/css/wallet_manage.css">
+<script src="/static/js/wallet_manage.js"></script>

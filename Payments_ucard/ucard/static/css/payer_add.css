@@ -1,0 +1,255 @@
+/* 付款人添加页面CSS */
+/* 确保弹窗背景不影响主界面 */
+.layui-layer-page .layui-layer-content {
+    overflow: auto !important;
+    padding: 0;
+}
+
+.layui-layer-shade {
+    pointer-events: auto;
+}
+
+.payer-add-container {
+    margin: 15px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,.12);
+}
+
+.payer-add-container .layui-card-header {
+    height: 42px;
+    line-height: 42px;
+    padding: 0 15px;
+    border-bottom: 1px solid #f6f6f6;
+    color: #333;
+    border-radius: 2px 2px 0 0;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.payer-add-container .layui-card-body {
+    padding: 15px;
+}
+
+.payer-add-container .layui-form-item {
+    margin-bottom: 15px;
+}
+
+.payer-add-container .layui-form-label {
+    width: 100px;
+    text-align: right;
+    padding: 9px 15px 9px 0;
+}
+
+.payer-add-container .layui-input-block {
+    margin-left: 130px;
+}
+
+.payer-add-container .layui-input, 
+.payer-add-container .layui-select, 
+.payer-add-container .layui-textarea {
+    width: 300px;
+}
+
+.payer-add-container .required {
+    color: #FF5722;
+    margin-right: 3px;
+}
+
+.payer-add-container .section-title {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.payer-add-container .layui-form-label-title {
+    font-weight: bold;
+    font-size: 15px;
+    color: #333;
+    padding-left: 10px;
+    border-left: 3px solid #1E9FFF;
+}
+
+/* 文件上传和预览区域样式 */
+.payer-add-container .upload-area {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.payer-add-container .upload-box {
+    display: inline-block;
+    width: 120px;
+    height: 90px;
+    border: 1px dashed #ddd;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    background-color: #fbfbfb;
+    transition: all 0.3s;
+}
+
+.payer-add-container .upload-box:hover {
+    border-color: #1E9FFF;
+    background-color: #f5f5f5;
+}
+
+.payer-add-container .upload-icon {
+    font-size: 30px;
+    color: #ccc;
+    margin-top: 20px;
+}
+
+.payer-add-container .upload-text {
+    color: #999;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.payer-add-container .cert-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.payer-add-container .cert-item {
+    position: relative;
+    width: 120px;
+    margin-bottom: 10px;
+}
+
+.payer-add-container .cert-img {
+    width: 120px;
+    height: 90px;
+    border: 1px solid #eee;
+    object-fit: cover;
+}
+
+.payer-add-container .cert-delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
+    background-color: #FF5722;
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.payer-add-container .layui-form-mid {
+    padding: 5px 0!important;
+}
+
+.payer-add-container .layui-word-aux {
+    color: #999;
+    font-size: 12px;
+}
+
+/* 业务范围标签样式 */
+.payer-add-container .selected-scopes {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.payer-add-container .scope-tag {
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    padding: 5px 8px;
+    background-color: #f8f8f8;
+    border: 1px solid #eee;
+    border-radius: 2px;
+    position: relative;
+    font-size: 12px;
+}
+
+.payer-add-container .scope-tag-text {
+    margin-right: 20px;
+}
+
+.payer-add-container .scope-tag-close {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #aaa;
+}
+
+.payer-add-container .scope-tag-close:hover {
+    color: #FF5722;
+}
+
+/* 按钮样式 */
+.payer-add-container .layui-btn {
+    background-color: #1E9FFF;
+}
+
+.payer-add-container .layui-btn-primary {
+    background-color: #fff;
+    border: 1px solid #e6e6e6;
+}
+
+/* 安全提示样式 */
+.payer-add-container .security-warning {
+    margin: 15px;
+    padding: 10px 15px;
+    background-color: #FFF3F3;
+    border-left: 3px solid #FF5722;
+    color: #FF5722;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.payer-add-container .security-warning i {
+    margin-right: 5px;
+}
+
+/* 弹窗特定样式 */
+.layui-layer-content .payer-add-container {
+    padding: 0;
+    margin: 0;
+}
+
+.payer-add-container .layui-layer-content .layui-card {
+    margin: 0;
+    box-shadow: none;
+    border: none;
+}
+
+.payer-add-container .layui-layer-content .layui-card-body {
+    padding: 15px;
+}
+
+/* 响应式布局调整 */
+@media screen and (max-width: 768px) {
+    .payer-add-container .layui-form-label {
+        width: 80px;
+        padding: 9px 5px;
+    }
+    
+    .payer-add-container .layui-input-block {
+        margin-left: 110px;
+    }
+    
+    .payer-add-container .layui-input, 
+    .payer-add-container .layui-select, 
+    .payer-add-container .layui-textarea {
+        width: calc(100% - 20px);
+    }
+    
+    .payer-add-container .cert-item {
+        width: 100%;
+        margin-right: 0;
+    }
+    
+    .payer-add-container .cert-img {
+        width: 100%;
+        height: auto;
+    }
+} 

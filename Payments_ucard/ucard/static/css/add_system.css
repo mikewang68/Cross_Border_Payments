@@ -1,0 +1,141 @@
+/* 页面容器 */
+.page-container {
+    padding: 20px;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+/* 页面头部 */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.page-header h2 {
+    font-size: 20px;
+    color: #333;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.page-header h2 .layui-icon {
+    margin-right: 8px;
+    font-size: 22px;
+    color: #1E9FFF;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* 平台列表容器 */
+.platform-list-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 表格样式优化 */
+.layui-table {
+    margin-top: 0;
+}
+
+.layui-table thead tr {
+    background-color: #f9f9f9;
+}
+
+.layui-table tbody tr:hover {
+    background-color: #f5f7fa;
+}
+
+/* 表单样式 */
+.layui-form-label {
+    width: 90px;
+}
+
+.layui-input-block {
+    margin-left: 120px;
+}
+
+.layui-textarea {
+    min-height: 120px;
+}
+
+/* 按钮样式优化 */
+.layui-btn {
+    background-color: #1E9FFF;
+}
+
+.layui-btn-normal {
+    background-color: #1E9FFF;
+}
+
+.layui-btn-danger {
+    background-color: #FF5722;
+}
+
+.layui-btn-primary {
+    border-color: #ddd;
+    color: #666;
+}
+
+.layui-btn-primary:hover {
+    border-color: #1E9FFF;
+    color: #1E9FFF;
+}
+
+/* 操作按钮样式 */
+.table-btn {
+    padding: 5px 10px;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.table-btn-view {
+    color: #1E9FFF;
+}
+
+.table-btn-edit {
+    color: #FFB800;
+}
+
+.table-btn-delete {
+    color: #FF5722;
+}
+
+/* 弹窗样式 */
+.layui-layer-page .layui-layer-content {
+    overflow: visible !important;
+}
+
+/* 表单项间距 */
+.layui-form-item {
+    margin-bottom: 20px;
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 768px) {
+    .layui-input-block {
+        margin-left: 100px;
+    }
+    
+    .layui-form-label {
+        width: 70px;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .header-actions {
+        margin-top: 10px;
+    }
+}

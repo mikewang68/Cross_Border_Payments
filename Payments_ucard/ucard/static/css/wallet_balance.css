@@ -1,0 +1,183 @@
+/* 钱包余额页面样式 */
+/* 搜索表单样式 */
+.layui-form-pane {
+    margin-bottom: 20px;
+}
+
+.layui-form-pane .layui-form-label {
+    width: 80px;
+}
+
+.layui-form-pane .layui-input-inline {
+    width: 180px;
+}
+
+/* 卡片头部样式 */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.platform-selector {
+    margin-right: 10px;
+}
+
+.platform-selector select {
+    padding: 5px 30px 5px 10px;
+    border: 1px solid #e6e6e6;
+    border-radius: 2px;
+    background-color: #fff;
+    height: 30px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.platform-selector select:hover {
+    border-color: #d2d2d2;
+}
+
+.platform-selector select:focus {
+    border-color: #009688;
+    outline: none;
+}
+
+.wallet-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.total-balance {
+    flex: 1;
+}
+
+.balance-title {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.main-balance {
+    display: flex;
+    align-items: baseline;
+}
+
+.amount {
+    font-size: 36px;
+    font-weight: bold;
+    color: #009688;
+    margin-right: 5px;
+}
+
+.currency {
+    font-size: 18px;
+    color: #666;
+    margin-right: 10px;
+}
+
+.refresh-btn {
+    cursor: pointer;
+    color: #1E9FFF;
+    font-size: 16px;
+}
+
+.refresh-btn:hover {
+    color: #009688;
+}
+
+.update-time {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+}
+
+.wallet-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* 货币卡片样式 */
+.currency-list-container {
+    margin-top: 20px;
+}
+
+.currency-card {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.currency-card:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.flag-container {
+    width: 40px;
+    height: 30px;
+    margin-right: 15px;
+    overflow: hidden;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.flag-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.currency-info {
+    flex: 1;
+}
+
+.currency-name {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.currency-amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.platform-info {
+    font-size: 12px;
+    color: #999;
+    margin-top: 5px;
+    padding: 2px 5px;
+    background-color: #f5f5f5;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.zero-balance {
+    color: #999;
+}
+
+/* 版权信息样式 */
+.footer-info {
+    text-align: center;
+    margin-top: 20px;
+    padding: 10px 0;
+    color: #999;
+    font-size: 12px;
+}

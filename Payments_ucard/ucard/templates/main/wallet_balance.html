@@ -1,0 +1,142 @@
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-header">
+            <div class="header-content">
+                <span>钱包余额</span>
+                <!-- <div class="platform-selector">
+                    <select id="platform-select" lay-filter="platform-select" lay-search>
+                        <option value="all">所有平台</option>
+                       
+                    </select>
+                </div> -->
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <!-- 搜索表单 -->
+            <form class="layui-form layui-form-pane" lay-filter="walletSearchForm">
+                <div class="layui-form-item">
+                    <!-- <div class="layui-inline">
+                        <label class="layui-form-label">货币</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="currency" placeholder="请输入货币代码" autocomplete="off" class="layui-input">
+                        </div>
+                    </div> -->
+                    <div class="layui-inline">
+                        <label class="layui-form-label">平台</label>
+                        <div class="layui-input-inline">
+                            <select name="version" lay-filter="version-select">
+                                <option value="">全部</option>
+                                <option value="J1">J1</option>
+                                <option value="J2">J2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            <!-- 顶部信息展示 -->
+            <div class="wallet-info">
+                <div class="total-balance">
+                    <h3 class="balance-title">当前余额</h3>
+                    <div class="main-balance">
+                        {% set total_amount = 0 %}
+                        {% for balance in wallet_balances %}
+                            {% set total_amount = total_amount + balance.amount|float %}
+                        {% endfor %}
+                        <span class="amount" id="main-amount">{{ total_amount|round(2) }}</span>
+                        <span class="currency" id="main-currency">总额</span>
+                        <i class="layui-icon layui-icon-refresh refresh-btn" id="refresh-balance" title="刷新余额"></i>
+                    </div>
+                    <div class="update-time" id="update-time">{% if wallet_balances and wallet_balances|length > 0 %}（更新于{{ wallet_balances[0].update_time }}）{% else %}（暂无更新时间）{% endif %}</div>
+                </div>
+                <div class="wallet-actions">
+                    <!-- <button class="layui-btn layui-btn-normal">充值</button>
+                    <button class="layui-btn layui-btn-primary">提现</button>
+                    <button class="layui-btn layui-btn-primary">转账</button> -->
+                </div>
+            </div>
+
+            <!-- 货币列表 -->
+            <div class="currency-list-container">
+                <div class="layui-row layui-col-space20" id="currency-list">
+                    <!-- 货币卡片将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 交易明细容器，默认隐藏，仅用于弹窗内容 -->
+    <div id="transactionsContainer" style="display: none;"></div>
+
+    <!-- 将数据传递给JavaScript -->
+    <script id="wallet-data" type="application/json">
+        {{ wallet_balances|tojson|safe }}
+    </script>
+    <script id="region-data" type="application/json">
+        {{ regions|tojson|safe }}
+    </script>
+    <!-- 传递示例交易数据，实际开发中应通过API获取 -->
+    <!-- <script id="transactions-data" type="application/json">
+        [
+            {
+                "transaction_id": "TX123456789",
+                "transaction_time": "2023-10-01T10:30:00",
+                "amount": 1000.00,
+                "after_balance_amount": 1000.00,
+                "amount_currency": "USD",
+                "after_balance_currency": "USD",
+                "txn_type": "BALANCE_RECHARGE",
+                "version": "J1",
+                "remark": "初始充值"
+            },
+            {
+                "transaction_id": "TX123456790",
+                "transaction_time": "2023-10-02T14:20:00",
+                "amount": -50.00,
+                "after_balance_amount": 950.00,
+                "amount_currency": "USD",
+                "after_balance_currency": "USD",
+                "txn_type": "CARD_PAYMENT",
+                "version": "J1",
+                "remark": "购物支付"
+            },
+            {
+                "transaction_id": "TX123456791",
+                "transaction_time": "2023-10-03T09:15:00",
+                "amount": 200.00,
+                "after_balance_amount": 1150.00,
+                "amount_currency": "USD",
+                "after_balance_currency": "USD",
+                "txn_type": "CARD_REFUND",
+                "version": "J2",
+                "remark": "退款"
+            },
+            {
+                "transaction_id": "TX123456792",
+                "transaction_time": "2023-10-04T16:45:00",
+                "amount": -120.00,
+                "after_balance_amount": 1030.00,
+                "amount_currency": "USD",
+                "after_balance_currency": "USD",
+                "txn_type": "ACCOUNT_PAY",
+                "version": "J1",
+                "remark": "转账支出"
+            },
+            {
+                "transaction_id": "TX123456793",
+                "transaction_time": "2023-10-05T11:10:00",
+                "amount": 500.00,
+                "after_balance_amount": 1530.00,
+                "amount_currency": "USD",
+                "after_balance_currency": "USD",
+                "txn_type": "EXCHANGE_IN",
+                "version": "J2",
+                "remark": "收入"
+            }
+        ]
+    </script> -->
+
+    <!-- 引入钱包CSS和JS -->
+    <link rel="stylesheet" href="/static/css/wallet_balance.css">
+    <script src="/static/js/wallet_balance.js"></script>
+</div>
